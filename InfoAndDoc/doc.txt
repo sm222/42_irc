@@ -1,1 +1,2 @@
 doc
+https://modern.ircdocs.horse/
