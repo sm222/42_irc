@@ -6,7 +6,7 @@ class Socket {
 public:
     Socket(const std::string ip, uint16_t port, const bool showDebug, const bool isServer = true);
     ~Socket();
-
+ 
     void                Bind();
     void                Listen();
     void                Connect(const std::string ip, const uint16_t port);
