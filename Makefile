@@ -1,9 +1,9 @@
 CC		= c++
-FLAGS	=
+FLAGS	= -Wall -Wextra -Werror 	# std98 is VERY strict on linux...
 #FLAGS	= -Wall -Wextra -Werror -std=c++98 -pedantic -g
 #FLAGS	= -Wall -Wextra -Werror -std=c++98 -O2
 
-TARGET		= 42irc
+TARGET		= ircserv
 OBJECTS		:= $(patsubst src/%.cpp,obj/%.o,$(wildcard src/*.cpp))
 
 $(TARGET): $(shell mkdir -p obj) $(OBJECTS)

@@ -1,27 +1,25 @@
 #include "socket.h"
 
-int main(int argc, char **args) {
 
+int main(int argc, char **args) {
+    (void)argc;
+    (void)args;
+
+    //  Votre binaire devra être appelé comme ceci:
+    //      ./ircserv <port> <password>
 
     try {
-        Socket serverSocket("127.0.0.1", 80, true);
-        // Need to implement .SetNonBlock(), man fcntl
+        Socket serverSocket("", 2000, "password", true);
+        serverSocket.SetAddrReusable();
+        serverSocket.SetNonBlocking();
         serverSocket.Bind();
         serverSocket.Listen();
-        
-        // Need to implement Read & Send
-            // then, we add our socket FD to poll ( or receive, but i strongly suggest poll)
-            // & we wait for poll to trigger
-            // it will means someone connected, crashed, or sent data
-
-
-        // Here is what it should looks like
-        // https://i.imgur.com/28XAJjj.png
-
-        // i also added stuff in the drawio
-
+        serverSocket.Start();
     }
     catch (const std::exception& e) { std::cout << e.what() << std::endl; }
 
+
     return 0;
 }
+
+
