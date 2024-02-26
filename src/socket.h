@@ -21,6 +21,11 @@ public:
     void                        Connect(const std::string& ip, const uint16_t& port);
 
     // Getter for "friend" class
+
+    // broadcast
+    void                        BroadcastToAll(const std::string& data);
+    userData*                   GetUserByNickname(const std::string& nickName);
+    userData*                   GetUserByUsername(const std::string& userName);
     void                        SendData(const int& userFD, std::string data);
     void                        KickUser(vectorIT& index);
     const std::string&          GetPassword();

@@ -35,6 +35,25 @@ void                Socket::SendData(const int& userFD, std::string data) {
 const std::string&  Socket::GetPassword() {
     return _password;
 }
+userData*           Socket::GetUserByUsername(const std::string& userName) {
+    for (ssize_t i = 0; i < _users.size(); i++) {
+        if (_users[i].userName == userName)
+            return &_users[i];
+    }
+    return 0;
+}
+userData*           Socket::GetUserByNickname(const std::string& nickName) {
+    for (ssize_t i = 0; i < _users.size(); i++) {
+        if (_users[i].nickName == nickName)
+            return &_users[i];
+    }
+    return 0;
+}
+void                Socket::BroadcastToAll(const std::string& data) {
+    for (ssize_t i = 0; i < _users.size(); i++) {
+        SendData(_users[i].userFD, data);
+    }
+}
 
 void                Socket::Listen() {
     if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][Listen] Listening..." << std::endl;

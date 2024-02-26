@@ -6,8 +6,7 @@ Parser::~Parser(){}
 
 void    Parser::ParseData(userData& user, vectorIT& index) {
 
-    (void)index;
-
+    // index is pretty much only used to kick user. 
 
     //user.currentAction = 1;                       // Action Index, step 1 = wait 4 password, step 2 = ask for username..Etc
                                                     // im not using it anywhere, its for you guys to use
