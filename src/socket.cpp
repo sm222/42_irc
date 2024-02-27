@@ -2,7 +2,7 @@
 #include "signal.h"
 
 // +++ Constructor +++
-Socket::Socket(const std::string ip, const uint16_t port, const std::string password, const bool showDebug) : _ip(ip), _port(port), _password(password), _showDebug(showDebug), _fd(-1), _addrInfo(0) {
+Socket::Socket(const uint16_t port, const std::string password, const bool showDebug) : _ip(""), _port(port), _password(password), _showDebug(showDebug), _fd(-1), _addrInfo(0) {
     _addrInfo = _getInfo(_ip, _port);
     _fd = _getSocket(_addrInfo);
 }
@@ -15,6 +15,11 @@ Socket::~Socket() {
 // +++ Public +++
 void                Socket::KickUser(vectorIT& index) {
     close(index->fd);
+
+    userData* user = GetUserByFD(index->fd);
+    if (user && user->userName != "") {
+        channels.SOCKETONLY_kickuserfromallchannels(user->userName);
+    }
     _users.erase(index->fd);
     index->fd = -1;             // We set this to -1 to remove it AFTER the Vector for loop
     _updatePolls(true);         // Definitely remove the user from Polls listing on next iteration
@@ -22,7 +27,7 @@ void                Socket::KickUser(vectorIT& index) {
 }
 void                Socket::SendData(const int& userFD, std::string data) {
 
-    if (fcntl(userFD, F_GETFD) == -1) {
+    if (_users.find(userFD) == _users.end()) { 
         if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SendData] You're trying to send data to an invalid socket..." << std::endl;
     }
     else {
@@ -32,8 +37,35 @@ void                Socket::SendData(const int& userFD, std::string data) {
         }
     }
 }
+void                Socket::SendData(const std::string& userName, std::string data) {
+    for (std::map<int, userData>::iterator i = _users.begin(); i != _users.end(); i++) {
+        if (userName == i->second.userName) {
+            SendData(i->first, data);
+            break;
+        }
+    }
+}
 const std::string&  Socket::GetPassword() {
     return _password;
+}
+userData*           Socket::GetUserByUsername(const std::string& userName) {
+    for (size_t i = 0; i < _users.size(); i++) {
+        if (_users[i].userName == userName)
+            return &_users[i];
+    }
+    return 0;
+}
+userData*           Socket::GetUserByNickname(const std::string& nickName) {
+    for (size_t i = 0; i < _users.size(); i++) {
+        if (_users[i].nickName == nickName)
+            return &_users[i];
+    }
+    return 0;
+}
+void                Socket::BroadcastToAll(const std::string& data) {
+    for (size_t i = 0; i < _users.size(); i++) {
+        SendData(_users[i].userFD, data);
+    }
 }
 
 void                Socket::Listen() {
@@ -166,6 +198,13 @@ void                Socket::Start() {
 }
 
 // +++ Private +++
+userData*           Socket::GetUserByFD(const int& fd) {
+    std::map<int, userData>::iterator i = _users.find(fd);
+    if (i != _users.end()) {
+        return &i->second;
+    }
+    return 0;
+}
 int                 Socket::_getSocket(addrinfo* AddrInfo) {
 
     // Attempt to get the Right IP

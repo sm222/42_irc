@@ -1,6 +1,7 @@
 #pragma once
 #include "_header.h"
 #include "socket.h"
+#include "Channels.h" // Not sure if it belongs there
 
 class Socket;
 

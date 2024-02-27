@@ -1,6 +1,7 @@
 #pragma once
 
 #include "_header.h"
+#include "Channels.h"
 #include "parser.h"
 
 #define BUFFER_SIZE 8196
@@ -9,9 +10,16 @@
 
 class Socket {
 public:
-    Socket(const std::string ip, uint16_t port, const std::string password, const bool showDebug = false);
+    Socket(uint16_t port, const std::string password, const bool showDebug = false);
     ~Socket();
  
+    // Channels
+    Channels                    channels;
+
+    // SendData by FD or USERNAME
+    void                        SendData(const int& userFD, std::string data);
+    void                        SendData(const std::string& userName, std::string data);
+    
     // Socket 
     void                        Bind();
     void                        Start();
@@ -21,10 +29,15 @@ public:
     void                        Connect(const std::string& ip, const uint16_t& port);
 
     // Getter for "friend" class
-    void                        SendData(const int& userFD, std::string data);
-    void                        KickUser(vectorIT& index);
     const std::string&          GetPassword();
+    void                        KickUser(vectorIT& index);
+    void                        BroadcastToAll(const std::string& data);
+    userData*                   GetUserByNickname(const std::string& nickName);
+    userData*                   GetUserByUsername(const std::string& userName);
 
+    
+
+    userData*                   GetUserByFD(const int& fd); // you shouldnt use this
 private:
     // +++ Sockets & Errors +++
     void                        _cleanup();
