@@ -1,5 +1,5 @@
 #include "socket.h"
-
+#include "Channels.h"
 
 int main(int argc, char **args) {
     (void)argc;
@@ -9,7 +9,7 @@ int main(int argc, char **args) {
     //      ./ircserv <port> <password>
 
     try {
-        Socket serverSocket("", 2000, "password", true);
+        Socket serverSocket(2000, "password", true);
         serverSocket.SetAddrReusable();
         serverSocket.SetNonBlocking();
         serverSocket.Bind();
@@ -17,8 +17,6 @@ int main(int argc, char **args) {
         serverSocket.Start();
     }
     catch (const std::exception& e) { std::cout << e.what() << std::endl; }
-
-
     return 0;
 }
 
