@@ -11,8 +11,21 @@ Socket::Socket(const uint16_t port, const std::string password, const bool showD
 Socket::~Socket() {
    _cleanup();
 }
-
 // +++ Public +++
+bool                Socket::doesThisUsernameExist(const std::string& username) {
+    for (std::map<int, userData>::iterator i = _users.begin(); i != _users.end(); i++) {
+        if (i->second.userName == username)
+            return true;
+    }
+    return false;
+}
+bool                Socket::doesThisNicknameExist(const std::string& nickname) {
+    for (std::map<int, userData>::iterator i = _users.begin(); i != _users.end(); i++) {
+        if (i->second.nickName == nickname)
+            return true;
+    }
+    return false;
+}
 void                Socket::KickUser(vectorIT& index) {
     close(index->fd);
 

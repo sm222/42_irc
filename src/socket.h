@@ -29,6 +29,8 @@ public:
     void                        Connect(const std::string& ip, const uint16_t& port);
 
     // Getter for "friend" class
+    bool                        doesThisNicknameExist(const std::string& nickname);
+    bool                        doesThisUsernameExist(const std::string& username);
     const std::string&          GetPassword();
     void                        KickUser(vectorIT& index);
     void                        BroadcastToAll(const std::string& data);

@@ -3,6 +3,13 @@
 Channels::Channels() {}
 
 // +++ Public +++
+bool                            Channels::DoesChannelAlreadyExist(const std::string& channelname) {
+    for (ChannelGroup::iterator i = _channelGroup.begin(); i != _channelGroup.end(); i++) {
+        if (i->first == channelname)
+            return true;
+    }
+    return false;
+}
 std::string                     Channels::GetChannelTopic(const std::string& channelName) {
     // Return [NULL] if the channel doesnt exist
     ChannelMap* x = _getChannelByName(channelName);

@@ -47,6 +47,7 @@ public:
     Channels();
 
     // Create channel
+    bool                            DoesChannelAlreadyExist(const std::string& channelname);
     bool                            CreateChannel(const std::string& channelMaker, const std::string& channelName);
     uint8_t                         LeaveChannel(const std::string& userName, const std::string& channelName);
     
