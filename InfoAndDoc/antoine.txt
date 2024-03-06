@@ -1,0 +1,213 @@
+--- --- ---
+Clients
+
+A client is anything connecting to a server that is not another server. Each client is distinguished from other clients by a unique nickname. In addition to the nickname,
+all servers must have the following information about all clients: the real name/address of the host that the client is connecting from,
+the username of the client on that host,
+and the server to which the client is connected.
+
+Nicknames are non-empty strings with the following restrictions:
+
+They MUST NOT contain any of the following characters: space (' ', 0x20), comma (',', 0x2C), asterisk ('*', 0x2A), question mark ('?', 0x3F), exclamation mark ('!', 0x21), at sign ('@', 0x40).
+They MUST NOT start with any of the following characters: dollar ('$', 0x24), colon (':', 0x3A).
+They MUST NOT start with a character listed as a channel type, channel membership prefix, or prefix listed in the IRCv3 multi-prefix Extension.
+They SHOULD NOT contain any dot character ('.', 0x2E).
+
+--- --- ---
+Channels
+
+Channel names are strings (beginning with specified prefix characters). 
+Apart from the requirement of the first character being a valid channel type prefix character; the only restriction on a channel name is that it may not contain any spaces (' ', 0x20),
+a control G / BELL ('^G', 0x07), or a comma (',', 0x2C) (which is used as a list item separator by the protocol).
+
+There are several types of channels used in the IRC protocol.
+The first standard type of channel is a regular channel,
+which is known to all servers that are connected to the network.
+The prefix character for this type of channel is ('#', 0x23).
+The second type are server-specific or local channels, where the clients connected can only see and talk to other clients on the same server.
+The prefix character for this type of channel is ('&', 0x26).
+Other types of channels are described in the Channel Types section.
+
+--- --- ---
+Channel Operators
+
+Channel operators (or “chanops”) on a given channel are considered to ‘run’ or ‘own’ that channel. In recognition of this status,
+channel operators are endowed with certain powers which let them moderate and keep control of their channel.
+
+Most IRC operators do not concern themselves with ‘channel politics’. 
+In addition, a large number of networks leave the management of specific channels up to chanops where possible, and try not to interfere themselves. However,
+this is a matter of network policy, and it’s best to consult the Message of the Day when looking at channel management.
+
+IRC servers may also define other levels of channel moderation. These can include ‘halfop’ (half operator), ‘protected’ (protected user/operator),
+‘founder’ (channel founder), and any other positions the server wishes to define. These moderation levels have varying privileges and can execute,
+and not execute, various channel management commands based on what the server defines.
+
+The commands which may only be used by channel moderators include:
+    KICK: Eject a client from the channel
+    MODE: Change the channel’s modes
+    INVITE: Invite a client to an invite-only channel (mode +i)
+    TOPIC: Change the channel topic in a mode +t channel
+
+Channel moderators are identified by the channel member prefix ('@' for standard channel operators, '%' for halfops) next to their nickname whenever it is associated with a channel (e.g. replies to the NAMES, WHO, and WHOIS commands).
+
+Specific prefixes and moderation levels are covered in the Channel Membership Prefixes section.
+
+
+--- --- ---
+Client-to-Server Protocol Structur
+
+While a client is connected to a server, they send a stream of bytes to each other.
+This stream contains messages separated by CR ('\r', 0x0D) and LF ('\n', 0x0A).
+These messages may be sent at any time from either side, and may generate zero or more reply messages.
+
+Software SHOULD use the UTF-8 character encoding to encode and decode messages,
+with fallbacks as described in the Character Encodings implementation considerations appendix.
+
+Names of IRC entities (clients, servers, channels) are casemapped.
+This prevents, for example, someone having the nickname 'Dan' and someone else having the nickname 'dan',
+confusing other users. Servers MUST advertise the casemapping they use in the RPL_ISUPPORT numeric that’s sent when connection registration has completed.
+
+Message Format
+An IRC message is a single line, delimited by a pair of CR ('\r', 0x0D) and LF ('\n', 0x0A) characters.
+
+When reading messages from a stream, read the incoming data into a buffer. Only parse and process a message once you encounter the \r\n at the end of it.
+If you encounter an empty message, silently ignore it.
+When sending messages, ensure that a pair of \r\n characters follows every single message your software sends out.
+
+Messages have this format, as rough ABNF:
+
+  message         ::= ['@' <tags> SPACE] [':' <source> SPACE] <command> <parameters> <crlf>
+  SPACE           ::=  %x20 *( %x20 )   ; space character(s)
+  crlf            ::=  %x0D %x0A        ; "carriage return" "linefeed"
+The specific parts of an IRC message are:
+
+tags: Optional metadata on a message, starting with ('@', 0x40).
+source: Optional note of where the message came from, starting with (':', 0x3A).
+command: The specific command this message represents.
+parameters: If it exists, data relevant to this specific command.
+These message parts, and parameters themselves, are separated by one or more ASCII SPACE characters (' ', 0x20).
+
+Most IRC servers limit messages to 512 bytes in length, including the trailing CR-LF characters.
+Implementations which include message tags need to allow additional bytes for the tags section of a message; clients must allow 8191 additional bytes and servers must allow 4096 additional bytes.
+
+The following sections describe how to process each part, but here are a few complete example messages:
+
+  :irc.example.com CAP LS * :multi-prefix extended-join sasl
+
+  @id=234AB :dan!d@localhost PRIVMSG #chan :Hey what's up!
+
+  CAP REQ :sasl
+
+--- --- ---
+Tags
+
+This is the format of the tags part:
+
+  <tags>          ::= <tag> [';' <tag>]*
+  <tag>           ::= <key> ['=' <escaped value>]
+  <key>           ::= [ <client_prefix> ] [ <vendor> '/' ] <sequence of letters, digits, hyphens (`-`)>
+  <client_prefix> ::= '+'
+  <escaped value> ::= <sequence of any characters except NUL, CR, LF, semicolon (`;`) and SPACE>
+  <vendor>        ::= <host>
+Basically, a series of <key>[=<value>] segments, separated by (';', 0x3B).
+
+The tags part is optional, and MUST NOT be sent unless explicitly enabled by a capability. This message part starts with a leading ('@', 0x40) character,
+which MUST be the first character of the message itself. The leading ('@', 0x40) is stripped from the value before it gets processed further.
+
+Here are some examples of tags sections and how they could be represented as JSON objects:
+
+  @id=123AB;rose         ->  {"id": "123AB", "rose": ""}
+
+  @url=;netsplit=tur,ty  ->  {"url": "", "netsplit": "tur,ty"}
+For more information on processing tags – including the naming and registration of them, and how to escape values – see the IRCv3 Message Tags specification.
+
+--- --- ---
+Source
+
+  source          ::=  <servername> / ( <nickname> [ "!" <user> ] [ "@" <host> ] )
+  nick            ::=  <any characters except NUL, CR, LF, chantype character, and SPACE> <possibly empty sequence of any characters except NUL, CR, LF, and SPACE>
+  user            ::=  <sequence of any characters except NUL, CR, LF, and SPACE>
+The source (formerly known as prefix) is optional and starts with a (':', 0x3A) character (which is stripped from the value),
+and if there are no tags it MUST be the first character of the message itself.
+
+The source indicates the true origin of a message. If the source is missing from a message,
+it’s is assumed to have originated from the client/server on the other end of the connection the message was received on.
+
+Clients MUST NOT include a source when sending a message.
+
+Servers MAY include a source on any message, and MAY leave a source off of any message.
+Clients MUST be able to process any given message the same way whether it contains a source or does not contain one.
+
+
+--- --- ---
+Command < -- -- -- importen
+
+  command         ::=  letter* / 3digit
+The command must either be a valid IRC command or a numeric (a three-digit number represented as text).
+
+Information on specific commands / numerics can be found in the Client Messages and Numerics sections, respectively.
+
+--- --- ---
+Parameters
+
+This is the format of the parameters part:
+
+  parameter       ::=  *( SPACE middle ) [ SPACE ":" trailing ]
+  nospcrlfcl      ::=  <sequence of any characters except NUL, CR, LF, colon (`:`) and SPACE>
+  middle          ::=  nospcrlfcl *( ":" / nospcrlfcl )
+  trailing        ::=  *( ":" / " " / nospcrlfcl )
+Parameters (or ‘params’) are extra pieces of information added to the end of a message.
+These parameters generally make up the ‘data’ portion of the message. What specific parameters mean changes for every single message.
+
+Parameters are a series of values separated by one or more ASCII SPACE characters (' ', 0x20).
+However, this syntax is insufficient in two cases: a parameter that contains one or more spaces, and an empty parameter.
+To permit such parameters, the final parameter can be prepended with a (':', 0x3A) character,
+in which case that character is stripped and the rest of the message is treated as the final parameter,
+including any spaces it contains.
+
+Parameters that contain spaces, are empty, or begin with a ':' character MUST be sent with a preceding ':';
+in other cases the use of a preceding ':' on the final parameter is OPTIONAL.
+
+Software SHOULD AVOID sending more than 15 parameters,
+as older client protocol documents specified this was the maximum and some clients may have trouble reading more than this.
+However, clients MUST parse incoming messages with any number of them.
+
+Here are some examples of messages and how the parameters would be represented as JSON lists:
+
+  :irc.example.com CAP * LIST :         ->  ["*", "LIST", ""]
+
+  CAP * LS :multi-prefix sasl           ->  ["*", "LS", "multi-prefix sasl"]
+
+  CAP REQ :sasl message-tags foo        ->  ["REQ", "sasl message-tags foo"]
+
+  :dan!d@localhost PRIVMSG #chan :Hey!  ->  ["#chan", "Hey!"]
+
+  :dan!d@localhost PRIVMSG #chan Hey!   ->  ["#chan", "Hey!"]
+
+  :dan!d@localhost PRIVMSG #chan ::-)   ->  ["#chan", ":-)"]
+As these examples show, a trailing parameter (a final parameter with a preceding ':') has the same semantics as any other parameter,
+and MUST NOT be treated specially or stored separately once the ':' is stripped.
+
+--- --- ---
+Compatibility with incorrect software
+
+Servers SHOULD handle single \n character, and MAY handle a single \r character, as if it was a \r\n pair,
+to support existing clients that might send this. However, clients and servers alike MUST NOT send single \r or \n characters.
+
+Servers and clients SHOULD ignore empty lines.
+
+Servers SHOULD gracefully handle messages over the 512-bytes limit. They may:
+
+Send an error numeric back, preferably ERR_INPUTTOOLONG (417)
+Truncate on the 510th byte (and add \r\n at the end) or, preferably, on the last UTF-8 character or grapheme that fits.
+Ignore the message or close the connection – but this may be confusing to users of buggy clients.
+Finally, clients and servers SHOULD NOT use more than one space (\x20) character as SPACE as defined in the grammar above.
+
+--- --- ---
+Numeric Replies
+
+Most messages sent from a client to a server generates a reply of some sort. The most common form of reply is the numeric reply, used for both errors and normal replies.
+Distinct from a normal message, a numeric reply MUST contain a <source> and use a three-digit numeric as the command.
+A numeric reply SHOULD contain the target of the reply as the first parameter of the message. A numeric reply is not allowed to originate from a client.
+
+In all other respects, a numeric reply is just like a normal message. A list of numeric replies is supplied in the Numerics section.
