@@ -773,3 +773,13 @@ IRCv3.2 also specifies this information in the sasl client capability value. For
 
 The text used in the last param of this message varies wildly.
 
+
+
+PASS password
+USER paul 0 * Full_name
+NICK lordbozo
+
+
+JOIN #channel_name
+
+PRIVMSG #channel_name the_message
