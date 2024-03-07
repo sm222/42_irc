@@ -34,7 +34,7 @@ function mac_ft() {
     name=${argv[${i}]}
     echo "runing $name"
     osascript -e "tell app \"Terminal\"
-      do script \"nc -l $port\"
+      do script \"nc -l $port && kill -9 \$$\"
     end tell"
     sleep $speed
     ./"$name" | nc -w 5 127.0.0.1 $port
