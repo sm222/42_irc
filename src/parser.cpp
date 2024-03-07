@@ -15,7 +15,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
                                                     // im not using it anywhere, its for you guys to use
 
     // Little example how i think you should use currentAction
-
+  /*
     // Step 1 -> Check password         ( you can probably use an Enum for this )
     if (user.currentAction == 0) {
 
@@ -48,7 +48,8 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
             user.currentAction++;   // Next step ...
         }
     }
-
+  */
+ (void)index;
 
     
 

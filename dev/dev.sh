@@ -16,34 +16,36 @@ port=8080
 # debug --<
 echo $# $sys
 
-# function --<
+#function --<
 function linux_ft() {
-  while [ $i -lt $len ]
-    do
-    name=${argv[${i}]}
-    echo "runing $name"
-    gnome-terminal -- nc -l $port
-    ./"$name" | nc -w 5 127.0.0.1 $port
-    i=$((i + 1))
-  done
+  gnome-terminal -- ./run.sh $@
 }
 
 function mac_ft() {
-  while [ $i -lt $len ]
-    do
-    name=${argv[${i}]}
-    echo "runing $name"
-    osascript -e "tell app \"Terminal\"
-      do script \"nc -l $port && kill -9 \$$\"
-    end tell"
-    sleep $speed
-    ./"$name" | nc -w 5 127.0.0.1 $port
-    i=$((i + 1))
-  done
+  osascript -e "tell app \"Terminal\"
+    do script \"$pwdtest/run.sh $txt\"
+  end tell"
+}
+
+function join_by {
+  local d=${1-} f=${2-}
+  if shift 2; then
+    printf %s "$f" "${@/#/$d}"
+  fi
 }
 
 # code --<
 
+
+pwdtest=$(pwd)
+txt=$pwdtest
+while [ $i -lt $# ]
+  do
+  txt=$(join_by  ' ' $txt ' ' ${argv[${i}]})
+  i=$((i + 1))
+done
+
+sleep 1
 if [ $sys == "Darwin" ]
   then
     mac_ft
