@@ -21,7 +21,7 @@ function linux_ft() {
   while [ $i -lt $len ]
     do
     name=${argv[${i}]}
-    gnome-terminal -x "ls"
+    gnome-terminal -x nc -l $port
     ./"$name".sh | nc -w 5 127.0.0.1 $port
     i=$((i + 1))
   done
