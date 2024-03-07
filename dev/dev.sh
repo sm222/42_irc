@@ -21,8 +21,9 @@ function linux_ft() {
   while [ $i -lt $len ]
     do
     name=${argv[${i}]}
-    gnome-terminal -x nc -l $port
-    ./"$name".sh | nc -w 5 127.0.0.1 $port
+    echo "runing $name"
+    gnome-terminal -- nc -l $port
+    ./"$name" | nc -w 5 127.0.0.1 $port
     i=$((i + 1))
   done
 }
@@ -31,11 +32,12 @@ function mac_ft() {
   while [ $i -lt $len ]
     do
     name=${argv[${i}]}
+    echo "runing $name"
     osascript -e "tell app \"Terminal\"
       do script \"nc -l $port\"
     end tell"
     sleep $speed
-    ./"$name".sh | nc -w 5 127.0.0.1 $port
+    ./"$name" | nc -w 5 127.0.0.1 $port
     i=$((i + 1))
   done
 }
@@ -48,13 +50,3 @@ if [ $sys == "Darwin" ]
   else
     linux_ft
 fi
-
-#args=("$@") 
-## get number of elements 
-#ELEMENTS=${#args[@]} 
-# 
-## echo each element in array
-## for loop 
-#for (( i=0;i<$ELEMENTS;i++)); do 
-#    echo ${args[${i}]} 
-#done
