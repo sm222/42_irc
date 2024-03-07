@@ -1,11 +1,25 @@
 #!/bin/bash
-#nc -l 8080
-speed=0.2
 
-echo test
-sleep $speed
-echo a
-sleep $speed
-echo b
-sleep $speed
-exit 0
+# seting --<
+speed=0.3
+endl='\n'
+
+# var --<
+args=(
+  "test"
+  "a"
+  "b"
+)
+# -- -- --
+i=0
+j=${#args[@]}
+
+# code --<
+
+while [ $i -lt $j ]
+  do
+  printf "${args[$i]}$endl"
+  i=$((i + 1))
+  sleep $speed
+done
+exit
