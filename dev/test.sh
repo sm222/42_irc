@@ -7,3 +7,5 @@ sleep $speed
 echo a
 sleep $speed
 echo b
+sleep $speed
+exit 0
