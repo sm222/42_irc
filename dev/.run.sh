@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# don't run this file by it self without
+# reading the code
+
 sys=$(uname -s)
 
 i=1

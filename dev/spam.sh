@@ -33,7 +33,7 @@ while [ $i -lt $j ]
   sleep $speed
   while [ $k -lt $l ]
     do
-    echo "<$$>" $k 
+    echo "<$$>" $k
     sleep $speed
     k=$((k + 1))
   done

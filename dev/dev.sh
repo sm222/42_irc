@@ -17,7 +17,7 @@ port=8080
 
 #function --<
 function linux_ft_run() {
-  gnome-terminal -- $pwdtest/run.sh $txt
+  gnome-terminal -- $pwdtest/.run.sh $txt
 }
 
 function mac_ft_run() {

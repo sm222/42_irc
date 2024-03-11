@@ -17,7 +17,7 @@ port=8080
 
 
 function linux_ft_run() {
-  gnome-terminal -- $pwdtest/run.sh $pwdtest spam.sh
+  gnome-terminal -- $pwdtest/.run.sh $pwdtest spam.sh
 }
 
 function mac_ft_run() {
