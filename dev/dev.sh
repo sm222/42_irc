@@ -20,7 +20,7 @@ function linux_ft_run() {
   gnome-terminal -- $pwdtest/.run.sh $txt
 }
 
-function mac_ft_run() {
+function mac_start() {
   osascript -e "tell app \"Terminal\"
     do script \"$pwdtest/../ircserv\"
   end tell"
@@ -30,7 +30,7 @@ function linux_start() {
   gnome-terminal -- $pwdtest/../ircserv
 }
 
-function mac_start() {
+function mac_ft_run() {
   osascript -e "tell app \"Terminal\"
     do script \"$pwdtest/.run.sh $txt\"
   end tell"
