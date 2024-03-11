@@ -11,7 +11,6 @@ sys=$(uname -s)
 
 # setting --<
 speed=0.2
-port=8080
 
 # debug --<
 
@@ -62,7 +61,7 @@ while [ $i -lt $# ]
   i=$((i + 1))
 done
 #   - - - - -   #
-sleep 1
+sleep $speed
 if [ $sys == "Darwin" ]
   then
     mac_start
