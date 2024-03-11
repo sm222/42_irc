@@ -32,7 +32,7 @@ function linux_start() {
 
 function mac_start() {
   osascript -e "tell app \"Terminal\"
-    do script \"$pwdtest/run.sh spam.sh\"
+    do script \"$pwdtest/.run.sh spam.sh\"
   end tell"
 }
 
