@@ -14,4 +14,6 @@ USER weechat
 
 WORKDIR $HOME
 
+EXPOSE 2000
+
 CMD ["weechat"]

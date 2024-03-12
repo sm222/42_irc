@@ -33,4 +33,10 @@ docker-clear:
 	@docker kill $$(docker ps -q) || true
 	@docker system prune -af || true
 
+ip:
+	@ifconfig | grep 'inet 10'
+
+wee:
+	@docker run -ti weechat/weechat
+
 .PHONY: all clean fclean re leak run docker
