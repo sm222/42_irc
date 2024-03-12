@@ -51,8 +51,6 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
   */
  (void)index;
 
-    
-
     //user.userName = "userName";                   // Set username
     //user.nickName = "nickName";                   // Set nickname
     //user.userFD;                                  // Hold user FD
