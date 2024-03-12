@@ -40,4 +40,10 @@ docker:
 		echo "There are active containers using the weechat-image. Deletion canceled."; \
 	fi
 
+ip:
+	@ifconfig | grep 'inet 10'
+
+wee:
+	@docker run -ti weechat/weechat
+
 .PHONY: all clean fclean re leak run docker
