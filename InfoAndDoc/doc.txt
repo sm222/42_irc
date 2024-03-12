@@ -1,2 +1,6 @@
 doc
 https://modern.ircdocs.horse/
+
+
+/set irc.server.O_O.username "Mon nom d'utilisateur"
+/set irc.server.O_O.realname "Mon nom réel"

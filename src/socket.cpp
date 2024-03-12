@@ -359,7 +359,6 @@ void                Socket::_acceptConnection() {
  }
 void                Socket::_recvData(vectorIT& index) {
     static Parser parser(*this);       // Parser instance starts here
-    std::cout << "test\n";
 
     // I think there's a limit to message lens. if there's not, ill need to do something similar
     /*
