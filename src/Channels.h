@@ -21,6 +21,14 @@ struct ChannelAndTopic {
     std::string     TopicName;
 };
 
+// Hold The Channels Options
+struct ChannelData {
+    std::string     Topic;
+    bool            InviteOnly;
+    bool            CanUserChangeChannel;
+};
+
+
 /*
 //                                                            (Key)           (Value)
 //                                              - - - - - [Users Map] -> UserState ( Role )
@@ -29,7 +37,7 @@ struct ChannelAndTopic {
 //                       |
 // channelGroup --- ChannelName
 //                       |
-//                        - - - - - - - - Topic Name    (First)
+//                        - - - - - - - - ChannelData    (First)
 
 */
 
@@ -37,7 +45,7 @@ struct ChannelAndTopic {
 //                                Username      Role
 #define UsersMap        std::map<std::string, userState>     // Users in Channel
 //                                  Topic    
-#define ChannelMap      std::pair<std::string, UsersMap>    // Channel
+#define ChannelMap      std::pair<ChannelData, UsersMap>    // Channel
 //                                ChannelName
 #define ChannelGroup    std::map<std::string, ChannelMap>    // All the Channels
 
@@ -46,41 +54,50 @@ public:
 
     Channels();
 
-    // Create channel
-    bool                            DoesChannelAlreadyExist(const std::string& channelname);
-    bool                            CreateChannel(const std::string& channelMaker, const std::string& channelName);
-    uint8_t                         LeaveChannel(const std::string& userName, const std::string& channelName);
+    // Basic Stuff
+    bool                            Channel_AlreadyExist(const std::string& channelname);
+    bool                            Channel_Create(const std::string& channelMaker, const std::string& channelName);
+    uint8_t                         Channel_Leave(const std::string& userName, const std::string& channelName);
+    bool                            Channel_Join(const std::string& userName, const std::string& channelName);
+
+    // Getter
+    bool                            Channel_Get_IsUserInChannel(const std::string& userName, const std::string& channelName);
+    bool                            Channel_Get_IsUserChannelOP(const std::string& userName, const std::string& channelName);
+    bool                            Channel_Get_InviteOnly(const std::string& channelname);
+    bool                            Channel_Get_CanUserChangeTopic(const std::string& channelname);
+    std::string                     Channel_Get_Topic(const std::string& channelName);
+
+    // Setter
+    void                            Channel_Set_InviteOnly(const std::string& channelname, const bool value);
+    void                            Channel_Set_CanUserChangeTopic(const std::string& channelname, const bool value);
+    uint8_t                         Channel_Set_Topic(const std::string& userName, const std::string& channelName, const std::string& topic);
+
+    // Informations
+    std::vector<ChannelAndTopic>    Channel_Get_AllChannelsAndTopicName();
+
+    // Operators Only
+    uint8_t                         Channel_Set_Operator(const std::string& currentOP,const std::string& newOP, const std::string& channelName);
+    uint8_t                         Channel_Kick(const std::string& currentOP,const std::string& userToKick, const std::string& channelName);
+    uint8_t                         Channel_Uninvite(const std::string& currentOP,const std::string& invitedUser, const std::string& channelName);
+    uint8_t                         Channel_Invite(const std::string& currentOP, const std::string& invitedUser, const std::string& channelName);
     
-    // All Channels and their Topic Name
-    std::vector<ChannelAndTopic>    GetAllChannelsAndTopicName();
+    // Broadcast to Channel (   You Loop the Vector & Use ---> Sock.SendData(User, Msg)   )
+    std::vector<std::string>        Channel_Get_AllUsers(const std::string& channelName);
+    std::vector<std::string>        Channel_Get_AllOperators(const std::string& channelName);
 
-    // Topic Name
-    std::string                     GetChannelTopic(const std::string& channelName);
-    uint8_t                         SetChannelTopic(const std::string& userName, const std::string& channelName, const std::string& topic);
-
-    // User must be invited by OP
-    uint8_t                         JoinChannel(const std::string& userName, const std::string& channelName);
-    
-    // Send Message to users in channel (You loop & used SendData with their username)
-    std::vector<std::string>        GetAllUsersInChannel(const std::string& channelName);
-    std::vector<std::string>        GetAllOPinChannel(const std::string& channelName);
-
-    // ----- Operator only -----
-    uint8_t                         SetUserAsOP(const std::string& currentOP,const std::string& newOP, const std::string& channelName);
-    uint8_t                         KickUserFromChannel(const std::string& currentOP,const std::string& userToKick, const std::string& channelName);
-    uint8_t                         CancelChannelInvite(const std::string& currentOP,const std::string& invitedUser, const std::string& channelName);
-    uint8_t                         InviteUserToChannel(const std::string& currentOP, const std::string& invitedUser, const std::string& channelName);
-
-    // ----- DO NOT USE -----
-    void                            SOCKETONLY_kickuserfromallchannels(const std::string& userName);
 
     // ---- Testing & Debugging -----
     void                            PrintALLChannelContent();
     void                            PrintChannelContent(const std::string& channelName);
 
+
+
+    // ----- DO NOT USE -----
+    void                            SOCKETONLY_kickuserfromallchannels(const std::string& userName);
 private:
     ChannelGroup                    _channelGroup;
     UsersMap::iterator              _getUserInChannelByName(const std::string& userName, const std::string& channelName);
     ChannelMap*                     _getChannelByName(const std::string& channelName);
     userState                       _createNewUserStats(const bool isUser, const bool isInv, const bool isOP);
+    bool                            _isUserInvited(ChannelMap* Channel, const std::string& channelName);
 };
