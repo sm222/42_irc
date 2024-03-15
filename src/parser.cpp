@@ -31,7 +31,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
             user.currentAction++;
         }
     }
- 
+
 
     // Step 2 -> Save user
     else if (user.currentAction == 2) {
@@ -49,8 +49,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
         }
     }
   */
- (void)index;
-
+  (void)index;
     
 
     //user.userName = "userName";                   // Set username
