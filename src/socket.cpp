@@ -374,7 +374,7 @@ void                Socket::_recvData(vectorIT& index) {
         } while ( bytesReceived == MAX_BUF_LENGTH );
     
     */
-
+    
     // Receiving Data part
     char buffer[BUFFER_SIZE];
     int len = recv(index->fd, buffer, BUFFER_SIZE - 1, MSG_DONTWAIT);

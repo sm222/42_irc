@@ -35,7 +35,8 @@ docker-clear:
 
 ip:
 	@ifconfig | grep 'inet 10'
-
+	@echo -n 'cd ' 
+	@pwd
 wee:
 	@docker run -ti weechat/weechat
 
