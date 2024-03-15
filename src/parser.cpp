@@ -8,7 +8,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     Channels& AllChannels = Sock.channels;
     AllChannels.CreateChannel("Some Looser", "BozoChannel");
 
-    
+    Sock.SendData(, "001 nick :j'Maime les patate boujours ici")
     // index is pretty much only used to kick user. 
 
     //user.currentAction = 1;                       // Action Index, step 1 = wait 4 password, step 2 = ask for username..Etc
