@@ -1,4 +1,5 @@
 #include "parser.h"
+#include <iostream>
 
 /// @brief use to pritn the memorry from a int or char ptr
 /// @param ptr adress
@@ -37,7 +38,7 @@
 /// @details 29	  GS 	(group separator)
 /// @details 30	  RS 	(record separator)
 /// @details 31	  US 	(unit separator)
-static void	Ct_mprintf(void *ptr, size_t size, int type, int name)
+void	Ct_mprintf(void *ptr, size_t size, int type, int name)
 {
 	size_t	i;
 
@@ -132,10 +133,26 @@ static void	Ct_mprintf(void *ptr, size_t size, int type, int name)
 Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
 Parser::~Parser(){}
 
+std::vector<std::string> Parser::TokenizeMessage(std::string message){
+    std::vector<std::string> vec;
+    size_t pos = message.find(" ");
+    while (pos != std::string::npos){
+        if (message[pos + 1] == '\0')
+            vec.push_back(message.substr(0, pos + 1));
+        else
+            vec.push_back(message.substr(0, pos));
+        if (message.length() > pos + 2 && message[pos + 2] != '\0')
+            vec.push_back(message.substr(pos + 2));
+    }
+    for (size_t i = 0; i < vec.size(); i++)
+            std::cout << "[" << i << "]" << vec[i] << std::endl;
+    return (vec);
+}
+
 void    Parser::ParseData(userData& user, vectorIT& index) {
     Channels& AllChannels = Sock.channels;
     AllChannels.CreateChannel("Some Looser", "BozoChannel");
-
+    TokenizeMessage(user.recvString);
     // index is pretty much only used to kick user. 
 
     //user.currentAction = 1;                       // Action Index, step 1 = wait 4 password, step 2 = ask for username..Etc
@@ -178,7 +195,6 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
   */
   (void)index;
     Ct_mprintf((char *)user.recvString.c_str(), user.recvString.size() + 1, 1, 'A');
-
     //user.userName = "userName";                   // Set username
     //user.nickName = "nickName";                   // Set nickname
     //user.userFD;                                  // Hold user FD
