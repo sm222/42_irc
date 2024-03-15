@@ -37,7 +37,7 @@
 /// @details 29	  GS 	(group separator)
 /// @details 30	  RS 	(record separator)
 /// @details 31	  US 	(unit separator)
-static void	Ct_mprintf(void *ptr, size_t size, int type, int name)
+void	Ct_mprintf(void *ptr, size_t size, int type, int name)
 {
 	size_t	i;
 
@@ -132,6 +132,11 @@ static void	Ct_mprintf(void *ptr, size_t size, int type, int name)
 Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
 Parser::~Parser(){}
 
+static std::string  makeMessage(const char *type) {
+  std::string result = type;
+  return (result);
+}
+
 void    Parser::ParseData(userData& user, vectorIT& index) {
     Channels& AllChannels = Sock.channels;
     AllChannels.CreateChannel("Some Looser", "BozoChannel");
@@ -178,9 +183,13 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
   */
   (void)index;
-    Ct_mprintf((char *)user.recvString.c_str(), user.recvString.size() + 1, 1, 'A');
+    if (std::strncmp(user.recvString.c_str(), "NICK user\r\n", 11) == 0) {
+      std::cout << "good :D\n";
+      Sock.SendData(user.userFD, "001 sm222 :Welcome to the 42irc, antoine");
+      makeMessage(MType[e_welcom]);
+    }
 
-00    //user.userName = "userName";                   // Set username
+    //user.userName = "userName";                   // Set username
     //user.nickName = "nickName";                   // Set nickname
     //user.userFD;                                  // Hold user FD
     //user.recvString;                              // Data received just now

@@ -20,6 +20,15 @@
 
 #define vectorIT    std::vector<pollfd>::iterator
 
+enum e_type {
+  e_welcom = 0,
+};
+
+const char *MType[] = {
+  "001",
+  "002",
+};
+
 // +++ Structs +++
 
 // This is what we need to parse

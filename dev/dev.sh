@@ -8,6 +8,8 @@ len=$#
 argv=("$@")
 name=""
 sys=$(uname -s)
+port=2000
+pass=a
 
 # setting --<
 speed=0.2
@@ -21,7 +23,7 @@ function linux_ft_run() {
 
 function mac_start() {
   osascript -e "tell app \"Terminal\"
-    do script \"$pwdtest/../ircserv\"
+    do script \"$pwdtest/../ircserv $port $pass\"
   end tell"
 }
 

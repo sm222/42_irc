@@ -44,6 +44,7 @@ void                Socket::SendData(const int& userFD, std::string data) {
         if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SendData] You're trying to send data to an invalid socket..." << std::endl;
     }
     else {
+        data += "\r\n";
         ssize_t bytesSent = send(userFD, data.c_str(), data.size(), MSG_DONTWAIT);
         if (bytesSent == -1) {
             if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SendData] Error while sending data... send returned -1 ..." << std::endl;
