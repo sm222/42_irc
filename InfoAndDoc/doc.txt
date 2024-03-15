@@ -2,7 +2,10 @@ doc
 https://modern.ircdocs.horse/
 
 
-/server add O_O 10.12.4.6/2000 -notls
+/server add O_O 10.12.5.6/2000 -notls
 /set irc.server.O_O.username "sm222"
 /set irc.server.O_O.realname "antoine"
 /connect O_O
+
+ N |   I |   C |   K |     |   u |   s |   e |   r |  \r |  \n 
+ U |   S |   E |   R |     |   s |   m |   2 |   2 |   2 |     |   0 |     |   * |     |   : |   a |   n |   t |   o |   i |   n |   e |  \r |  \n |  \0 |
