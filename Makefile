@@ -24,6 +24,6 @@ leak: all
 	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET)
 
 run: fclean $(TARGET)
-	@./$(TARGET)
+	@./$(TARGET) 2000 ""
 
 .PHONY: all clean fclean re leak run

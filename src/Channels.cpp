@@ -4,7 +4,7 @@ Channels::Channels() {}
 
 // +++ Public +++
 
-std::string              Channels::Channel_Get_Password(const std::string& channelname) {
+std::string                     Channels::Channel_Get_Password(const std::string& channelname) {
     ChannelMap* Chan = _getChannelByName(channelname);
     if (!Chan) return "";
 
@@ -188,6 +188,10 @@ bool                            Channels::Channel_Leave(const std::string& userN
         }
     }
     return false;
+}
+void                            Channels::Channel_Delete(const std::string& channelName) {
+    ChannelGroup::iterator i = _channelGroup.find(channelName);
+    if (i != _channelGroup.end()) { _channelGroup.erase(i); }
 }
 
 bool                            Channels::Channel_Set_Operator(const std::string& user, const std::string& channelName) {

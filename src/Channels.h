@@ -46,8 +46,10 @@ struct ChannelData {
 
 //                                Username      Role
 #define UsersMap        std::map<std::string, userState>     // Users in Channel
+
 //                                  Topic    
 #define ChannelMap      std::pair<ChannelData, UsersMap>    // Channel
+
 //                                ChannelName
 #define ChannelGroup    std::map<std::string, ChannelMap>    // All the Channels
 
@@ -57,6 +59,7 @@ public:
     Channels();
 
     // Basic Stuff
+    void                            Channel_Delete(const std::string& channelName);                       
     bool                            Channel_AlreadyExist(const std::string& channelname);
     bool                            Channel_Create(const std::string& channelMaker, const std::string& channelName);
     bool                            Channel_Join(const std::string& userName, const std::string& channelName);
