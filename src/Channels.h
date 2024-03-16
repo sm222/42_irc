@@ -24,6 +24,7 @@ struct ChannelAndTopic {
 // Hold The Channels Options
 struct ChannelData {
     std::string     Topic;
+    // ADD PASSWORD !
     bool            InviteOnly;
     bool            CanUserChangeChannel;
 };
