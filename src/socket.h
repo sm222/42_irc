@@ -33,19 +33,21 @@ public:
 
 
     // you shouldnt use this
-    void                        Bind();
-    void                        Start();
-    void                        Listen();
-    void                        SetNonBlocking();
-    void                        SetAddrReusable();
-    void                        Connect(const std::string& ip, const uint16_t& port);
     userData*                   GetUserByFD(const int& fd);
 private:
     // +++ Sockets & Errors +++
+
+
+
+    
+
+
+    int                         _getSocket(const uint16_t port, const std::string ip);
+    void                        _start();
+
+
     void                        _cleanup();
-    int                         _getSocket(addrinfo* AddrInfo);
     size_t                      _updatePolls(const bool needUpdate = false);
-    addrinfo*                   _getInfo(const std::string ip, const uint16_t port);
     
     // +++ Users Methods +++
     void                        _acceptConnection();
@@ -53,17 +55,12 @@ private:
     void                        _recvData(vectorIT& index);
 
     // +++ Server Data +++
-    const std::string           _ip;
-    const uint16_t              _port;
+    int                         _fd;
     const std::string           _password;
     const bool                  _showDebug;
 
     // +++ Polls & UserData +++
     std::vector<pollfd>         _polls;
     std::map<int, userData>     _users;
-
-    // +++ Free & Close +++
-    int                         _fd;
-    addrinfo*                   _addrInfo;
 
 };

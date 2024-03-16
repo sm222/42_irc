@@ -24,8 +24,9 @@ struct ChannelAndTopic {
 // Hold The Channels Options
 struct ChannelData {
     std::string     Topic;
-    // ADD PASSWORD !
+    std::string     Password;
     bool            InviteOnly;
+    int             MaxUserCount;
     bool            CanUserChangeChannel;
 };
 
@@ -62,16 +63,20 @@ public:
     bool                            Channel_Leave(const std::string& userName, const std::string& channelName);
 
     // Getter
+    int                             Channel_Get_MaxUsersCount(const std::string& channelname);
     bool                            Channel_Get_IsUserInChannel(const std::string& userName, const std::string& channelName);
     bool                            Channel_Get_IsUserChannelOP(const std::string& userName, const std::string& channelName);
     bool                            Channel_Get_InviteOnly(const std::string& channelname);
     bool                            Channel_Get_CanUserChangeTopic(const std::string& channelname);
+    std::string                     Channel_Get_Password(const std::string& channelname);
     std::string                     Channel_Get_Topic(const std::string& channelName);
 
     // Setter
+    void                            Channel_Set_MaxUsersCount(const std::string& channelname, const int maxCount);
+    void                            Channel_Set_Password(const std::string& channelname, const std::string& password);
     void                            Channel_Set_InviteOnly(const std::string& channelname, const bool value);
     void                            Channel_Set_CanUserChangeTopic(const std::string& channelname, const bool value);
-    bool                            Channel_Set_Topic(const std::string& channelName, const std::string& topic);
+    void                            Channel_Set_Topic(const std::string& channelName, const std::string& topic);
 
     // Informations
     std::vector<ChannelAndTopic>    Channel_Get_AllChannelsAndTopicName();
@@ -85,6 +90,21 @@ public:
     std::vector<std::string>        Channel_Get_AllUsers(const std::string& channelName);
     std::vector<std::string>        Channel_Get_AllOperators(const std::string& channelName);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // ---- Testing & Debugging -----
     void                            PrintALLChannelContent();
     void                            PrintChannelContent(const std::string& channelName);
@@ -93,7 +113,6 @@ public:
     void                            SOCKETONLY_kickuserfromallchannels(const std::string& userName);
 private:
     ChannelGroup                    _channelGroup;
-    UsersMap::iterator              _getUserInChannelByName(const std::string& userName, const std::string& channelName);
     ChannelMap*                     _getChannelByName(const std::string& channelName);
     userState                       _createNewUserStats(const bool isUser, const bool isInv, const bool isOP);
     bool                            _isUserInvited(ChannelMap* Channel, const std::string& channelName);

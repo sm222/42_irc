@@ -1,5 +1,5 @@
 CC		= c++
-FLAGS	= -Wall -Wextra -Werror -std=c++98 -g	# std98 is VERY strict on linux...
+FLAGS	= -Wall -Wextra -Werror -g	# std98 is VERY strict on linux...
 #FLAGS	= -Wall -Wextra -Werror -std=c++98 -pedantic -g
 #FLAGS	= -Wall -Wextra -Werror -std=c++98 -O2
 
