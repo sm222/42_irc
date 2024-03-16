@@ -9,7 +9,7 @@ int main(int argc, char **args) {
     //      ./ircserv <port> <password>
 
     try {
-        Socket serverSocket(2000, "password", true);
+        Socket serverSocket(2001, "password");
         serverSocket.SetAddrReusable();
         serverSocket.SetNonBlocking();
         serverSocket.Bind();

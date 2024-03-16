@@ -1,6 +1,8 @@
 #include "socket.h"
 #include "signal.h"
 
+#define DEBUGGING_MODE false
+
 // +++ Constructor +++
 Socket::Socket(const uint16_t port, const std::string password, const bool showDebug) : _ip(""), _port(port), _password(password), _showDebug(showDebug), _fd(-1), _addrInfo(0) {
     _addrInfo = _getInfo(_ip, _port);
@@ -44,7 +46,7 @@ void                Socket::SendData(const int& userFD, std::string data) {
         if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SendData] You're trying to send data to an invalid socket..." << std::endl;
     }
     else {
-        ssize_t bytesSent = send(userFD, data.c_str(), data.size(), MSG_DONTWAIT);
+        ssize_t bytesSent = send(userFD, data.c_str(), data.size(), 0);
         if (bytesSent == -1) {
             if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SendData] Error while sending data... send returned -1 ..." << std::endl;
         }
@@ -163,6 +165,9 @@ void                Socket::Start() {
         ret = poll(_polls.data(), _polls.size(), -1);       // Waiting for events
 
         // ------------------------- Error Handling -------------------------
+
+        // This is needed to run debugger, otherwise poll returns -1
+        if (DEBUGGING_MODE && ret <= 0) continue;
 
         // Signals
         if (*signalStop()) {
@@ -344,6 +349,7 @@ void                Socket::_cleanup() {
         close(i->fd);
     }
 
+
     _users.clear();
     _polls.clear();
 }
@@ -360,36 +366,32 @@ void                Socket::_acceptConnection() {
 void                Socket::_recvData(vectorIT& index) {
     static Parser parser(*this);       // Parser instance starts here
 
-
-    // I think there's a limit to message lens. if there's not, ill need to do something similar
-    /*
-        int bytesReceived = 0;
-        do {
-            bytesReceived = recv(*csock, &buffer[0], buffer.size(), 0);
-            // append string from buffer.
-            if ( bytesReceived == -1 ) { 
-                // error 
-            } else {
-                rcv.append( buffer.cbegin(), buffer.cend() );
-            }
-        } while ( bytesReceived == MAX_BUF_LENGTH );
-    
-    */
-
-    // Receiving Data part
-    char buffer[BUFFER_SIZE];
-    int len = recv(index->fd, buffer, BUFFER_SIZE - 1, MSG_DONTWAIT);
+    // Receiving Data
+    static char buffer[BUFFER_SIZE];
+    int len = recv(index->fd, buffer, BUFFER_SIZE - 1, 0);
 
     // Errors
     if (len <= 0) {
         KickUser(index);
         return;
     }
-
-    // Store the data, then do something with it
     buffer[len] = '\0';
-    _users[index->fd].recvString = buffer;
+    
 
-    // Send Stuff to Parse Class
-    parser.ParseData(_users[index->fd], index);
+
+
+    std::string content = _users[index->fd].recvString + buffer;
+    size_t i = content.find("\r\n");
+    while (i != std::string::npos) {
+        std::string chunk = content.substr(0, i + 2);
+        _users[index->fd].recvString = chunk;
+        parser.ParseData(_users[index->fd], index);
+        content.erase(0, i + 2);
+        i = content.find("\r\n");
+    }
+    if (content.length() > 0)   { _users[index->fd].recvString = content; }
+    else                        { _users[index->fd].recvString = ""; }
+
 }
+
+

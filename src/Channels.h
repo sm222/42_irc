@@ -57,8 +57,8 @@ public:
     // Basic Stuff
     bool                            Channel_AlreadyExist(const std::string& channelname);
     bool                            Channel_Create(const std::string& channelMaker, const std::string& channelName);
-    uint8_t                         Channel_Leave(const std::string& userName, const std::string& channelName);
     bool                            Channel_Join(const std::string& userName, const std::string& channelName);
+    bool                            Channel_Leave(const std::string& userName, const std::string& channelName);
 
     // Getter
     bool                            Channel_Get_IsUserInChannel(const std::string& userName, const std::string& channelName);
@@ -70,27 +70,23 @@ public:
     // Setter
     void                            Channel_Set_InviteOnly(const std::string& channelname, const bool value);
     void                            Channel_Set_CanUserChangeTopic(const std::string& channelname, const bool value);
-    uint8_t                         Channel_Set_Topic(const std::string& userName, const std::string& channelName, const std::string& topic);
+    bool                            Channel_Set_Topic(const std::string& channelName, const std::string& topic);
 
     // Informations
     std::vector<ChannelAndTopic>    Channel_Get_AllChannelsAndTopicName();
 
     // Operators Only
-    uint8_t                         Channel_Set_Operator(const std::string& currentOP,const std::string& newOP, const std::string& channelName);
-    uint8_t                         Channel_Kick(const std::string& currentOP,const std::string& userToKick, const std::string& channelName);
-    uint8_t                         Channel_Uninvite(const std::string& currentOP,const std::string& invitedUser, const std::string& channelName);
-    uint8_t                         Channel_Invite(const std::string& currentOP, const std::string& invitedUser, const std::string& channelName);
+    bool                            Channel_Set_Operator(const std::string& user, const std::string& channelName);
+    bool                            Channel_Uninvite(const std::string& invitedUser, const std::string& channelName);
+    bool                            Channel_Invite(const std::string& invitedUser, const std::string& channelName);
     
     // Broadcast to Channel (   You Loop the Vector & Use ---> Sock.SendData(User, Msg)   )
     std::vector<std::string>        Channel_Get_AllUsers(const std::string& channelName);
     std::vector<std::string>        Channel_Get_AllOperators(const std::string& channelName);
 
-
     // ---- Testing & Debugging -----
     void                            PrintALLChannelContent();
     void                            PrintChannelContent(const std::string& channelName);
-
-
 
     // ----- DO NOT USE -----
     void                            SOCKETONLY_kickuserfromallchannels(const std::string& userName);
