@@ -2,7 +2,7 @@ doc
 https://modern.ircdocs.horse/
 
 
-/server add O_O 10.12.6.7/2000 -notls
+/server add O_O 10.12.5.3/2000 -notls
 /set irc.server.O_O.username "oli"
 /set irc.server.O_O.realname "olivier"
 /connect O_O
