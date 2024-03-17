@@ -132,9 +132,10 @@ void	Ct_mprintf(void *ptr, size_t size, int type, int name)
 Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
 Parser::~Parser(){}
 
-static std::string  makeMessage(const char *type) {
-  std::string result = type;
-  return (result);
+std::string  Parser::makeMessage(const char* const type, const std::string msg, const userData& user) {
+    std::string result = type;
+    result += " " + user.userName + " " + msg;
+    return (result);
 }
 
 void    Parser::ParseData(userData& user, vectorIT& index) {
@@ -183,12 +184,21 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
   */
   (void)index;
-    if (std::strncmp(user.recvString.c_str(), "NICK user\r\n", 11) == 0) {
-      std::cout << "good :D\n";
-      Sock.SendData(user.userFD, "001 sm222 :Welcome to the 42irc, antoine");
-      makeMessage(MType[e_welcom]);
-    }
-
+  if (std::strncmp(user.recvString.c_str(), "USER ", 5) == 0) {
+    size_t  i = 5;
+    // USER paul 0 * Full_name
+    //std::string::substr()
+    while (i < user.recvString.size() && user.recvString[i] != ' ') {i++;}
+    user.userName = user.recvString.substr(5, i - 1);
+    std::string tmp = makeMessage(MType[e_welcom], ":Welcome to the 42irc", user);
+    std::cout << " > > " << tmp << std::endl;
+    Sock.SendData(user.userFD, tmp);
+  }
+  if (std::strncmp(user.recvString.c_str(), "PING ", 5) == 0) {
+    std::string tmp = "PONG ";
+    tmp += user.recvString.c_str() + 5;
+    Sock.SendData(user.userFD, tmp);
+  }
     //user.userName = "userName";                   // Set username
     //user.nickName = "nickName";                   // Set nickname
     //user.userFD;                                  // Hold user FD

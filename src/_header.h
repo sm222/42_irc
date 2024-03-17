@@ -24,7 +24,7 @@ enum e_type {
   e_welcom = 0,
 };
 
-const char *MType[] = {
+const char* const MType[] = {
   "001",
   "002",
 };
