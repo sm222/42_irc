@@ -132,10 +132,49 @@ void	Ct_mprintf(void *ptr, size_t size, int type, int name)
 Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
 Parser::~Parser(){}
 
+/// @brief use to build a message to send
+/// @param type 
+/// @param msg %u = user.userName, %n = user.nickName, %i could add ip ?
+/// @param user 
+/// @return 
 std::string  Parser::makeMessage(t_code const type, const std::string msg, const userData& user) {
     std::string result = MType[type];
-    result += " " + user.userName + " " + msg;
+    result += " " + user.userName + " ";
+    for (size_t i = 0; i < msg.size(); i++) {
+      if (msg[i] == '%' && msg[i + 1] == 'u') {
+        result += user.userName;
+        i++;
+      }
+      else if (msg[i] == '%' && msg[i + 1] == 'n') {
+        result += user.nickName;
+        i++;
+      }
+      else if (msg[i] == '%' && msg[i + 1] == 'i') {
+        result += ">ip here<";
+        i++;
+      }
+      else
+        result += msg[i];
+    }
     return (result);
+}
+
+bool Parser::setUserInfo(userData& user) {
+  size_t  i = 0;
+  while (5 + i < user.recvString.size() && user.recvString[5 + i] != ' ') {i++;}
+  user.userName = user.recvString.substr(5, i);
+  while (i < user.recvString.size() && user.recvString[i] != ':') {i++;}
+  user.nickName = user.recvString.substr(i + 1, i - user.recvString.size());
+  std::cout << "name = " << user.userName << " ,nick name = " << user.nickName << std::endl;
+  Sock.SendData(user.userFD, makeMessage(e_welcom, ":Welcome to the 42irc %n", user));
+  return true;
+}
+
+bool    Parser::joinChanel(const userData& user, const std::string chanelName) {
+  (void)user;
+  if (Sock.channels.DoesChannelAlreadyExist(chanelName) == true)
+    return false;
+  return true;
 }
 
 void    Parser::ParseData(userData& user, vectorIT& index) {
@@ -184,25 +223,27 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
   */
   (void)index;
-  Sock.channels
-  // shit way to get the user so weechar stop crying
+  //* shit way to get the user so weechar stop crying
   if (std::strncmp(user.recvString.c_str(), "USER ", 5) == 0) {
-    size_t  i = 0;
-    // USER paul 0 * Full_name
-    //std::string::substr()
-    while (5 + i < user.recvString.size() && user.recvString[5 + i] != ' ') {i++;}
-    user.userName = user.recvString.substr(5, i);
-    std::cout << user.userName << "<<" << std::endl;
-    Ct_mprintf((char *)user.userName.c_str(), user.userName.size(), 1, 'A');
-    std::string tmp = makeMessage(e_welcom, ":Welcome to the 42irc", user);
-    std::cout << " > > " << tmp << std::endl;
-    Sock.SendData(user.userFD, tmp);
+    setUserInfo(user);
   }
-  // send a pong so the weechat don't stop the connection
-  if (std::strncmp(user.recvString.c_str(), "PING ", 5) == 0) {
+  //? send a pong so the weechat don't stop the connection
+  else if (std::strncmp(user.recvString.c_str(), "PING ", 5) == 0) {
     std::string tmp = "PONG ";
     tmp += user.recvString.c_str() + 5;
     Sock.SendData(user.userFD, tmp);
+  }
+  else if (std::strncmp(user.recvString.c_str(), "JOIN ", 5) == 0) {
+    size_t  i = 0;
+    while (i < user.recvString.size()) {
+      i = user.recvString.find('#', i) + 1;
+      size_t  j = user.recvString.find(' ', i);
+      std::cout << "> " << joinChanel(user, user.recvString.substr(i, j - i)) << " <" << std::endl;
+      i += j + 1;
+    }
+    
+    
+    
   }
     //user.userName = "userName";                   // Set username
     //user.nickName = "nickName";                   // Set nickname
