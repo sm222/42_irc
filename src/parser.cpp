@@ -172,14 +172,13 @@ bool Parser::setUserInfo(userData& user) {
 
 bool    Parser::joinChanel(const userData& user, const std::string chanelName) {
   (void)user;
-  if (Sock.channels.DoesChannelAlreadyExist(chanelName) == true)
+  if (Sock.channels.Channel_AlreadyExist(chanelName) == true)
     return false;
   return true;
 }
 
 void    Parser::ParseData(userData& user, vectorIT& index) {
     Channels& AllChannels = Sock.channels;
-    AllChannels.CreateChannel("Some Looser", "BozoChannel");
 
     
     // index is pretty much only used to kick user. 
@@ -236,13 +235,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
   else if (std::strncmp(user.recvString.c_str(), "JOIN ", 5) == 0) {
     size_t  i = 0;
     while (i < user.recvString.size()) {
-      i = user.recvString.find('#', i) + 1;
-      size_t  j = user.recvString.find(' ', i);
-      std::cout << "> " << joinChanel(user, user.recvString.substr(i, j - i)) << " <" << std::endl;
-      i += j + 1;
     }
-    
-    
     
   }
     //user.userName = "userName";                   // Set username
