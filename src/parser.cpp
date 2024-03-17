@@ -179,7 +179,7 @@ bool    Parser::joinChanel(const userData& user, const std::string chanelName) {
 
 void    Parser::ParseData(userData& user, vectorIT& index) {
     Channels& AllChannels = Sock.channels;
-
+    (void)AllChannels;
     
     // index is pretty much only used to kick user. 
 
@@ -235,6 +235,9 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
   else if (std::strncmp(user.recvString.c_str(), "JOIN ", 5) == 0) {
     size_t  i = 0;
     while (i < user.recvString.size()) {
+      if (user.recvString[i] == '#')
+
+      i++;
     }
     
   }
