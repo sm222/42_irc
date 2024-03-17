@@ -5,7 +5,7 @@
 # Executables
 *.exe
 *.out
-42irc
+ircserv
 
 # VSCode useless stuff
 .vscode/
