@@ -27,18 +27,11 @@ run: fclean $(TARGET)
 	@./$(TARGET)
 
 docker:
-	cd weechat_docker && docker build -t weechat-image .
-	docker run -it --rm weechat-image 
-	@if [ -z "$$(docker ps -a -q --filter ancestor=weechat-image )" ]; then \
-		if docker images weechat-image  | awk '{ print $$1 }' | grep -q weechat-image ; then \
-			echo "No active containers. Removing the weechat-image ..."; \
-			docker rmi weechat-image:latest; \
-		else \
-			echo "weechat-image does not exist."; \
-		fi \
-	else \
-		echo "There are active containers using the weechat-image. Deletion canceled."; \
-	fi
+	docker run -it weechat/weechat
+
+docker-clear:
+	@docker kill $$(docker ps -q) || true
+	@docker system prune -af || true
 
 ip:
 	@ifconfig | grep 'inet 10'
