@@ -1,5 +1,5 @@
 CC		= c++
-FLAGS	= -Wall -Wextra -Werror 	# std98 is VERY strict on linux...
+FLAGS	= -Wall -Wextra -Werror -g	# std98 is VERY strict on linux...
 #FLAGS	= -Wall -Wextra -Werror -std=c++98 -pedantic -g
 #FLAGS	= -Wall -Wextra -Werror -std=c++98 -O2
 
@@ -24,6 +24,6 @@ leak: all
 	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET)
 
 run: fclean $(TARGET)
-	@./$(TARGET)
+	@./$(TARGET) 2000 ""
 
 .PHONY: all clean fclean re leak run
