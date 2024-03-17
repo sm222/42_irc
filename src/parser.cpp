@@ -132,8 +132,8 @@ void	Ct_mprintf(void *ptr, size_t size, int type, int name)
 Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
 Parser::~Parser(){}
 
-std::string  Parser::makeMessage(const char* const type, const std::string msg, const userData& user) {
-    std::string result = type;
+std::string  Parser::makeMessage(t_code const type, const std::string msg, const userData& user) {
+    std::string result = MType[type];
     result += " " + user.userName + " " + msg;
     return (result);
 }
@@ -184,16 +184,21 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
   */
   (void)index;
+  Sock.channels
+  // shit way to get the user so weechar stop crying
   if (std::strncmp(user.recvString.c_str(), "USER ", 5) == 0) {
-    size_t  i = 5;
+    size_t  i = 0;
     // USER paul 0 * Full_name
     //std::string::substr()
-    while (i < user.recvString.size() && user.recvString[i] != ' ') {i++;}
-    user.userName = user.recvString.substr(5, i - 1);
-    std::string tmp = makeMessage(MType[e_welcom], ":Welcome to the 42irc", user);
+    while (5 + i < user.recvString.size() && user.recvString[5 + i] != ' ') {i++;}
+    user.userName = user.recvString.substr(5, i);
+    std::cout << user.userName << "<<" << std::endl;
+    Ct_mprintf((char *)user.userName.c_str(), user.userName.size(), 1, 'A');
+    std::string tmp = makeMessage(e_welcom, ":Welcome to the 42irc", user);
     std::cout << " > > " << tmp << std::endl;
     Sock.SendData(user.userFD, tmp);
   }
+  // send a pong so the weechat don't stop the connection
   if (std::strncmp(user.recvString.c_str(), "PING ", 5) == 0) {
     std::string tmp = "PONG ";
     tmp += user.recvString.c_str() + 5;

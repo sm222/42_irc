@@ -20,9 +20,9 @@
 
 #define vectorIT    std::vector<pollfd>::iterator
 
-enum e_type {
-  e_welcom = 0,
-};
+typedef enum e_type {
+  e_welcom = 0, // 001
+} t_code;
 
 const char* const MType[] = {
   "001",

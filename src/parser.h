@@ -10,7 +10,7 @@ class Parser {
 public:
     Parser(Socket& socket);
     ~Parser();
-    std::string makeMessage(const char* const type, const std::string msg , const userData& user);
+    std::string makeMessage(t_code const type, const std::string msg , const userData& user);
     // Im calling this in my socket class, everytime we get new Data from Client
     void        ParseData(userData& user, vectorIT& index); 
 
