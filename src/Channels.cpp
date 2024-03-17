@@ -3,89 +3,144 @@
 Channels::Channels() {}
 
 // +++ Public +++
-bool                            Channels::DoesChannelAlreadyExist(const std::string& channelname) {
+
+std::string                     Channels::Channel_Get_Password(const std::string& channelname) {
+    ChannelMap* Chan = _getChannelByName(channelname);
+    if (!Chan) return "";
+
+    return Chan->first.Password;
+}
+void                            Channels::Channel_Set_Password(const std::string& channelname, const std::string& password) {
+    ChannelMap* Chan = _getChannelByName(channelname);
+    if (!Chan) return;
+    Chan->first.Password = password;
+}
+
+int                             Channels::Channel_Get_MaxUsersCount(const std::string& channelname) {
+    // -1 = No Limit
+    // -2 = Doesn't exist
+
+    ChannelMap* Chan = _getChannelByName(channelname);
+    if (!Chan) return -2;
+    return Chan->first.MaxUserCount;
+}
+void                            Channels::Channel_Set_MaxUsersCount(const std::string& channelname, const int maxCount) {
+    ChannelMap* Chan = _getChannelByName(channelname);
+    if (!Chan) return ;
+
+    // Basic Protection
+    if (maxCount < -1)  return;
+
+    Chan->first.MaxUserCount = maxCount;
+}
+
+bool                            Channels::Channel_Get_IsUserInChannel(const std::string& userName, const std::string& channelName) {
+    // True - Is in Channel
+    // False - Not in channel
+
+    std::vector<std::string> T = Channel_Get_AllUsers(channelName);
+    for (unsigned int i = 0; i < T.size(); i++) {
+        if (T[i] == userName)
+            return true;
+    }
+    return false;
+}
+bool                            Channels::Channel_Get_IsUserChannelOP(const std::string& userName, const std::string& channelName) {
+    // Return false if Channel doesnt exist
+    ChannelMap* Chan = _getChannelByName(channelName);
+    if (!Chan) return false;
+
+    // Loop all the users
+    for (UsersMap::iterator i = Chan->second.begin(); i != Chan->second.end(); i++) {
+        // If user is OP && Is the right username
+        if (i->second.in_Operator_List && userName == i->first) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool                            Channels::Channel_AlreadyExist(const std::string& channelname) {
     for (ChannelGroup::iterator i = _channelGroup.begin(); i != _channelGroup.end(); i++) {
         if (i->first == channelname)
             return true;
     }
     return false;
 }
-std::string                     Channels::GetChannelTopic(const std::string& channelName) {
+
+bool                            Channels::Channel_Get_CanUserChangeTopic(const std::string& channelname) {
+    // Return False if channel doesnt exist
+    ChannelMap* T =_getChannelByName(channelname);
+    if (T) { return T->first.CanUserChangeChannel; }
+    return false;
+}
+bool                            Channels::Channel_Get_InviteOnly(const std::string& channelname) {
+    // Return False if channel doesnt exist
+    ChannelMap* T =_getChannelByName(channelname);
+    if (T) { return T->first.InviteOnly; }
+    return false;
+}
+void                            Channels::Channel_Set_CanUserChangeTopic(const std::string& channelname, const bool value) {
+    ChannelMap* T =_getChannelByName(channelname);
+    if (T) { T->first.CanUserChangeChannel = value; }
+}
+void                            Channels::Channel_Set_InviteOnly(const std::string& channelname, const bool value) {
+    ChannelMap* T =_getChannelByName(channelname);
+    if (T) { T->first.InviteOnly = value; }
+}
+std::string                     Channels::Channel_Get_Topic(const std::string& channelName) {
     // Return [NULL] if the channel doesnt exist
     ChannelMap* x = _getChannelByName(channelName);
-    if (!x) return "[NULL]";
-    return x->first;
+    if (!x) return "-1";
+    return x->first.Topic;
 }
-uint8_t                         Channels::SetChannelTopic(const std::string& userName, const std::string& channelName, const std::string& topic) {
-    // 0 -> Success
-    // 1 -> Channel don't exist
-    // 2 -> User not in channel
-    // 3 -> User not Operator
 
-    try {
-        UsersMap::iterator   userIT = _getUserInChannelByName(userName, channelName);
-        if (!userIT->second.in_Operator_List) return 3;
-        _channelGroup[channelName].first = topic;
+void                            Channels::Channel_Set_Topic(const std::string& channelName, const std::string& topic) {
+    ChannelMap* T = _getChannelByName(channelName);
+    if (T) {
+        T->first.Topic = topic;
     }
-    catch (const int& e) {
-        switch(e){
-            case 0: return 1;
-            case 1: return 2;
-        }
-    }
-    return 0;
 }
-bool                            Channels::CreateChannel(const std::string& channelMaker, const std::string& channelName) {
+bool                            Channels::Channel_Create(const std::string& channelMaker, const std::string& channelName) {
     // True     = Success
     // False    = Channel Already exist
 
     if (_getChannelByName(channelName)) return false;
     ChannelMap& T = _channelGroup[channelName];
-    T.first = "";
+
+    // Default Default for new Channel
+    T.first.Topic = "";
+    T.first.Password = "";
+    T.first.MaxUserCount = -1;
+    T.first.CanUserChangeChannel = false;
+    T.first.InviteOnly = false;
+
     T.second[channelMaker] = _createNewUserStats(false, false, true);
     return true;
 }
-uint8_t                         Channels::LeaveChannel(const std::string& userName, const std::string& channelName) {
-    // 0 = Success
-    // 1 = Channel doesnt exist
-    // 2 = User not in channel
-    // 3 = Only in invited list
+bool                            Channels::Channel_Join(const std::string& userName, const std::string& channelName) {
+    // true = Success
+    // false = Fail
 
-    try {
-        UsersMap::iterator   userIT = _getUserInChannelByName(userName, channelName);
-        if (!userIT->second.in_Operator_List && !userIT->second.in_User_list) return 3;   // Only in invited
-        _channelGroup[channelName].second.erase(userIT);
-    }
-    catch (const int& e) {
-        switch (e) {
-            case 0: return 1;   // Channel doesnt exist
-            case 1: return 2;   // User not in channel
-        }
-    }
+    ChannelMap *T = _getChannelByName(channelName);
 
-    return 0; // Success
+     // Channel Dont exist (False)
+    if (!T) return false;                                                          
+
+    // Channel on Invite Only && User NOT invited (False)
+    if (T->first.InviteOnly && !_isUserInvited(T, userName)) { return false; }
+
+    // Already in Channel (False)
+    UsersMap::iterator i = T->second.find(userName);
+    if (i != T->second.end() && !i->second.in_Invited_List) return false;
+
+    // Add User to UserList (True)
+    i->second.in_Invited_List = false;
+    i->second.in_User_list = true;
+    return true;
+
 }
-uint8_t                         Channels::JoinChannel(const std::string& userName, const std::string& channelName) {
-    // 0 -> Success
-    // 1 -> Channel don't exist
-    // 2 -> User not invited    --- User need invite to join
-    // 3 -> Already in channel
-
-    try {
-        UsersMap::iterator T = _getUserInChannelByName(userName, channelName);
-        if (T->second.in_User_list || T->second.in_Operator_List) return 3;
-        T->second.in_Invited_List = false;  // Remove from Invited list
-        T->second.in_User_list = true;      // Add to userlist
-    }
-    catch (const int& e) {
-        switch (e) {
-            case 0: return 1;               // Channel don't exist
-            case 1: return 2;               // User not invited
-        }
-    }
-    return 0;
-}
-std::vector<std::string>        Channels::GetAllUsersInChannel(const std::string& channelName) {
+std::vector<std::string>        Channels::Channel_Get_AllUsers(const std::string& channelName) {
     // Return empty vector on error
     // only Users and Operators are considered users ( not Invited )
 
@@ -99,7 +154,7 @@ std::vector<std::string>        Channels::GetAllUsersInChannel(const std::string
     }
     return T;
 }
-std::vector<std::string>        Channels::GetAllOPinChannel(const std::string& channelName) {
+std::vector<std::string>        Channels::Channel_Get_AllOperators(const std::string& channelName) {
     std::vector<std::string> T;
     
     ChannelMap* Chan = _getChannelByName(channelName);
@@ -111,173 +166,75 @@ std::vector<std::string>        Channels::GetAllOPinChannel(const std::string& c
     }
     return T;
 }
-std::vector<ChannelAndTopic>    Channels::GetAllChannelsAndTopicName() {
+std::vector<ChannelAndTopic>    Channels::Channel_Get_AllChannelsAndTopicName() {
     std::vector<ChannelAndTopic> T;
 
     for (ChannelGroup::iterator Channel = _channelGroup.begin(); Channel != _channelGroup.end(); Channel++) {
         ChannelAndTopic A;
         A.ChannelName = Channel->first;
-        A.TopicName = Channel->second.first;
+        A.TopicName = Channel->second.first.Topic;
         T.push_back(A);
     }
     return T;
 }
-uint8_t                         Channels::KickUserFromChannel(const std::string& currentOP,const std::string& userToKick, const std::string& channelName) {
-    // 0 -> Success
-    // 1 -> Channel don't exist
-
-    // --- userToKick ERRORS ---
-    // 2 -> usertoKick not in channel
-    // 3 -> userToKick in Invited list only
-    // 4 -> userToKick in Operator
-
-    // --- currentOP ERRORS ---
-    // 5 -> currentOP is not Operator 
-    // 6 -> currentOP is not in channel
-
-
-    // currentOP Status
-    try {
-        UsersMap::iterator OP = _getUserInChannelByName(currentOP, channelName);
-        if (!OP->second.in_Operator_List) return 5;
-    }
-    catch (const int& e) {
-        switch (e) {
-            case 0: return 1;
-            case 1: return 6;
+bool                            Channels::Channel_Leave(const std::string& userName, const std::string& channelName) {
+    ChannelMap* T = _getChannelByName(channelName);
+    if (T) {
+        for (UsersMap::iterator i = T->second.begin(); i != T->second.end(); i++) {
+            if (userName == i->first) {
+                T->second.erase(i);
+                return true;
+            }
         }
     }
-
-    // userToKick Status
-    try {
-        UsersMap::iterator _newOP = _getUserInChannelByName(userToKick, channelName);
-        if (_newOP->second.in_Invited_List) return 3;
-        if (_newOP->second.in_Operator_List) return 4;
-        _channelGroup[channelName].second.erase(_newOP);   // Kicking the user here
-    }
-    catch (const int& e) {
-        switch (e) {
-            case 0: return 1;
-            case 1: return 2;
-        }
-    }
-
-    return 0;
+    return false;
 }
-uint8_t                         Channels::SetUserAsOP(const std::string& currentOP,const std::string& newOP, const std::string& channelName) {
-    // 0 -> Success
-    // 1 -> Channel don't exist
-
-    // --- NEW OP ERRORS ---
-    // 2 -> Only invited 
-    // 3 -> Already Operator
-    // 4 -> Not in channel
-
-    // --- CURRENTOP ERRORS ---
-    // 5 -> is not Operator ( i hope you call him bozo )
-    // 6 -> Not in channel
-    //
-
-    // newOP Status
-    try {
-        UsersMap::iterator _newOP = _getUserInChannelByName(newOP, channelName);
-        if (_newOP->second.in_Invited_List) return 2;
-        if (_newOP->second.in_Operator_List) return 3;
-    }
-    catch (const int& e) {
-        switch (e) {
-            case 0: return 1;
-            case 1: return 4;
-        }
-    }
-
-    // currentOP Status
-    try {
-        UsersMap::iterator OP = _getUserInChannelByName(currentOP, channelName);
-        if (!OP->second.in_Operator_List) return 5;
-    }
-    catch (const int& e) {
-        switch (e) {
-            case 0: return 1;   // i love copy pasting
-            case 1: return 6;
-        }
-    }
-
-    _channelGroup[channelName].second[newOP] = _createNewUserStats(false, false, true);
-    return 0;
+void                            Channels::Channel_Delete(const std::string& channelName) {
+    ChannelGroup::iterator i = _channelGroup.find(channelName);
+    if (i != _channelGroup.end()) { _channelGroup.erase(i); }
 }
-uint8_t                         Channels::InviteUserToChannel(const std::string& currentOP, const std::string& invitedUser, const std::string& channelName) {
-    // 0 -> Success
-    // 1 -> Channel don't exist
 
-    // --- CURRENTOP ERRORS ---
-    // 2 -> not in channel
-    // 3 -> not Operator
+bool                            Channels::Channel_Set_Operator(const std::string& user, const std::string& channelName) {
 
-    // --- invitedUser ERRORS ---
-    // 4 -> already in channel
-    // 5 -> already invited
-
-    // currentOP Status
-    try {
-        UsersMap::iterator OP = _getUserInChannelByName(currentOP, channelName);
-        if (!OP->second.in_Operator_List) return 3; // not OP
-    }
-    catch (const int& e) {
-        switch (e) {
-            case 0: return 1;   // channel dont exist
-            case 1: return 2;   // user not in channel
+    ChannelMap* T = _getChannelByName(channelName);
+    if (T) {
+        for (UsersMap::iterator i = T->second.begin(); i != T->second.end(); i++) {
+            if (user == i->first) {
+                i->second = _createNewUserStats(false, false, true);
+                return true;
+            }
         }
     }
+    return false;
 
-    UsersMap::iterator i = _channelGroup[channelName].second.find(invitedUser);
-    // Already listed
-    if (i != _channelGroup[channelName].second.end()) {
-        if (i->second.in_Operator_List || i->second.in_User_list) return 4;
-        if (i->second.in_Invited_List) return 5;
-    }
-
-    _channelGroup[channelName].second[invitedUser] = _createNewUserStats(false, true, false);
-    return 0;
 }
-uint8_t                         Channels::CancelChannelInvite(const std::string& currentOP,const std::string& invitedUser, const std::string& channelName) {
-    // 0 -> Success
-    // 1 -> Channel don't exist
+bool                            Channels::Channel_Invite(const std::string& invitedUser, const std::string& channelName) {
+    ChannelMap* T = _getChannelByName(channelName);
+    if (T) {
+        for (UsersMap::iterator i = T->second.begin(); i != T->second.end(); i++) {
+            if (invitedUser == i->first) {
 
-    // --- currentOP ERRORS ---
-    // 2 -> currentOP not Operator
-    // 3 -> currentOP not in channel
+                // Already in Channel -> Return false
+                if (i->second.in_Operator_List || i->second.in_User_list) return false;
 
-    // --- invitedUser ERRORS ---
-    // 4 -> invitedUser already in channel
-    // 5 -> invitedUser Not in channel
-
-    // currentOP Status
-    try {
-        UsersMap::iterator OP = _getUserInChannelByName(currentOP, channelName);
-        if (!OP->second.in_Operator_List) return 2;
-    }
-    catch (const int& e) {
-        switch (e) {
-            case 0: return 1;
-            case 1: return 3;
+                i->second.in_Invited_List = true;
+                return true;
+            }
         }
     }
-
-    // invitedUser Status
-    try {
-        UsersMap::iterator InvitedUser = _getUserInChannelByName(invitedUser, channelName);
-        if (InvitedUser->second.in_Operator_List || InvitedUser->second.in_User_list) return 4;
-        InvitedUser->second.in_Invited_List = false;
-    }
-    catch (const int& e) {
-        switch (e) {
-            case 0: return 1;
-            case 1: return 5;
+    return false;
+}
+bool                            Channels::Channel_Uninvite(const std::string& invitedUser, const std::string& channelName) {
+    ChannelMap* T = _getChannelByName(channelName);
+    if (T) {
+        for (UsersMap::iterator i = T->second.begin(); i != T->second.end(); i++) {
+            if (invitedUser == i->first) {
+                i->second.in_Invited_List = false;
+                return true;
+            }
         }
     }
-
-    return 0;
+    return false;
 }
 
 void                            Channels::PrintChannelContent(const std::string& channelName) {
@@ -354,18 +311,12 @@ void                            Channels::SOCKETONLY_kickuserfromallchannels(con
 }
 
 // +++ Private +++
-UsersMap::iterator              Channels::_getUserInChannelByName(const std::string& userName, const std::string& channelName) {
-    // Object -> Success
-    // Throw 0 -> Channel don't exist
-    // Throw 1 -> User not in channel
-    
-    ChannelMap* T = _getChannelByName(channelName);
-    if (!T) throw 0;
-
-    UsersMap::iterator i = T->second.find(userName);
-    if (i == T->second.end()) throw 1;
-
-    return i;
+bool                            Channels::_isUserInvited(ChannelMap* Channel, const std::string& user) {
+    if (!Channel) return false;
+    UsersMap::iterator i = Channel->second.find(user);
+    if (i == Channel->second.end())
+        return false;
+    return true;
 }
 ChannelMap*                     Channels::_getChannelByName(const std::string& channelName) {
     ChannelGroup::iterator i = _channelGroup.find(channelName);

@@ -1,16 +1,19 @@
 #include "socket.h"
 #include "signal.h"
 
+#define DEBUGGING_MODE false
+
 // +++ Constructor +++
-Socket::Socket(const uint16_t port, const std::string password, const bool showDebug) : _ip(""), _port(port), _password(password), _showDebug(showDebug), _fd(-1), _addrInfo(0) {
-    _addrInfo = _getInfo(_ip, _port);
-    _fd = _getSocket(_addrInfo);
+Socket::Socket(const uint16_t port, const std::string password, const bool showDebug) : _password(password), _showDebug(showDebug) {
+    _fd = _getSocket(port, "");
+    _start();
 }
 
 // +++ Destructor +++
 Socket::~Socket() {
    _cleanup();
 }
+
 // +++ Public +++
 bool                Socket::doesThisUsernameExist(const std::string& username) {
     for (std::map<int, userData>::iterator i = _users.begin(); i != _users.end(); i++) {
@@ -44,7 +47,7 @@ void                Socket::SendData(const int& userFD, std::string data) {
         if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SendData] You're trying to send data to an invalid socket..." << std::endl;
     }
     else {
-        ssize_t bytesSent = send(userFD, data.c_str(), data.size(), MSG_DONTWAIT);
+        ssize_t bytesSent = send(userFD, data.c_str(), data.size(), 0);
         if (bytesSent == -1) {
             if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SendData] Error while sending data... send returned -1 ..." << std::endl;
         }
@@ -80,81 +83,16 @@ void                Socket::BroadcastToAll(const std::string& data) {
         SendData(_users[i].userFD, data);
     }
 }
-
-void                Socket::Listen() {
-    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][Listen] Listening..." << std::endl;
-    if (listen(_fd, SOMAXCONN) == -1) {
-        _cleanup();
-        throw AnyExcept("[-] [EXCEPT] ["+ std::string(__FILE__) +"][Listen] Error while Listening... [" + _ip + ":" + std::to_string(_port) + "]");
+userData*           Socket::GetUserByFD(const int& fd) {
+    std::map<int, userData>::iterator i = _users.find(fd);
+    if (i != _users.end()) {
+        return &i->second;
     }
-    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][Listen] Activated" << std::endl;
+    return 0;
 }
-void                Socket::Bind() {
-
-    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][Bind] Trying to bind..." << std::endl;
-
-    if (bind(_fd, _addrInfo->ai_addr, _addrInfo->ai_addrlen) == -1) {
-        _cleanup();
-        throw AnyExcept("[EXCEPT] ["+ std::string(__FILE__) +"][Bind] Binding Socket Failed...");
-    }
-
-    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][Bind] Success" << std::endl;
-}
-void                Socket::Connect(const std::string& ip, const uint16_t& port) {
-
-    addrinfo* userInfo = _getInfo(ip, port);
-
-    if (_showDebug) std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][Connect] Trying to connect: [" + _ip + ":" + std::to_string(_port) + "]" << std::endl;
-    if (connect(_fd, userInfo->ai_addr, userInfo->ai_addrlen) < 0) {
-        freeaddrinfo(userInfo);
-        userInfo = 0;
-        _cleanup();
-        throw AnyExcept("[-] [EXCEPT] ["+ std::string(__FILE__) +"][Connect] Couldn't Connect... [" + _ip + ":" + std::to_string(_port) + "]\n");
-    }
-
-    // We don't need that anymore
-    freeaddrinfo(userInfo);
-    userInfo = 0;
-    if (_showDebug) std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][Connect] Success [" + _ip + ":" + std::to_string(_port) + "]" << std::endl;
-}
-void                Socket::SetNonBlocking() {
-  
-    // Grab the initials flags already in the sockets
-    if (_showDebug) std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SetNonBlocking] Getting socket flags..." << std::endl;
-    int flags = fcntl(_fd, F_GETFL, 0);
-    if (flags == -1) {
-        _cleanup();
-        throw AnyExcept("[-] [EXCEPT] ["+ std::string(__FILE__) +"][SetNonBlocking] Couldn't get the initial socket flags");
-    }
-    if (_showDebug) std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SetNonBlocking] Done" << std::endl;
-
-    // Modify the flags
-    if (_showDebug) std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SetNonBlocking] Setting the new flags..." << std::endl;
-    flags = flags & ~O_NONBLOCK;
-    if (fcntl(_fd, F_SETFL, flags) != 0) {
-        _cleanup();
-        throw AnyExcept("[-] [EXCEPT] ["+ std::string(__FILE__) +"][SetNonBlocking] Couldn't modify socket flags");
-    }
-    if (_showDebug) std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SetNonBlocking] Done" << std::endl;
-
-
-
-}
-void                Socket::SetAddrReusable() {
-
-    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][_setAddrReusable] Trying to set the socket as Reusable..." << std::endl;
-
-    int optval = 1;
-    if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
-        _cleanup();
-        throw AnyExcept("[-] [EXCEPT] ["+ std::string(__FILE__) +"][_setAddrReusable] Couldnt set the socket as Reusable...");
-    }
-
-    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][_setAddrReusable] Done" << std::endl;
-
-}
-void                Socket::Start() {
-    _newUser(_fd);  // Add the Server socket to poll, so we can receive New users requests
+// +++ Private +++
+void                Socket::_start() {
+    _newUser(_fd);
 
     int     ret;
     initSignal();
@@ -163,6 +101,9 @@ void                Socket::Start() {
         ret = poll(_polls.data(), _polls.size(), -1);       // Waiting for events
 
         // ------------------------- Error Handling -------------------------
+
+        // This is needed to run debugger, otherwise poll returns -1
+        if (DEBUGGING_MODE && ret <= 0) continue;
 
         // Signals
         if (*signalStop()) {
@@ -208,75 +149,6 @@ void                Socket::Start() {
         }
     
     }
-}
-
-// +++ Private +++
-userData*           Socket::GetUserByFD(const int& fd) {
-    std::map<int, userData>::iterator i = _users.find(fd);
-    if (i != _users.end()) {
-        return &i->second;
-    }
-    return 0;
-}
-int                 Socket::_getSocket(addrinfo* AddrInfo) {
-
-    // Attempt to get the Right IP
-    int serverSocket = -1;
-    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][_getSocket] Trying to get socket..." << std::endl;
-    for (addrinfo* T = AddrInfo; T; T = T->ai_next) {
-
-        // Create Socket
-        serverSocket = socket(T->ai_family, T->ai_socktype, T->ai_protocol);
-        if (serverSocket == -1) { 
-            if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][_getSocket] Socket Attempted Failed... Continue" << std::endl;
-            continue; 
-        }
-
-        // Found a valid socket
-        if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][_getSocket] Success" << std::endl;
-        return serverSocket;
-    }
-
-    _cleanup();
-    throw AnyExcept("[-] [EXCEPT] ["+ std::string(__FILE__) +"][_getSocket] Couldn't find a viable socket.. [" + _ip + ":" + std::to_string(_port) + "]");
-    return 0;
-}
-addrinfo*           Socket::_getInfo(const std::string ip, const uint16_t port) {
-
-    // This attempt to get IP Data
-    addrinfo hints;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family     = AF_UNSPEC;
-    hints.ai_socktype   = SOCK_STREAM;
-    hints.ai_protocol   = IPPROTO_TCP;
-
-    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][_getInfo] Trying to IP Info..." << std::endl;
-
-    std::string ipvalue;
-    addrinfo*   result = 0;
-    int         getAddrInfoResult;
-
-    // Server Mode
-    if (ip == "") {
-        hints.ai_flags = AI_PASSIVE;
-        getAddrInfoResult = getaddrinfo(NULL, std::to_string(port).c_str(), &hints, &result);
-    }
-
-    // Client mode
-    else {
-        getAddrInfoResult = getaddrinfo(ip.c_str(), std::to_string(port).c_str(), &hints, &result);
-    }
-
-    // Check Return Value
-    if (getAddrInfoResult != 0) {
-        result = 0;
-        _cleanup();
-        throw AnyExcept("[-] [EXCEPT] ["+ std::string(__FILE__) +"][_getInfo] Couldnt Resolve IP... [" + ip + ":" + std::to_string(port) + "] Errno: [" + std::to_string(getAddrInfoResult) +  "]");
-    }
-
-    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][_getInfo] Success" << std::endl;
-
-    return result;
 }
 void                Socket::_newUser(const int& fd) {
 
@@ -335,14 +207,10 @@ void                Socket::_cleanup() {
         close(_fd);
     }
 
-    if (_addrInfo) {
-        freeaddrinfo(_addrInfo);
-        _addrInfo = 0;
-    }
-
     for (vectorIT i = _polls.begin(); i != _polls.end(); i++) {
         close(i->fd);
     }
+
 
     _users.clear();
     _polls.clear();
@@ -360,35 +228,93 @@ void                Socket::_acceptConnection() {
 void                Socket::_recvData(vectorIT& index) {
     static Parser parser(*this);       // Parser instance starts here
 
-    // I think there's a limit to message lens. if there's not, ill need to do something similar
-    /*
-        int bytesReceived = 0;
-        do {
-            bytesReceived = recv(*csock, &buffer[0], buffer.size(), 0);
-            // append string from buffer.
-            if ( bytesReceived == -1 ) { 
-                // error 
-            } else {
-                rcv.append( buffer.cbegin(), buffer.cend() );
-            }
-        } while ( bytesReceived == MAX_BUF_LENGTH );
-    
-    */
-    
-    // Receiving Data part
-    char buffer[BUFFER_SIZE];
-    int len = recv(index->fd, buffer, BUFFER_SIZE - 1, MSG_DONTWAIT);
+    // Receiving Data
+    static char buffer[BUFFER_SIZE];
+    int len = recv(index->fd, buffer, BUFFER_SIZE - 1, 0);
 
     // Errors
     if (len <= 0) {
         KickUser(index);
         return;
     }
-
-    // Store the data, then do something with it
     buffer[len] = '\0';
-    _users[index->fd].recvString = buffer;
+    
 
-    // Send Stuff to Parse Class
-    parser.ParseData(_users[index->fd], index);
+
+
+    std::string content = _users[index->fd].recvString + buffer;
+    size_t i = content.find("\r\n");
+    while (i != std::string::npos) {
+        std::string chunk = content.substr(0, i + 2);
+        _users[index->fd].recvString = chunk;
+        parser.ParseData(_users[index->fd], index);
+        content.erase(0, i + 2);
+        i = content.find("\r\n");
+    }
+    if (content.length() > 0)   { _users[index->fd].recvString = content; }
+    else                        { _users[index->fd].recvString = ""; }
+
 }
+int                 Socket::_getSocket(const uint16_t port, const std::string ip) {
+    
+    int ret;
+    addrinfo    hints;
+    addrinfo*   result = 0;
+    memset(&hints, 0, sizeof(hints));
+
+    hints.ai_family     = AF_UNSPEC;
+    hints.ai_socktype   = SOCK_STREAM;
+    hints.ai_protocol   = IPPROTO_TCP;
+
+    //                       Get Address Info
+    // -------------------------------------------------------------
+
+    // Local ( Server & Client )
+    if (ip == "")   { hints.ai_flags = AI_PASSIVE; ret = getaddrinfo(NULL, std::to_string(port).c_str(), &hints, &result); }
+    
+    // Only used with CONNECT ( Client )
+    else            { ret = getaddrinfo(ip.c_str(), std::to_string(port).c_str(), &hints, &result); }
+
+
+    if (ret != 0 || !result) {
+        freeaddrinfo(result);
+        throw AnyExcept("[-] Couldnt Create Socket.. [Address Info] [0]");
+    }
+
+    //                            Find Viable Socket
+    // -------------------------------------------------------------
+
+    int sock = -1;
+    for (addrinfo* T = result; T; T = T->ai_next) {
+
+        //                            Get Socket
+        // -------------------------------------------------------------
+        sock = socket(T->ai_family, T->ai_socktype, T->ai_protocol); if (sock == -1)    { continue; }
+
+        //                           Set Re-usable
+        // if you don't set this, the port will be busy everytime you stop & restart the server
+        // -------------------------------------------------------------
+        int optval = 1;
+        if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)  { close(sock); continue; }
+        
+        //                          Set Non Blocking
+        // now we don't need to put any flags to recv/send and its never gonna be blocking
+        // -------------------------------------------------------------
+        int flags = fcntl(sock, F_GETFL, 0); if (flags == -1)                           { close(sock); continue; } flags = flags & ~O_NONBLOCK; if (fcntl(sock, F_SETFL, flags) != 0) { close(sock); continue; }
+
+        //                      Server only, Bind & Listen
+        // -------------------------------------------------------------
+        if (ip == "") {
+            if (bind(sock, T->ai_addr, T->ai_addrlen) == -1)                            { close(sock); continue; } 
+            if (listen(sock, SOMAXCONN) == -1)                                          { close(sock); continue; }
+        }
+
+        freeaddrinfo(result);
+        return sock;
+    }
+
+    freeaddrinfo(result);
+    throw AnyExcept("[-] Couldnt Create Socket.. [Address Info] [1]");
+    return -1;
+}
+
