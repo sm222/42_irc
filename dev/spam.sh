@@ -8,7 +8,7 @@
 #  add more if needed
 #  those may change
 speed=0.0001
-endl='\n'
+endl='\r'
 dest="1.1.1.1"
 name="user"
 nic="bozo"

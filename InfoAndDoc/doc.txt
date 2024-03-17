@@ -6,6 +6,7 @@ https://modern.ircdocs.horse/
 /set irc.server.O_O.username "sm222"
 /set irc.server.O_O.realname "antoine"
 /connect O_O
+/join #a
 
 /join #BozoChannel \\ JOIN #BozoChannel
 

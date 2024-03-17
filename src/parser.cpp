@@ -149,10 +149,6 @@ std::string  Parser::makeMessage(t_code const type, const std::string msg, const
         result += user.nickName;
         i++;
       }
-      else if (msg[i] == '%' && msg[i + 1] == 'i') {
-        result += ">ip here<";
-        i++;
-      }
       else
         result += msg[i];
     }
@@ -170,10 +166,16 @@ bool Parser::setUserInfo(userData& user) {
   return true;
 }
 
+// ! not final, use as templet
 bool    Parser::joinChanel(const userData& user, const std::string chanelName) {
-  (void)user;
-  if (Sock.channels.Channel_AlreadyExist(chanelName) == true)
-    return false;
+  std::string tmp;
+  if (Sock.channels.Channel_AlreadyExist(chanelName) == true) {
+    Sock.channels.Channel_Join(user.userName, chanelName);
+    tmp = makeMessage(e_rplTopic, chanelName, user);
+    tmp += " " + Sock.channels.Channel_Get_Topic(chanelName);
+    return true;
+  }
+    Sock.channels.Channel_Create(user.userName, chanelName);
   return true;
 }
 
@@ -233,13 +235,16 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     Sock.SendData(user.userFD, tmp);
   }
   else if (std::strncmp(user.recvString.c_str(), "JOIN ", 5) == 0) {
+    std::string tmp = user.recvString.c_str() + 5;
     size_t  i = 0;
-    while (i < user.recvString.size()) {
-      if (user.recvString[i] == '#')
-
-      i++;
+    while (i < tmp.size()) {
+      if (tmp[i] == '#') {
+        size_t  j = 1;
+        while (i + j < tmp.size() && std::isalpha(tmp[i + j])) {j++;}
+        joinChanel(user, tmp.substr(i + 1, j));
+      }
+    i++;
     }
-    
   }
     //user.userName = "userName";                   // Set username
     //user.nickName = "nickName";                   // Set nickname
