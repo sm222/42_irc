@@ -1,25 +1,23 @@
 #include "parser.h"
 
-static int	nb_word(const char *str, char c)
-{
-	int	i;
-	int	size;
+static int  nb_word(const char *str, char c) {
+	int i;
+	int size;
 
-	i = 0;
-	size = 0;
-	while (str[i]) {
-		while (str[i] && str[i] == c)
-			i++;
-		if (str[i])
-			size++;
-		while (str[i] && str[i] != c)
-			i++;
-	}
-	return size;
+  i = 0;
+  size = 0;
+  while (str[i]) {
+    while (str[i] && str[i] == c)
+      i++;
+    if (str[i])
+      size++;
+    while (str[i] && str[i] != c)
+      i++;
+  }
+  return size;
 }
 
-static std::string ft_strdup_c(const char *str, char c)
-{
+static std::string ft_strdup_c(const char *str, char c) {
   size_t        i;
   std::string   ret;
 
@@ -31,156 +29,25 @@ static std::string ft_strdup_c(const char *str, char c)
   return ret;
 }
 
-std::vector<std::string> ft_split(char const *s, char c)
-{
-	std::vector<std::string>  ret;
-	size_t	i;
+splitData ft_split(char const *s, char c) {
+  size_t	i;
   size_t  nbW;
+  splitData  ret;
 
-	i = 0;
-	if (!s)
-		throw std::invalid_argument("split fail");
+  i = 0;
+  if (!s)
+    throw std::invalid_argument("split fail");
   nbW = nb_word(s + i, c);
-	while (nbW--)
-	{
-		while (s[i] && s[i] == c)
-			i++;
-		ret.push_back(ft_strdup_c(s + i, c));
-		while (s[i] && s[i] != c)
-			i++;
-	}
-	return ret;
+  while (nbW--)
+  {
+    while (s[i] && s[i] == c)
+      i++;
+    ret.push_back(ft_strdup_c(s + i, c));
+    while (s[i] && s[i] != c)
+      i++;
+  }
+  return ret;
 }
-
-/// @brief use to pritn the memorry from a int or char ptr
-/// @param ptr adress
-/// @param size width of the pointer (length of the array)
-/// @param type  0 int , 1 char
-/// @param name exp : 'A' 'B' 'C'
-/// @details 00	'\0' 	(null character)
-/// @details 1 	  SOH	(start of heading)
-/// @details 2 	  STX	(start of text)
-/// @details 3 	  ETX	(end of text)
-/// @details 4 	  EOT	(end of transmission)
-/// @details 5 	  ENQ	(enquiry)
-/// @details 6 	  ACK	(acknowledge)
-/// @details 7 	  BEL	'\a' (bell)
-/// @details 8 	  BS 	'\b' (backspace)
-/// @details 9 	  HT 	'\t' (horizontal tab)
-/// @details 10	  LF 	'\n' (new line)
-/// @details 11	  VT 	'\v' (vertical tab)
-/// @details 12	  FF 	'\f' (form feed)
-/// @details 13	  CR 	'\r' (carriage ret)
-/// @details 14	  SO 	(shift out)
-/// @details 15	  SI 	(shift in)
-/// @details 16	  DLE	(data link escape)
-/// @details 17	  DC1	(device control 1)
-/// @details 18	  DC2	(device control 2)
-/// @details 19	  DC3	(device control 3)
-/// @details 20	  DC4	(device control 4)
-/// @details 21	  NAK	(negative ack.)
-/// @details 22	  SYN	(synchronous idle)
-/// @details 23	  ETB	(end of trans. blk)
-/// @details 24	  CAN	(cancel)
-/// @details 25	  EM 	(end of medium)
-/// @details 26	  SUB	(substitute)
-/// @details 27	  ESC	(escape)
-/// @details 28	  FS 	(file separator)
-/// @details 29	  GS 	(group separator)
-/// @details 30	  RS 	(record separator)
-/// @details 31	  US 	(unit separator)
-#include <cstdio>
-void	Ct_mprintf(void *ptr, size_t size, int type, int name)
-{
-	size_t	i;
-
-	i = 0;
-	if (!ptr)
-		return ;
-	printf("[%c]", name);
-	if (type == 0)
-	{
-		while (i < size)
-			printf("%12d | ", ((char *)ptr)[i++]);
-	}
-	else if (type == 1)
-	{
-		while (i < size)
-		{
-			if (((char *)ptr)[i] > 31 && ((char *)ptr)[i] < 127)
-				printf("%3c | ", ((char *)ptr)[i]);
-			else if (((char *)ptr)[i] == 0)
-				printf(" \\0 | ");
-			else if (((char *)ptr)[i] == 1)
-				printf("SHO | ");
-			else if (((char *)ptr)[i] == 2)
-				printf("STX | ");
-			else if (((char *)ptr)[i] == 3)
-				printf("ETX | ");
-			else if (((char *)ptr)[i] == 4)
-				printf("EOT | ");
-			else if (((char *)ptr)[i] == 5)
-				printf("ENQ | ");
-			else if (((char *)ptr)[i] == 6)
-				printf("ACK | ");
-			else if (((char *)ptr)[i] == 7)
-				printf(" \\a | ");
-			else if (((char *)ptr)[i] == 8)
-				printf(" \\b | ");
-			else if (((char *)ptr)[i] == 9)
-				printf(" \\t | ");
-			else if (((char *)ptr)[i] == 10)
-				printf(" \\n | ");
-			else if (((char *)ptr)[i] == 11)
-				printf(" \\v | ");
-			else if (((char *)ptr)[i] == 12)
-				printf(" \\f | ");
-			else if (((char *)ptr)[i] == 13)
-				printf(" \\r | ");
-			else if (((char *)ptr)[i] == 14)
-				printf(" SO | ");
-			else if (((char *)ptr)[i] == 15)
-				printf(" SI | ");
-			else if (((char *)ptr)[i] == 16)
-				printf("DLE | ");
-			else if (((char *)ptr)[i] == 17)
-				printf("DC1 | ");
-			else if (((char *)ptr)[i] == 18)
-				printf("DC2 | ");
-			else if (((char *)ptr)[i] == 19)
-				printf("DC3 | ");
-			else if (((char *)ptr)[i] == 20)
-				printf("DC4 | ");
-			else if (((char *)ptr)[i] == 21)
-				printf("NAK | ");
-			else if (((char *)ptr)[i] == 22)
-				printf("SYN | ");
-			else if (((char *)ptr)[i] == 23)
-				printf("ETB | ");
-			else if (((char *)ptr)[i] == 24)
-				printf("CAN | ");
-			else if (((char *)ptr)[i] == 25)
-				printf(" EM | ");
-			else if (((char *)ptr)[i] == 26)
-				printf("SUB | ");
-			else if (((char *)ptr)[i] == 27)
-				printf("ESC | ");
-			else if (((char *)ptr)[i] == 28)
-				printf(" FS | ");
-			else if (((char *)ptr)[i] == 29)
-				printf(" GS | ");
-			else if (((char *)ptr)[i] == 30)
-				printf(" RS | ");
-			else if (((char *)ptr)[i] == 31)
-				printf(" US | ");
-			else
-				printf("%3d | ", ((char *)ptr)[i]);
-			i++;
-		}
-	}
-	printf("\n");
-}
-
 
 Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
 Parser::~Parser(){}
@@ -235,12 +102,20 @@ bool    Parser::joinChanel(const userData& user, const std::string chanelName) {
 void    Parser::ParseData(userData& user, vectorIT& index) {
     Channels& AllChannels = Sock.channels;
     (void)AllChannels;
-    
-    // index is pretty much only used to kick user. 
+    splitData split = ft_split(user.recvString.c_str(), ' ');
+    for (size_t i = 0; i < split.size(); i++) {
+      std::cout << '[' << i << ']' << split[i] << std::endl; }
+    if (std::strncmp(split[0].c_str(), "PASS", 4) == 0) {
+      std::string str = Sock.GetPassword();
+      if (str != split[1]) {
+        Sock.SendData(user.userFD, "get fuck");
+        Sock.KickUser(index);
+      }
+    }
 
+    // index is pretty much only used to kick user. 
     //user.currentAction = 1;                       // Action Index, step 1 = wait 4 password, step 2 = ask for username..Etc
                                                     // im not using it anywhere, its for you guys to use
-
     // Little example how i think you should use currentAction
   /*
     // Step 1 -> Check password         ( you can probably use an Enum for this )
@@ -258,16 +133,12 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
             user.currentAction++;
         }
     }
-
-
     // Step 2 -> Save user
     else if (user.currentAction == 2) {
-
         // Empty Username, We dont increment, so user will be forced to actually send something
         if (user.recvString == "") {
             Sock.SendData(user.userFD, "Are you fucking dumb ? Enter something bozo");
         }
-
         // Correct Username
         else {
             user.userName = user.recvString;
@@ -277,17 +148,20 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
   */
   (void)index;
+  /*
+    use to split on the data
+  */
   //* shit way to get the user so weechar stop crying
-  if (std::strncmp(user.recvString.c_str(), "USER ", 5) == 0) {
+  if (std::strncmp(split[0].c_str(), "USER", 4) == 0) {
     setUserInfo(user);
   }
   //? send a pong so the weechat don't stop the connection
-  else if (std::strncmp(user.recvString.c_str(), "PING ", 5) == 0) {
+  else if (std::strncmp(split[0].c_str(), "PING", 4) == 0) {
     std::string tmp = "PONG ";
     tmp += user.recvString.c_str() + 5;
     Sock.SendData(user.userFD, tmp);
   }
-  else if (std::strncmp(user.recvString.c_str(), "JOIN ", 5) == 0) {
+  else if (std::strncmp(user.recvString.c_str(), "JOIN", 4) == 0) {
     std::string tmp = user.recvString.c_str() + 5;
     size_t  i = 0;
     while (i < tmp.size()) {

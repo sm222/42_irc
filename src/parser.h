@@ -4,6 +4,10 @@
 #include "Channels.h" // Not sure if it belongs there
 #include <cstring>
 
+
+//type use
+typedef std::vector<std::string> splitData;
+
 class Socket;
 
 class Parser {
