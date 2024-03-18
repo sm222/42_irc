@@ -1,5 +1,57 @@
 #include "parser.h"
 
+static int	nb_word(const char *str, char c)
+{
+	int	i;
+	int	size;
+
+	i = 0;
+	size = 0;
+	while (str[i]) {
+		while (str[i] && str[i] == c)
+			i++;
+		if (str[i])
+			size++;
+		while (str[i] && str[i] != c)
+			i++;
+	}
+	return size;
+}
+
+static std::string ft_strdup_c(const char *str, char c)
+{
+  size_t        i;
+  std::string   ret;
+
+  i = 0;
+  while (str[i] && str[i] != c) {
+    ret += str[i];
+    i++;
+  }
+  return ret;
+}
+
+std::vector<std::string> ft_split(char const *s, char c)
+{
+	std::vector<std::string>  ret;
+	size_t	i;
+  size_t  nbW;
+
+	i = 0;
+	if (!s)
+		throw std::invalid_argument("split fail");
+  nbW = nb_word(s + i, c);
+	while (nbW--)
+	{
+		while (s[i] && s[i] == c)
+			i++;
+		ret.push_back(ft_strdup_c(s + i, c));
+		while (s[i] && s[i] != c)
+			i++;
+	}
+	return ret;
+}
+
 /// @brief use to pritn the memorry from a int or char ptr
 /// @param ptr adress
 /// @param size width of the pointer (length of the array)
@@ -37,6 +89,7 @@
 /// @details 29	  GS 	(group separator)
 /// @details 30	  RS 	(record separator)
 /// @details 31	  US 	(unit separator)
+#include <cstdio>
 void	Ct_mprintf(void *ptr, size_t size, int type, int name)
 {
 	size_t	i;

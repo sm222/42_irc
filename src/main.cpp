@@ -1,6 +1,6 @@
 #include "socket.h"
 #include "Channels.h"
-#include "parsingAv.hpp"
+#include <stdlib.h>
 
 int main(int argc, char **args) {
 
@@ -15,7 +15,7 @@ int main(int argc, char **args) {
     // ++++++++++++++ Port ++++++++++++++
     uint16_t port;
     try {
-        int value = std::stoi(args[1]);
+        int value = std::atoi(args[1]);
         if (value < 1 || value > 65535) {
             std::cout << "[-] Port can only be between 0 and 65535" << std::endl;
             return 1;
