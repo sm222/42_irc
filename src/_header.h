@@ -20,6 +20,17 @@
 
 #define vectorIT    std::vector<pollfd>::iterator
 
+typedef enum e_type {
+  e_welcom,     // 001
+  e_rplTopic    // 332
+} t_code;
+
+const char* const MType[] = {
+  "001",
+  "332",
+  ""
+};
+
 // +++ Structs +++
 
 // This is what we need to parse
