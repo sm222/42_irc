@@ -23,8 +23,8 @@ re: fclean $(TARGET)
 leak: all
 	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET)
 
-run: fclean $(TARGET)
-	@./$(TARGET) 2000 "a"
+run: re $(TARGET) ip
+	@./$(TARGET) 2000 a
 
 docker:
 	docker run -it weechat/weechat
@@ -34,9 +34,10 @@ docker-clear:
 	@docker system prune -af || true
 
 ip:
-	@ifconfig | grep 'inet 10'
+	@ifconfig -l | xargs -n1 ipconfig getifaddr | grep 10.
 	@echo -n 'cd ' 
 	@pwd
+
 wee:
 	@docker run -ti weechat/weechat
 

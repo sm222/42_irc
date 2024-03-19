@@ -1,53 +1,5 @@
 #include "parser.h"
-
-static int  nb_word(const char *str, char c) {
-	int i;
-	int size;
-
-  i = 0;
-  size = 0;
-  while (str[i]) {
-    while (str[i] && str[i] == c)
-      i++;
-    if (str[i])
-      size++;
-    while (str[i] && str[i] != c)
-      i++;
-  }
-  return size;
-}
-
-static std::string ft_strdup_c(const char *str, char c) {
-  size_t        i;
-  std::string   ret;
-
-  i = 0;
-  while (str[i] && str[i] != c) {
-    ret += str[i];
-    i++;
-  }
-  return ret;
-}
-
-splitData ft_split(char const *s, char c) {
-  size_t	i;
-  size_t  nbW;
-  splitData  ret;
-
-  i = 0;
-  if (!s)
-    throw std::invalid_argument("split fail");
-  nbW = nb_word(s + i, c);
-  while (nbW--)
-  {
-    while (s[i] && s[i] == c)
-      i++;
-    ret.push_back(ft_strdup_c(s + i, c));
-    while (s[i] && s[i] != c)
-      i++;
-  }
-  return ret;
-}
+#include <iostream>
 
 Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
 Parser::~Parser(){}
@@ -99,18 +51,52 @@ bool    Parser::joinChanel(const userData& user, const std::string chanelName) {
   return true;
 }
 
+vec_str Parser::TokenizeMessage(std::string message){
+  vec_str vec;
+  size_t pos = 0;
+  size_t old_pos = 0;
+  // bool inQuote = false;
+  message.erase(message.find_last_not_of("\n"), 1);
+  message.erase(message.find_last_not_of("\r"), 1);
+  while ((pos = message.find(" ", old_pos)) != std::string::npos) {
+      std::string token = message.substr(old_pos, pos - old_pos);
+      if (!token.empty())
+          vec.push_back(token);
+      old_pos = pos + 1;
+  }
+  if (old_pos < message.length())
+      vec.push_back(message.substr(old_pos));
+  for (size_t i = 0; i < vec.size(); ++i) 
+      std::cout << "{" << i << "}" << vec[i] << "|" << std::endl;
+  return (vec);
+}
+
+void TEST(std::string str){
+  std::cout << str << std::endl;
+}
+
 void    Parser::ParseData(userData& user, vectorIT& index) {
     Channels& AllChannels = Sock.channels;
     (void)AllChannels;
-    splitData split = ft_split(user.recvString.c_str(), ' ');
-    for (size_t i = 0; i < split.size(); i++) {
-      std::cout << '[' << i << ']' << split[i] << std::endl; }
-    if (std::strncmp(split[0].c_str(), "PASS", 4) == 0) {
-      std::string str = Sock.GetPassword();
-      if (str != split[1]) {
-        Sock.SendData(user.userFD, "get fuck");
-        Sock.KickUser(index);
+    vec_str split = TokenizeMessage(user.recvString);
+    if (split[0] == "PASS"){
+      if (split[1] == Sock.GetPassword()){
+        std::cout << "Valid password" << std::endl;
       }
+      else{
+        Sock.SendData(user.userFD, makeMessage(e_passmismatch, "Server :password incorect", user));
+        Sock.KickUser(index);
+        std::cout << "Bad password" << std::endl;
+      }
+    }
+
+    if (split[0] == "PING"){
+      Sock.SendData(user.userFD, std::string("PONG ") + split[1]);
+      std::cout << user.userName << " :PING" << std::endl;
+    }
+
+    if (split[0] == "USER"){
+      setUserInfo(user);
     }
 
     // index is pretty much only used to kick user. 
@@ -151,28 +137,8 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
   /*
     use to split on the data
   */
-  //* shit way to get the user so weechar stop crying
-  if (std::strncmp(split[0].c_str(), "USER", 4) == 0) {
-    setUserInfo(user);
-  }
+  //* shit way to get the user so weechat stop crying
   //? send a pong so the weechat don't stop the connection
-  else if (std::strncmp(split[0].c_str(), "PING", 4) == 0) {
-    std::string tmp = "PONG ";
-    tmp += user.recvString.c_str() + 5;
-    Sock.SendData(user.userFD, tmp);
-  }
-  else if (std::strncmp(user.recvString.c_str(), "JOIN", 4) == 0) {
-    std::string tmp = user.recvString.c_str() + 5;
-    size_t  i = 0;
-    while (i < tmp.size()) {
-      if (tmp[i] == '#') {
-        size_t  j = 1;
-        while (i + j < tmp.size() && std::isalpha(tmp[i + j])) {j++;}
-        joinChanel(user, tmp.substr(i + 1, j));
-      }
-    i++;
-    }
-  }
     //user.userName = "userName";                   // Set username
     //user.nickName = "nickName";                   // Set nickname
     //user.userFD;                                  // Hold user FD

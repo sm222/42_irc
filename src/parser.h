@@ -6,7 +6,7 @@
 
 
 //type use
-typedef std::vector<std::string> splitData;
+typedef std::vector<std::string> vec_str;
 
 class Socket;
 
@@ -14,6 +14,8 @@ class Parser {
 public:
     Parser(Socket& socket);
     ~Parser();
+    vec_str TokenizeMessage(std::string message);
+
     //TODO: v
     std::string makeMessage(t_code const type, const std::string msg , const userData& user);
     bool        setUserInfo(userData& user);
