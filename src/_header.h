@@ -20,14 +20,21 @@
 
 #define vectorIT    std::vector<pollfd>::iterator
 
+
+#define MSG_Welcom          (client, user) "001 " + client + " :Welcome to the 42irc " + user             //<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]
+#define MSG_RplTopic        (client, channel, topic) "332 " + client + " " + channel + " " + topic        //<client> <channel> :<topic>
+#define MSG_PassMisMatch    "464 Server :password incorect"                                               //<client> :Password incorrect
+
 typedef enum e_type {
   e_welcom,     // 001
-  e_rplTopic    // 332
+  e_rplTopic,    // 332
+  e_passmismatch //464
 } t_code;
 
 const char* const MType[] = {
   "001",
   "332",
+  "464",
   ""
 };
 

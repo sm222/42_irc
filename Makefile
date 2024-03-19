@@ -23,7 +23,7 @@ re: fclean $(TARGET)
 leak: all
 	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET)
 
-run: fclean $(TARGET) ip
+run: re $(TARGET) ip
 	@./$(TARGET) 2000 a
 
 docker:

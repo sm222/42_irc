@@ -2,9 +2,9 @@ doc
 https://modern.ircdocs.horse/
 
 
-/server add O_O 10.12.5.8/2000 -notls -password=b
-/set irc.server.O_O.username "sm222"
-/set irc.server.O_O.realname "antoine"
+/server add O_O 10.12.5.7/2000 -notls -password="asdkfhgdskf"
+/set irc.server.O_O.username "Oli"
+/set irc.server.O_O.realname "Olivier"
 /connect O_O
 /join #a
 
