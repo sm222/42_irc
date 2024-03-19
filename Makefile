@@ -24,7 +24,7 @@ leak: all
 	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET)
 
 run: fclean $(TARGET)
-	@./$(TARGET) 2000 ""
+	@./$(TARGET) 2000 "a"
 
 docker:
 	docker run -it weechat/weechat
