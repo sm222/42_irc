@@ -9,6 +9,7 @@ Parser::~Parser(){}
 /// @param msg %u = user.userName, %n = user.nickName, %i could add ip ?
 /// @param user 
 /// @return 
+//** don't use, out of date
 std::string  Parser::makeMessage(t_code const type, const std::string msg, const userData& user) {
     std::string result = MType[type];
     result += " " + user.userName + " ";
@@ -56,8 +57,14 @@ vec_str Parser::TokenizeMessage(std::string message){
   size_t pos = 0;
   size_t old_pos = 0;
   // bool inQuote = false;
-  message.erase(message.find_last_not_of("\n"), 1);
-  message.erase(message.find_last_not_of("\r"), 1);
+  size_t end = message.find_last_not_of("\n");
+  if (end != std::string::npos)
+    message.erase(end, 1);
+  end = message.find_last_not_of("\r");
+  if (end != std::string::npos)
+    message.erase(end, 1);
+  if (message.empty())
+    return (vec);
   while ((pos = message.find(" ", old_pos)) != std::string::npos) {
       std::string token = message.substr(old_pos, pos - old_pos);
       if (!token.empty())
@@ -66,7 +73,7 @@ vec_str Parser::TokenizeMessage(std::string message){
   }
   if (old_pos < message.length())
       vec.push_back(message.substr(old_pos));
-  for (size_t i = 0; i < vec.size(); ++i) 
+  for (size_t i = 0; i < vec.size(); ++i)
       std::cout << "{" << i << "}" << vec[i] << "|" << std::endl;
   return (vec);
 }
@@ -75,30 +82,55 @@ void TEST(std::string str){
   std::cout << str << std::endl;
 }
 
+bool Parser::testPassWord(std::string &pass, userData &user, vectorIT& index) {
+  if (pass == Sock.GetPassword()){
+    std::cout << "Valid password" << std::endl;
+    return true;
+  }
+  Sock.SendData(user.userFD, MSG_PassMisMatch);
+  Sock.KickUser(index);
+  std::cout << "Bad password" << std::endl;
+  return false;
+}
+
+/*
+* - asuming the currentAction = 0 at start, step 0 is to confim the password
+*
+*                                                *
+*  password - 0                                  *
+*            |                                   *
+*            get user info - 1                   *
+*                          |                     *
+*                          ? next step 2         *
+*                                                *
+*                                                *
+*/
+
+
 void    Parser::ParseData(userData& user, vectorIT& index) {
     Channels& AllChannels = Sock.channels;
     (void)AllChannels;
     vec_str split = TokenizeMessage(user.recvString);
-    if (split[0] == "PASS"){
-      if (split[1] == Sock.GetPassword()){
-        std::cout << "Valid password" << std::endl;
-      }
-      else{
-        Sock.SendData(user.userFD, makeMessage(e_passmismatch, "Server :password incorect", user));
-        Sock.KickUser(index);
-        std::cout << "Bad password" << std::endl;
-      }
+    if (split.empty()) {
+      std::cout << "empty\n"; //! fix segfault
+      return ;
     }
-
-    if (split[0] == "PING"){
-      Sock.SendData(user.userFD, std::string("PONG ") + split[1]);
-      std::cout << user.userName << " :PING" << std::endl;
+    std::cout << "user - " << user.userName << " - currentAction - > " << user.currentAction << std::endl;
+    if (split[0] == "PASS" && LV(user.currentAction, 0)) {
+      if (testPassWord(split[1], user, index))
+        user.currentAction++;
     }
-
-    if (split[0] == "USER"){
+    //! user
+    if (split[0] == "USER" && LV(user.currentAction, 1)) {
       setUserInfo(user);
+      user.currentAction++;
     }
-
+    // ? PONG :)
+    if (split[0] == "PING" && LV(user.currentAction, 2)) {
+      MSG_PONG(user.userFD, split[1]);
+      std::cout << user.userName << " :PING, " << std::endl;
+    }
+    //user set user
     // index is pretty much only used to kick user. 
     //user.currentAction = 1;                       // Action Index, step 1 = wait 4 password, step 2 = ask for username..Etc
                                                     // im not using it anywhere, its for you guys to use
@@ -138,7 +170,6 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     use to split on the data
   */
   //* shit way to get the user so weechat stop crying
-  //? send a pong so the weechat don't stop the connection
     //user.userName = "userName";                   // Set username
     //user.nickName = "nickName";                   // Set nickname
     //user.userFD;                                  // Hold user FD

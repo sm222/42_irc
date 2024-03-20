@@ -21,7 +21,7 @@
 #define vectorIT    std::vector<pollfd>::iterator
 
 
-#define MSG_Welcom          (client, user) "001 " + client + " :Welcome to the 42irc " + user             //<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]
+#define MSG_Welcome         (client, user) "001 " + client + " :Welcome to the 42irc " + user             //<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]
 #define MSG_RplTopic        (client, channel, topic) "332 " + client + " " + channel + " " + topic        //<client> <channel> :<topic>
 #define MSG_PassMisMatch    "464 Server :password incorect"                                               //<client> :Password incorrect
 
