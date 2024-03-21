@@ -12,7 +12,7 @@ Parser::~Parser(){}
 //** don't use, out of date
 std::string  Parser::makeMessage(t_code const type, const std::string msg, const userData& user) {
     std::string result = MType[type];
-    result += " " + user.userName + " ";
+    result += " " ServerName " ";
     for (size_t i = 0; i < msg.size(); i++) {
       if (msg[i] == '%' && msg[i + 1] == 'u') {
         result += user.userName;
@@ -26,6 +26,11 @@ std::string  Parser::makeMessage(t_code const type, const std::string msg, const
         result += msg[i];
     }
     return (result);
+}
+
+void  Parser::kickUser(vectorIT& index, const char* reasons, userData &user) {
+    Sock.SendData(user.userFD, reasons);
+    Sock.KickUser(index);
 }
 
 bool Parser::setUserInfo(userData& user) {
@@ -83,12 +88,15 @@ void TEST(std::string str){
 }
 
 bool Parser::testPassWord(std::string &pass, userData &user, vectorIT& index) {
-  if (pass == Sock.GetPassword()){
+  if (pass == Sock.GetPassword() && user.currentAction == e_notConfim){
     std::cout << "Valid password" << std::endl;
     return true;
   }
-  Sock.SendData(user.userFD, MSG_PassMisMatch);
-  Sock.KickUser(index);
+  else if (pass == Sock.GetPassword()) {
+    
+    return false;
+  }
+  kickUser(index, MSG_PassMisMatch, user);
   std::cout << "Bad password" << std::endl;
   return false;
 }
@@ -104,6 +112,9 @@ bool Parser::testPassWord(std::string &pass, userData &user, vectorIT& index) {
 *                          ? next step 2         *
 *                                                *
 *                                                *
+*                                                *
+*                                                *
+*                                                *
 */
 
 
@@ -116,21 +127,33 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
       return ;
     }
     std::cout << "user - " << user.userName << " - currentAction - > " << user.currentAction << std::endl;
-    if (split[0] == "PASS" && LV(user.currentAction, 0)) {
+    if (split[0] == "PASS" && LV(user.currentAction, e_notConfim)) {
       if (testPassWord(split[1], user, index))
         user.currentAction++;
     }
     //! user
-    if (split[0] == "USER" && LV(user.currentAction, 1)) {
-      setUserInfo(user);
-      user.currentAction++;
+    if (split[0] == "USER" && LV(user.currentAction, e_notNameSet)) {
+      if (setUserInfo(user))
+        user.currentAction++;
     }
     // ? PONG :)
-    if (split[0] == "PING" && LV(user.currentAction, 2)) {
+    if (split[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
       MSG_PONG(user.userFD, split[1]);
-      std::cout << user.userName << " :PING, " << std::endl;
+      std::cout << user.userName << " :PING, " << std::endl; //? dev can be remove
     }
-    //user set user
+    else if (user.currentAction == 0) {
+      kickUser(index, MSG_ErrSaslFail, user); //!if user send shit witout giving a valid password
+    }
+    //dev messasge  *v*
+    std::cout << "Received: " + user.recvString;    // Data Received
+}
+
+
+
+
+//** example v
+
+   //user set user
     // index is pretty much only used to kick user. 
     //user.currentAction = 1;                       // Action Index, step 1 = wait 4 password, step 2 = ask for username..Etc
                                                     // im not using it anywhere, its for you guys to use
@@ -165,11 +188,6 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
         }
     }
   */
-  (void)index;
-  /*
-    use to split on the data
-  */
-  //* shit way to get the user so weechat stop crying
     //user.userName = "userName";                   // Set username
     //user.nickName = "nickName";                   // Set nickname
     //user.userFD;                                  // Hold user FD
@@ -178,6 +196,3 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     //Sock.KickUser(index);                           // Kick user
     //Sock.GetPassword();                             // To check if user entered correct password, return the password
     //Sock.SendData(user.userFD, "nice scam sir");    // You can easily send data with this
-
-    std::cout << "Received: " + user.recvString;    // Data Received
-}

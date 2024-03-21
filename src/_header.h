@@ -16,14 +16,29 @@
 // Others
 #include "exception.h"
 
+// +++ enum +++
+
+enum e_ActionLv {
+  e_notConfim,
+  e_notNameSet,
+  e_ConfimUser
+};
+
 // +++ Defines +++
 
 #define vectorIT    std::vector<pollfd>::iterator
+#define ServerName  "42irc"
 
+// base //
+#define MSG_Welcome         (user) "001 " ServerName " :Welcome to the 42irc " + user             //<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]
 
-#define MSG_Welcome         (client, user) "001 " + client + " :Welcome to the 42irc " + user             //<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]
-#define MSG_RplTopic        (client, channel, topic) "332 " + client + " " + channel + " " + topic        //<client> <channel> :<topic>
-#define MSG_PassMisMatch    "464 Server :password incorect"                                               //<client> :Password incorrect
+// info //
+#define MSG_RplTopic        (channel, topic) "332 " ServerName " " + channel + " " + topic        //<client> <channel> :<topic>
+
+// error //
+#define MSG_PassMisMatch    "464 " ServerName " :password incorect"                                                //<client> :Password incorrect
+#define MSG_ErrSaslFail     "904 " ServerName " :SASL authentication failed"
+
 
 typedef enum e_type {
   e_welcom,     // 001

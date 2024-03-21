@@ -21,7 +21,9 @@ public:
     bool        setUserInfo(userData& user);
     bool        joinChanel(const userData& user, const std::string chanelName);
     bool        testPassWord(std::string &pass, userData &user, vectorIT& index);
-    //    /|
+    //*    //
+    void        kickUser(vectorIT& index, const char* reasons, userData &user);
+    //*    //
     
     // Im calling this in my socket class, everytime we get new Data from Client
     void        ParseData(userData& user, vectorIT& index); 
