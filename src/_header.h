@@ -36,8 +36,9 @@ enum e_ActionLv {
 #define MSG_RplTopic        (channel, topic) "332 " ServerName " " + channel + " " + topic        //<client> <channel> :<topic>
 
 // error //
-#define MSG_PassMisMatch    "464 " ServerName " :password incorect"                                                //<client> :Password incorrect
-#define MSG_ErrSaslFail     "904 " ServerName " :SASL authentication failed"
+#define MSG_ERR_UNKNOWNERROR     "400 " ServerName " :SASL authentication failed"
+#define MSG_PassMisMatch         "464 " ServerName " :password incorect"                                                //<client> :Password incorrect
+#define MSG_ErrSaslFail          "904 " ServerName " :SASL authentication failed"
 
 
 typedef enum e_type {

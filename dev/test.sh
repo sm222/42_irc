@@ -2,13 +2,13 @@
 
 # seting --<
 speed=0.3
-endl='\n'
+endl=\r
 
 # var --<
 args=(
-  "test"
-  "a"
-  "b"
+  "PASS a"
+  "USER a 0 * :b"
+  "PING A A A"
 )
 # -- -- --
 i=0

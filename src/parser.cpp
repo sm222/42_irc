@@ -4,6 +4,11 @@
 Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
 Parser::~Parser(){}
 
+
+void Parser::badCmd(userData &user) {
+  Sock.SendData(user.userName, std::string("400 ") + ServerName " " + user.recvString + " :unknow cmd" );
+}
+
 /// @brief use to build a message to send
 /// @param type 
 /// @param msg %u = user.userName, %n = user.nickName, %i could add ip ?
@@ -132,18 +137,20 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
         user.currentAction++;
     }
     //! user
-    if (split[0] == "USER" && LV(user.currentAction, e_notNameSet)) {
+    else if (split[0] == "USER" && LV(user.currentAction, e_notNameSet)) {
       if (setUserInfo(user))
         user.currentAction++;
     }
-    // ? PONG :)
-    if (split[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
+    //? PONG :)
+    else if (split[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
       MSG_PONG(user.userFD, split[1]);
       std::cout << user.userName << " :PING, " << std::endl; //? dev can be remove
     }
     else if (user.currentAction == 0) {
       kickUser(index, MSG_ErrSaslFail, user); //!if user send shit witout giving a valid password
     }
+    else
+      badCmd(user);
     //dev messasge  *v*
     std::cout << "Received: " + user.recvString;    // Data Received
 }
