@@ -9,6 +9,13 @@ void Parser::badCmd(userData &user) {
   Sock.SendData(user.userName, std::string("400 ") + ServerName " " + user.recvString + " :unknow cmd" );
 }
 
+
+void  Parser::allReadyRegistered(userData &user) {
+  Sock.SendData(user.userName, ServerName " :You may not reregister");
+}
+
+
+
 /// @brief use to build a message to send
 /// @param type 
 /// @param msg %u = user.userName, %n = user.nickName, %i could add ip ?
@@ -98,7 +105,7 @@ bool Parser::testPassWord(std::string &pass, userData &user, vectorIT& index) {
     return true;
   }
   else if (pass == Sock.GetPassword()) {
-    
+    //ERR_ALREADYREGISTERED (462)
     return false;
   }
   kickUser(index, MSG_PassMisMatch, user);
@@ -140,6 +147,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     else if (split[0] == "USER" && LV(user.currentAction, e_notNameSet)) {
       if (setUserInfo(user))
         user.currentAction++;
+        //!ERR_ALREADYREGISTERED (462)
     }
     //? PONG :)
     else if (split[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {

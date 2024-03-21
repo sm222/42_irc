@@ -24,6 +24,7 @@ public:
     //*    //
     void        kickUser(vectorIT& index, const char* reasons, userData &user);
     void        badCmd(userData &user);
+    void        allReadyRegistered(userData &user);
     //*    //
     
     // Im calling this in my socket class, everytime we get new Data from Client
@@ -32,6 +33,7 @@ public:
 private:
     Socket&     Sock;
     #define MSG_PONG(user, ip) Sock.SendData(user, std::string("PONG ") + ip);
+    #define MSG_ReadyRegistered(user) allReadyRegistered(user);
     //look if the user doing the acorder lever of Action
     #define LV(userLv, askLv) (userLv >= askLv)
     //
