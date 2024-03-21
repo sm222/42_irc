@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "_header.h"
 #include <iostream>
 
 Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
@@ -26,6 +27,22 @@ std::string  Parser::makeMessage(t_code const type, const std::string msg, const
         result += msg[i];
     }
     return (result);
+}
+
+bool	isBetween(std::string str, size_t pos, char c)
+{
+	bool	between_c;
+
+	between_c = false;
+	if (pos == 0 || str.empty() || str.length() >= pos)
+		return (false);
+	for (size_t i = 0; i <= pos; i++) {
+		if (str[i] == c && !between_c)
+			between_c = !between_c;
+	}
+	if (between_c)
+		return (true);
+	return (false);
 }
 
 void  Parser::kickUser(vectorIT& index, const char* reasons, userData &user) {
@@ -61,23 +78,25 @@ vec_str Parser::TokenizeMessage(std::string message){
   vec_str vec;
   size_t pos = 0;
   size_t old_pos = 0;
-  // bool inQuote = false;
   size_t end = message.find_last_not_of("\n");
+
   if (end != std::string::npos)
     message.erase(end, 1);
   end = message.find_last_not_of("\r");
   if (end != std::string::npos)
     message.erase(end, 1);
   if (message.empty())
-    return (vec);
+    return vec;
   while ((pos = message.find(" ", old_pos)) != std::string::npos) {
+    if (!isBetween(message, pos, '"')){
       std::string token = message.substr(old_pos, pos - old_pos);
       if (!token.empty())
-          vec.push_back(token);
-      old_pos = pos + 1;
+        vec.push_back(token);
+    }
+    old_pos = pos + 1;
   }
   if (old_pos < message.length())
-      vec.push_back(message.substr(old_pos));
+    vec.push_back(message.substr(old_pos));
   for (size_t i = 0; i < vec.size(); ++i)
       std::cout << "{" << i << "}" << vec[i] << "|" << std::endl;
   return (vec);
@@ -117,11 +136,12 @@ bool Parser::testPassWord(std::string &pass, userData &user, vectorIT& index) {
 *                                                *
 */
 
-
 void    Parser::ParseData(userData& user, vectorIT& index) {
+    (void) index;
     Channels& AllChannels = Sock.channels;
     (void)AllChannels;
     vec_str split = TokenizeMessage(user.recvString);
+
     if (split.empty()) {
       std::cout << "empty\n"; //! fix segfault
       return ;
