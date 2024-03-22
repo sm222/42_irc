@@ -5,8 +5,14 @@ Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
 Parser::~Parser(){}
 
 
+//! shoud be modefy for bad arg in cmd
+//! @param user ERR_UNKNOWNERROR (400) 
 void Parser::badCmd(userData &user) {
-  Sock.SendData(user.userFD, std::string("400 ") + ServerName " " + user.recvString + " :unknow cmd" );
+  Sock.SendData(user.userFD, std::string("400 ") + ServerName " " + user.recvString + " :ERR_UNKNOWNERROR" );
+}
+
+void  Parser::unknowCommand(userData &user) {
+  Sock.SendData(user.userFD, std::string("421 ") + ServerName " " + user.recvString + " :unknow cmd" );
 }
 
 
@@ -61,15 +67,7 @@ bool Parser::setUserInfo(userData& user) {
 }
 
 // ! not final, use as templet
-bool    Parser::joinChanel(const userData& user, const std::string chanelName) {
-  std::string tmp;
-  if (Sock.channels.Channel_AlreadyExist(chanelName) == true) {
-    Sock.channels.Channel_Join(user.userName, chanelName);
-    tmp = makeMessage(e_rplTopic, chanelName, user);
-    tmp += " " + Sock.channels.Channel_Get_Topic(chanelName);
-    return true;
-  }
-    Sock.channels.Channel_Create(user.userName, chanelName);
+bool    Parser::joinChanel(const userData& user, const std::vector<std::string>& vec) {
   return true;
 }
 
@@ -158,11 +156,14 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
       MSG_PONG(user.userFD, split[1]);
       std::cout << user.userName << " :PING, " << std::endl; //? dev can be remove
     }
+    else if (split[0] == "JOIN") {
+      
+    }
     else if (user.currentAction == 0) {
       kickUser(index, MSG_ErrSaslFail, user); //!if user send shit witout giving a valid password
     }
     else
-      badCmd(user);
+      unknowCommand(user);
     //dev messasge  *v*
     std::cout << "Received: " + user.recvString;    // Data Received
 }
