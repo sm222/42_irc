@@ -22,7 +22,7 @@ public:
     bool        joinChanel(const userData& user, const std::string chanelName);
     bool        testPassWord(std::string &pass, userData &user, vectorIT& index);
     //*    //
-    void        kickUser(vectorIT& index, const char* reasons, userData &user);
+    void        kickUser(vectorIT& index, const char* reasons, const userData &user);
     void        badCmd(userData &user);
     void        allReadyRegistered(userData &user);
     //*    //

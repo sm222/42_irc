@@ -6,12 +6,12 @@ Parser::~Parser(){}
 
 
 void Parser::badCmd(userData &user) {
-  Sock.SendData(user.userName, std::string("400 ") + ServerName " " + user.recvString + " :unknow cmd" );
+  Sock.SendData(user.userFD, std::string("400 ") + ServerName " " + user.recvString + " :unknow cmd" );
 }
 
 
 void  Parser::allReadyRegistered(userData &user) {
-  Sock.SendData(user.userName, ServerName " :You may not reregister");
+  Sock.SendData(user.userFD, ServerName " :You may not reregister");
 }
 
 
@@ -40,12 +40,16 @@ std::string  Parser::makeMessage(t_code const type, const std::string msg, const
     return (result);
 }
 
-void  Parser::kickUser(vectorIT& index, const char* reasons, userData &user) {
+void  Parser::kickUser(vectorIT& index, const char* reasons, const userData &user) {
     Sock.SendData(user.userFD, reasons);
     Sock.KickUser(index);
 }
 
 bool Parser::setUserInfo(userData& user) {
+  if (user.currentAction > e_notNameSet) {
+    allReadyRegistered(user);
+    return false;
+  }
   size_t  i = 0;
   while (5 + i < user.recvString.size() && user.recvString[5 + i] != ' ') {i++;}
   user.userName = user.recvString.substr(5, i);
@@ -100,13 +104,13 @@ void TEST(std::string str){
 }
 
 bool Parser::testPassWord(std::string &pass, userData &user, vectorIT& index) {
-  if (pass == Sock.GetPassword() && user.currentAction == e_notConfim){
+  if (user.currentAction > e_notConfim) {
+    allReadyRegistered(user);
+    return false;
+  }
+  else if (pass == Sock.GetPassword() && user.currentAction == e_notConfim){
     std::cout << "Valid password" << std::endl;
     return true;
-  }
-  else if (pass == Sock.GetPassword()) {
-    //ERR_ALREADYREGISTERED (462)
-    return false;
   }
   kickUser(index, MSG_PassMisMatch, user);
   std::cout << "Bad password" << std::endl;
