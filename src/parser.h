@@ -18,7 +18,7 @@ public:
 
     //TODO: v
     std::string makeMessage(t_code const type, const std::string msg , const userData& user);
-    bool        setUserInfo(userData& user);
+    bool        setUserInfo(userData& user, vec_str vec);
     bool        joinChanel(const userData& user, const std::vector<std::string>& vec);
     bool        testPassWord(std::string &pass, userData &user, vectorIT& index);
     //*    //

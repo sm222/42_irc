@@ -24,13 +24,17 @@ void  Parser::allReadyRegistered(userData &user) {
 
 /// @brief use to build a message to send
 /// @param type 
-/// @param msg %u = user.userName, %n = user.nickName, %i could add ip ?
+/// @param msg %u = user.userName, %n = user.nickName, %i
 /// @param user 
 /// @return 
-//** don't use, out of date
 std::string  Parser::makeMessage(t_code const type, const std::string msg, const userData& user) {
-    std::string result = MType[type];
-    result += " " ServerName " ";
+    std::string result;
+    if (type > -1) {
+      result = MType[type];
+      result += " " + user.nickName + " : ";
+    }
+    else
+      result = "";
     for (size_t i = 0; i < msg.size(); i++) {
       if (msg[i] == '%' && msg[i + 1] == 'u') {
         result += user.userName;
@@ -43,6 +47,7 @@ std::string  Parser::makeMessage(t_code const type, const std::string msg, const
       else
         result += msg[i];
     }
+    std::cout << RED "|" << CYN  << result << RESET << "\n";
     return (result);
 }
 
@@ -51,25 +56,50 @@ void  Parser::kickUser(vectorIT& index, const char* reasons, const userData &use
     Sock.KickUser(index);
 }
 
-bool Parser::setUserInfo(userData& user) {
-  if (user.currentAction > e_notNameSet) {
-    allReadyRegistered(user);
-    return false;
-  }
-  size_t  i = 0;
-  while (5 + i < user.recvString.size() && user.recvString[5 + i] != ' ') {i++;}
-  user.userName = user.recvString.substr(5, i);
-  while (i < user.recvString.size() && user.recvString[i] != ':') {i++;}
-  user.nickName = user.recvString.substr(i + 1, i - user.recvString.size());
-  std::cout << "name = " << user.userName << " ,nick name = " << user.nickName << std::endl;
-  Sock.SendData(user.userFD, makeMessage(e_welcom, ":Welcome to the 42irc %n", user));
+/// @brief not final but work for now
+/// @param user 
+/// @param vec 
+/// @return 
+bool Parser::setUserInfo(userData& user, vec_str vec) {
+  //if (user.currentAction > e_notNameSet) {
+  //  allReadyRegistered(user);
+  //  return false;
+  //}
+  user.userName = vec[1];
+  user.nickName = vec[4].c_str() + 1;
+  Sock.SendData(user.userFD, makeMessage(e_welcom, "Welcome to the 42irc %n", user));
+  //std::cout << "name = " << user.userName << " ,nick name = " << user.nickName << std::endl;
   return true;
 }
 
 // ! not final, use as templet
 bool    Parser::joinChanel(const userData& user, const std::vector<std::string>& vec) {
+  size_t  list = 1;
+
+  if (vec.size() > 1 && vec[list][0] == '#') {
+    const char  *tmp = vec[list].c_str() + 1;
+    if (Sock.channels.Channel_AlreadyExist(tmp)) {
+      Sock.channels.Channel_Join(user.userName, tmp);
+      Sock.SendData(user.userFD, makeMessage(e_none, std::string(":%n JOIN ") + vec[list], user));
+      return false;
+    }
+    else {
+      Sock.channels.Channel_Create(user.userName, tmp);
+      Sock.channels.Channel_Join(user.userName, tmp);
+      Sock.SendData(user.userFD, makeMessage(e_none, std::string(":%n JOIN ") + vec[list], user));
+      //? :Olivier JOIN #a    
+      //?  ^         ^   ^    
+      //?  |         |   |    
+      //?  |       CMD   |    
+      //?  NAME          |    
+      //?          CHANEL NANE
+    }
+  }
   return true;
 }
+  //(void)user;
+  //(void)vec;
+  //Sock.
 
 vec_str Parser::TokenizeMessage(std::string message){
   vec_str vec;
@@ -92,13 +122,9 @@ vec_str Parser::TokenizeMessage(std::string message){
   }
   if (old_pos < message.length())
       vec.push_back(message.substr(old_pos));
-  for (size_t i = 0; i < vec.size(); ++i)
-      std::cout << "{" << i << "}" << vec[i] << "|" << std::endl;
+  //for (size_t i = 0; i < vec.size(); ++i)
+  //    std::cout << "{" << i << "}" << vec[i] << "|" << std::endl;
   return (vec);
-}
-
-void TEST(std::string str){
-  std::cout << str << std::endl;
 }
 
 bool Parser::testPassWord(std::string &pass, userData &user, vectorIT& index) {
@@ -107,11 +133,11 @@ bool Parser::testPassWord(std::string &pass, userData &user, vectorIT& index) {
     return false;
   }
   else if (pass == Sock.GetPassword() && user.currentAction == e_notConfim){
-    std::cout << "Valid password" << std::endl;
+    std::cout << GRN << "Valid password" << RESET << std::endl;
     return true;
   }
   kickUser(index, MSG_PassMisMatch, user);
-  std::cout << "Bad password" << std::endl;
+  std::cout << RED <<  "Bad password" << RESET << std::endl;
   return false;
 }
 
@@ -140,32 +166,36 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
       std::cout << "empty\n"; //! fix segfault
       return ;
     }
-    std::cout << "user - " << user.userName << " - currentAction - > " << user.currentAction << std::endl;
+    std::cout << "user - " << user.userName << "currentAction\t\t\t\t\t\t\t>" << user.currentAction << std::endl;
     if (split[0] == "PASS" && LV(user.currentAction, e_notConfim)) {
       if (testPassWord(split[1], user, index))
-        user.currentAction++;
+        user.currentAction = 10;
+    }
+    else if (user.currentAction == 0) {
+      kickUser(index, MSG_ErrSaslFail, user); //!if user send shit witout giving a valid password
     }
     //! user
     else if (split[0] == "USER" && LV(user.currentAction, e_notNameSet)) {
-      if (setUserInfo(user))
+      if (setUserInfo(user, split))
         user.currentAction++;
         //!ERR_ALREADYREGISTERED (462)
     }
     //? PONG :)
     else if (split[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
       MSG_PONG(user.userFD, split[1]);
-      std::cout << user.userName << " :PING, " << std::endl; //? dev can be remove
+      std::cout << ORG << user.userName << RESET << " :PING, " << std::endl; //? dev can be remove
     }
     else if (split[0] == "JOIN") {
-      
+      joinChanel(user, split);
     }
-    else if (user.currentAction == 0) {
-      kickUser(index, MSG_ErrSaslFail, user); //!if user send shit witout giving a valid password
+    else if (split[0] == "NICK") {
+      user.nickName = split[1];
+      makeMessage(e_none, std::string("NICK") + split[1] , user);
     }
-    else
-      unknowCommand(user);
+    //else
+    //  unknowCommand(user);
     //dev messasge  *v*
-    std::cout << "Received: " + user.recvString;    // Data Received
+    //std::cout << "Received: " + user.recvString;    // Data Received
 }
 
 
