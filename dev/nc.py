@@ -8,9 +8,10 @@ HOST = '10.12.5.7'
 PORT = 2000
 
 commands = [
-    ("PASS a\r\n", 1),
-    ("NICK sm222\r\n", 2),
-    ("USER antoine 0 * :sm222\r\n", 0.5)
+    ("PASS a\r\n", 0.5),
+    ("NICK sm222\r\n", 0.5),
+    ("USER antoine 0 * :sm222\r\n", 0.5),
+    ("JOIN #a\r\n", 0.5)
 ]
 
 def sendcommands(s):
