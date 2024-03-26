@@ -8,11 +8,11 @@ Parser::~Parser(){}
 //! shoud be modefy for bad arg in cmd
 //! @param user ERR_UNKNOWNERROR (400) 
 void Parser::badCmd(userData &user) {
-  Sock.SendData(user.userFD, std::string("400 ") + ServerName " " + user.recvString + " :ERR_UNKNOWNERROR" );
+  Sock.SendData(user.userFD, string("400 ") + ServerName " " + user.recvString + " :ERR_UNKNOWNERROR" );
 }
 
 void  Parser::unknowCommand(userData &user) {
-  Sock.SendData(user.userFD, std::string("421 ") + ServerName " " + user.recvString + " :unknow cmd" );
+  Sock.SendData(user.userFD, string("421 ") + ServerName " " + user.recvString + " :unknow cmd" );
 }
 
 
@@ -27,8 +27,8 @@ void  Parser::allReadyRegistered(userData &user) {
 /// @param msg %u = user.userName, %n = user.nickName, %i
 /// @param user 
 /// @return 
-std::string  Parser::makeMessage(t_code const type, const std::string msg, const userData& user) {
-    std::string result;
+string  Parser::makeMessage(t_code const type, const string msg, const userData& user) {
+    string result;
     if (type > -1) {
       result = MType[type];
       result += " " + user.nickName + " : ";
@@ -72,21 +72,32 @@ bool Parser::setUserInfo(userData& user, vec_str vec) {
   return true;
 }
 
-// ! not final, use as templet
-bool    Parser::joinChanel(const userData& user, const std::vector<std::string>& vec) {
+short     Parser::_tryJoinChanel(const userData& user, const string name, const string pass) {
+  const string& _pass = Sock.channels.Channel_Get_Password(name);
+  if (!_pass.empty() && _pass != pass) {
+    return false;
+  }
+  (void)user;
+  //if (Sock.channels.Channel_Join(user+.userName, name))
+  return true;
+}
+
+
+// ? not final, use as templet
+bool    Parser::joinChanel(const userData& user, const std::vector<string>& vec) {
   size_t  list = 1;
 
   if (vec.size() > 1 && vec[list][0] == '#') {
     const char  *tmp = vec[list].c_str() + 1;
     if (Sock.channels.Channel_AlreadyExist(tmp)) {
       Sock.channels.Channel_Join(user.userName, tmp);
-      Sock.SendData(user.userFD, makeMessage(e_none, std::string(":%n JOIN ") + vec[list], user));
+      Sock.SendData(user.userFD, makeMessage(e_none, string(":%n JOIN ") + vec[list], user));
       return false;
     }
     else {
       Sock.channels.Channel_Create(user.userName, tmp);
       Sock.channels.Channel_Join(user.userName, tmp);
-      Sock.SendData(user.userFD, makeMessage(e_none, std::string(":%n JOIN ") + vec[list], user));
+      Sock.SendData(user.userFD, makeMessage(e_none, string(":%n JOIN ") + vec[list], user));
       //? :Olivier JOIN #a    
       //?  ^         ^   ^    
       //?  |         |   |    
@@ -101,21 +112,21 @@ bool    Parser::joinChanel(const userData& user, const std::vector<std::string>&
   //(void)vec;
   //Sock.
 
-vec_str Parser::TokenizeMessage(std::string message){
+vec_str Parser::TokenizeMessage(string message){
   vec_str vec;
   size_t pos = 0;
   size_t old_pos = 0;
   // bool inQuote = false;
   size_t end = message.find_last_not_of("\n");
-  if (end != std::string::npos)
+  if (end != string::npos)
     message.erase(end, 1);
   end = message.find_last_not_of("\r");
-  if (end != std::string::npos)
+  if (end != string::npos)
     message.erase(end, 1);
   if (message.empty())
     return (vec);
-  while ((pos = message.find(" ", old_pos)) != std::string::npos) {
-      std::string token = message.substr(old_pos, pos - old_pos);
+  while ((pos = message.find(" ", old_pos)) != string::npos) {
+      string token = message.substr(old_pos, pos - old_pos);
       if (!token.empty())
           vec.push_back(token);
       old_pos = pos + 1;
@@ -127,7 +138,7 @@ vec_str Parser::TokenizeMessage(std::string message){
   return (vec);
 }
 
-bool Parser::testPassWord(std::string &pass, userData &user, vectorIT& index) {
+bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
   if (user.currentAction > e_notConfim) {
     allReadyRegistered(user);
     return false;
@@ -190,7 +201,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
     else if (split[0] == "NICK") {
       user.nickName = split[1];
-      makeMessage(e_none, std::string("NICK") + split[1] , user);
+      makeMessage(e_none, string("NICK ") + split[1] , user);
     }
     //else
     //  unknowCommand(user);

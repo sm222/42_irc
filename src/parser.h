@@ -5,6 +5,7 @@
 #include <cstring>
 
 
+using std::string;
 //type use
 typedef std::vector<std::string> vec_str;
 
@@ -14,12 +15,12 @@ class Parser {
 public:
     Parser(Socket& socket);
     ~Parser();
-    vec_str TokenizeMessage(std::string message);
+    vec_str TokenizeMessage(string message);
 
     //TODO: v
-    std::string makeMessage(t_code const type, const std::string msg , const userData& user);
+    std::string makeMessage(t_code const type, const string msg , const userData& user);
     bool        setUserInfo(userData& user, vec_str vec);
-    bool        joinChanel(const userData& user, const std::vector<std::string>& vec);
+    bool        joinChanel(const userData& user, const std::vector<string>& vec);
     bool        testPassWord(std::string &pass, userData &user, vectorIT& index);
     //*    //
     void        kickUser(vectorIT& index, const char* reasons, const userData &user);
@@ -33,7 +34,8 @@ public:
 
 private:
     Socket&     Sock;
-    #define     MSG_PONG(user, ip) Sock.SendData(user, std::string("PONG ") + ip);
+    short       _tryJoinChanel(const userData& user, const string name, const string pass);
+    #define     MSG_PONG(user, ip) Sock.SendData(user, string("PONG ") + ip);
     #define     MSG_ReadyRegistered(user) allReadyRegistered(user);
     //          look if the user doing the acorder lever of Action
     #define     LV(userLv, askLv) (userLv >= askLv)
