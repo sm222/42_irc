@@ -193,7 +193,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
     //? PONG :)
     else if (split[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
-      MSG_PONG(user.userFD, split[1]);
+      Sock.SendData(user.userFD, string("PONG ") + split[1]);
       std::cout << ORG << user.userName << RESET << " :PING, " << std::endl; //? dev can be remove
     }
     else if (split[0] == "JOIN") {
@@ -201,12 +201,12 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
     else if (split[0] == "NICK") {
       user.nickName = split[1];
-      makeMessage(e_none, string("NICK ") + split[1] , user);
+      Sock.SendData(user.userFD, string("NICK ") + split[1]);
     }
     //else
     //  unknowCommand(user);
     //dev messasge  *v*
-    //std::cout << "Received: " + user.recvString;    // Data Received
+    std::cout << "Received: " + user.recvString;    // Data Received
 }
 
 

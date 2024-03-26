@@ -35,8 +35,6 @@ public:
 private:
     Socket&     Sock;
     short       _tryJoinChanel(const userData& user, const string name, const string pass);
-    #define     MSG_PONG(user, ip) Sock.SendData(user, string("PONG ") + ip);
-    #define     MSG_ReadyRegistered(user) allReadyRegistered(user);
     //          look if the user doing the acorder lever of Action
     #define     LV(userLv, askLv) (userLv >= askLv)
     //
