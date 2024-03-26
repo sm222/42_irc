@@ -55,15 +55,15 @@ bool Parser::setUserInfo(userData& user, vec_str vec) {
 short     Parser::_tryJoinChanel(const userData& user, const string name, const string pass) {
   const string& _pass = Sock.channels.Channel_Get_Password(name);
   if (!_pass.empty() && _pass != pass) {
+    //! bad PASSWORD
     return false;
   }
   (void)user;
-  //if (Sock.channels.Channel_Join(user+.userName, name))
   return true;
 }
 
 // ? not final, use as templet
-bool    Parser::joinChanel(const userData& user, const std::vector<string>& vec) {
+bool    Parser::joinChanel(const userData& user, const vec_str& vec) {
   size_t  list = 1;
 
   if (vec.size() > 1 && vec[list][0] == '#') {
