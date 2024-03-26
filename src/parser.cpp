@@ -5,6 +5,21 @@
 Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
 Parser::~Parser(){}
 
+bool	isBetween(std::string str, size_t pos, char c)
+{
+	bool	between_c;
+
+	between_c = false;
+	if (pos == 0 || str.empty() || str.length() >= pos)
+		return (false);
+	for (size_t i = 0; i <= pos; i++) {
+		if (str[i] == c && !between_c)
+			between_c = !between_c;
+	}
+	if (between_c)
+		return (true);
+	return (false);
+}
 
 //! shoud be modefy for bad arg in cmd
 //! @param user ERR_UNKNOWNERROR (400) 
