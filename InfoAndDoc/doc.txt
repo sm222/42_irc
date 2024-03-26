@@ -4,7 +4,7 @@ https://modern.ircdocs.horse/
 
 /server add O_O 10.12.5.7/2000 -notls -password=a
 /set irc.server.O_O.username "Oli"
-/set irc.server.O_O.realname "Olivier"
+/set irc.server.O_O.realname "Oliv-[]()*ier"
 /connect O_O
 /join #a
 

@@ -1,9 +1,25 @@
 #include "parser.h"
+#include "_header.h"
 #include <iostream>
 
 Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
 Parser::~Parser(){}
 
+bool	isBetween(std::string str, size_t pos, char c)
+{
+	bool	between_c;
+
+	between_c = false;
+	if (pos == 0 || str.empty() || str.length() >= pos)
+		return (false);
+	for (size_t i = 0; i <= pos; i++) {
+		if (str[i] == c && !between_c)
+			between_c = !between_c;
+	}
+	if (between_c)
+		return (true);
+	return (false);
+}
 
 //! shoud be modefy for bad arg in cmd
 //! @param user ERR_UNKNOWNERROR (400) 
@@ -19,7 +35,6 @@ void  Parser::unknowCommand(userData &user) {
 void  Parser::allReadyRegistered(userData &user) {
   Sock.SendData(user.userFD, ServerName " :You may not reregister");
 }
-
 
 
 /// @brief use to build a message to send
@@ -112,29 +127,31 @@ bool    Parser::joinChanel(const userData& user, const std::vector<string>& vec)
   //(void)vec;
   //Sock.
 
-vec_str Parser::TokenizeMessage(string message){
+vec_str Parser::Tokenize(std::string message, char c){
   vec_str vec;
   size_t pos = 0;
   size_t old_pos = 0;
-  // bool inQuote = false;
   size_t end = message.find_last_not_of("\n");
-  if (end != string::npos)
+
+  if (end != std::string::npos)
     message.erase(end, 1);
   end = message.find_last_not_of("\r");
   if (end != string::npos)
     message.erase(end, 1);
   if (message.empty())
-    return (vec);
-  while ((pos = message.find(" ", old_pos)) != string::npos) {
-      string token = message.substr(old_pos, pos - old_pos);
+    return vec;
+  while ((pos = message.find(c, old_pos)) != std::string::npos) {
+    if (!isBetween(message, pos, '"')){
+      std::string token = message.substr(old_pos, pos - old_pos);
       if (!token.empty())
-          vec.push_back(token);
-      old_pos = pos + 1;
+        vec.push_back(token);
+    }
+    old_pos = pos + 1;
   }
   if (old_pos < message.length())
-      vec.push_back(message.substr(old_pos));
-  //for (size_t i = 0; i < vec.size(); ++i)
-  //    std::cout << "{" << i << "}" << vec[i] << "|" << std::endl;
+    vec.push_back(message.substr(old_pos));
+  for (size_t i = 0; i < vec.size(); ++i)
+      std::cout << "{" << i << "}" << vec[i] << "|" << std::endl;
   return (vec);
 }
 
@@ -168,15 +185,17 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
 *                                                *
 */
 
-
 void    Parser::ParseData(userData& user, vectorIT& index) {
+    (void) index;
     Channels& AllChannels = Sock.channels;
     (void)AllChannels;
-    vec_str split = TokenizeMessage(user.recvString);
+    vec_str split = Tokenize(user.recvString, ' ');
+
     if (split.empty()) {
       std::cout << "empty\n"; //! fix segfault
       return ;
     }
+
     std::cout << "user - " << user.userName << "currentAction\t\t\t\t\t\t\t>" << user.currentAction << std::endl;
     if (split[0] == "PASS" && LV(user.currentAction, e_notConfim)) {
       if (testPassWord(split[1], user, index))
@@ -198,6 +217,18 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
     else if (split[0] == "JOIN") {
       joinChanel(user, split);
+    }
+    else if (split[0] == "KICK") {
+      //KICK
+    }
+    else if (split[0] == "INVITE") {
+      //KICK
+    }
+    else if (split[0] == "TOPIC") {
+      //KICK
+    }
+    else if (split[0] == "MODE") {
+      //KICK
     }
     else if (split[0] == "NICK") {
       user.nickName = split[1];
