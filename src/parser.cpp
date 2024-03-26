@@ -37,7 +37,6 @@ void  Parser::allReadyRegistered(userData &user) {
 }
 
 
-
 /// @brief use to build a message to send
 /// @param type 
 /// @param msg %u = user.userName, %n = user.nickName, %i
@@ -128,7 +127,7 @@ bool    Parser::joinChanel(const userData& user, const std::vector<string>& vec)
   //(void)vec;
   //Sock.
 
-vec_str Parser::TokenizeMessage(std::string message, char c){
+vec_str Parser::Tokenize(std::string message, char c){
   vec_str vec;
   size_t pos = 0;
   size_t old_pos = 0;
@@ -190,12 +189,13 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     (void) index;
     Channels& AllChannels = Sock.channels;
     (void)AllChannels;
-    vec_str split = TokenizeMessage(user.recvString, ' ');
+    vec_str split = Tokenize(user.recvString, ' ');
 
     if (split.empty()) {
       std::cout << "empty\n"; //! fix segfault
       return ;
     }
+
     std::cout << "user - " << user.userName << "currentAction\t\t\t\t\t\t\t>" << user.currentAction << std::endl;
     if (split[0] == "PASS" && LV(user.currentAction, e_notConfim)) {
       if (testPassWord(split[1], user, index))
@@ -217,6 +217,18 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
     else if (split[0] == "JOIN") {
       joinChanel(user, split);
+    }
+    else if (split[0] == "KICK") {
+      //KICK
+    }
+    else if (split[0] == "INVITE") {
+      //KICK
+    }
+    else if (split[0] == "TOPIC") {
+      //KICK
+    }
+    else if (split[0] == "MODE") {
+      //KICK
     }
     else if (split[0] == "NICK") {
       user.nickName = split[1];
