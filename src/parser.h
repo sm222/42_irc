@@ -14,7 +14,7 @@ class Parser {
 public:
     Parser(Socket& socket);
     ~Parser();
-    vec_str TokenizeMessage(std::string message);
+    vec_str TokenizeMessage(std::string message, char c);
 
     //TODO: v
     std::string makeMessage(t_code const type, const std::string msg , const userData& user);

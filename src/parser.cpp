@@ -74,7 +74,7 @@ bool    Parser::joinChanel(const userData& user, const std::string chanelName) {
   return true;
 }
 
-vec_str Parser::TokenizeMessage(std::string message){
+vec_str Parser::TokenizeMessage(std::string message, char c){
   vec_str vec;
   size_t pos = 0;
   size_t old_pos = 0;
@@ -87,7 +87,7 @@ vec_str Parser::TokenizeMessage(std::string message){
     message.erase(end, 1);
   if (message.empty())
     return vec;
-  while ((pos = message.find(" ", old_pos)) != std::string::npos) {
+  while ((pos = message.find(c, old_pos)) != std::string::npos) {
     if (!isBetween(message, pos, '"')){
       std::string token = message.substr(old_pos, pos - old_pos);
       if (!token.empty())
@@ -140,7 +140,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     (void) index;
     Channels& AllChannels = Sock.channels;
     (void)AllChannels;
-    vec_str split = TokenizeMessage(user.recvString);
+    vec_str split = TokenizeMessage(user.recvString, ' ');
 
     if (split.empty()) {
       std::cout << "empty\n"; //! fix segfault
