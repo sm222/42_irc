@@ -3,6 +3,8 @@
 #include "socket.h"
 #include "Channels.h" // Not sure if it belongs there
 #include <cstring>
+#include <iostream>
+
 
 
 using std::string;
@@ -23,7 +25,7 @@ public:
     bool        joinChanel(const userData& user, const std::vector<string>& vec);
     bool        testPassWord(std::string &pass, userData &user, vectorIT& index);
     //*    //
-    void        kickUser(vectorIT& index, const char* reasons, const userData &user);
+    void        kickUser(vectorIT& index, const string reasons, const userData &user);
     void        badCmd(userData &user);
     void        unknowCommand(userData &user);
     void        allReadyRegistered(userData &user);
