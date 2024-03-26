@@ -16,6 +16,22 @@
 // Others
 #include "exception.h"
 
+/// <<<<<<<<<<<<<<<<<<<<<<<         DEV
+# ifndef COLORS
+# define RED	"\x1B[31m"
+# define GRN	"\x1B[32m"
+# define YEL	"\x1B[33m"
+# define BLU	"\x1B[34m"
+# define MAG	"\x1B[35m"
+# define CYN	"\x1B[36m"
+# define WHT	"\x1B[37m"
+# define ORG	"\x1b[38;5;202m"
+# define PIK	"\x1b[38;5;176m"
+# define TOX	"\x1b[38;5;190m"
+# define RESET	"\x1B[0m"
+# define CLE	"\e[1;1H\e[2J"
+# endif
+
 // +++ enum +++
 
 enum e_ActionLv {
@@ -36,12 +52,14 @@ enum e_ActionLv {
 #define MSG_RplTopic        (channel, topic) "332 " ServerName " " + channel + " " + topic        //<client> <channel> :<topic>
 
 // error //
-#define MSG_PassMisMatch    "464 " ServerName " :password incorect"                                                //<client> :Password incorrect
-#define MSG_ErrSaslFail     "904 " ServerName " :SASL authentication failed"
+#define MSG_ERR_UNKNOWNERROR     "400 " ServerName " :SASL authentication failed"
+#define MSG_PassMisMatch         "464 " ServerName " :password incorect"                                                //<client> :Password incorrect
+#define MSG_ErrSaslFail          "904 " ServerName " :SASL authentication failed"
 
 
 typedef enum e_type {
-  e_welcom,     // 001
+  e_none = -1,   // -1
+  e_welcom,      // 001
   e_rplTopic,    // 332
   e_passmismatch //464
 } t_code;

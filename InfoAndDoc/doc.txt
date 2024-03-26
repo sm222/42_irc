@@ -2,7 +2,7 @@ doc
 https://modern.ircdocs.horse/
 
 
-/server add O_O 10.12.6.1/2000 -notls -password="a askdhgashd askdhgasd"
+/server add O_O 10.12.5.8/2000 -notls -password=a
 /set irc.server.O_O.username "Oli"
 /set irc.server.O_O.realname "Oliv-[]()*ier"
 /connect O_O
