@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "_header.h"
 #include <cctype>
 
 
@@ -20,9 +21,13 @@ bool	isBetween(std::string str, size_t pos, char c)
 	return (false);
 }
 
+/// @brief check if str isalpha/isdigit and dont start with a digit
+/// @param str a string 
+/// @param other a string to add chars in the filter
+/// @return bool
 bool isValidStr(std::string str, std::string other){
   for (size_t i = 0; i < str.length(); i++) {
-    if (!isdigit(str[0]) || (isalpha(str[i]) && isdigit(str[i]) && other.find(str[i]) != std::string::npos))
+    if (!isdigit(str[0]) && isalpha(str[i]) && isdigit(str[i]) && other.find(str[i]) != std::string::npos)
       return true;
   }
   return false;
@@ -32,6 +37,14 @@ int charCount(std::string str, char c){
   return std::count(str.begin(), str.end(), c);
 }
 
+void print_vec(vec_str vec, std::string name){
+  if (vec.empty())
+    return;
+  std::cout << RED "|" RESET << name;
+  for (size_t i = 0; i < vec.size(); ++i)
+      std::cout <<  "[" << i << "]" YEL << vec[i] << RESET "|";
+  std::cout << std::endl;
+}
 
 //CLASS
 
@@ -75,29 +88,24 @@ vec_str Parser::Tokenize(std::string message, char c){
   vec_str vec;
   size_t pos = 0;
   size_t old_pos = 0;
-  size_t end = message.find_last_not_of("\n");
+  size_t end = message.find_last_of("\n");
 
   if (end != std::string::npos)
     message.erase(end, 1);
-  end = message.find_last_not_of("\r");
-  if (end != string::npos)
+  end = message.find_last_of("\r");
+  if (end != std::string::npos)
     message.erase(end, 1);
   if (message.empty())
     return vec;
   while ((pos = message.find(c, old_pos)) != std::string::npos) {
-    if (!isBetween(message, pos, '"')){
       std::string token = message.substr(old_pos, pos - old_pos);
       if (!token.empty())
         vec.push_back(token);
-    }
     old_pos = pos + 1;
   }
   if (old_pos < message.length())
     vec.push_back(message.substr(old_pos));
-  std::cout << RED "|" RESET;
-  for (size_t i = 0; i < vec.size(); ++i)
-      std::cout <<  "[" << i << "]" YEL << vec[i] << RESET "|";
-  std::cout << std::endl;
+  print_vec(vec, "TOKEN");
   return (vec);
 }
 
@@ -119,30 +127,36 @@ vec_str Parser::Tokenize(std::string message, char c){
 */
 
 void Parser::fnPASS(vec_str vec, userData& user, vectorIT& index){
-  if (isValidStr(vec[1], "-_!@$%?&*|+="))
-    if (testPassWord(vec[1], user, index))
-        user.currentAction = 10;
+  std::cout << RED "|fnPASS" RESET << std::endl;
+  if (testPassWord(vec[1], user, index))
+    user.currentAction = 10;
 }
 
 void Parser::fnUSER(vec_str vec, userData& user){
-  if (isValidStr(vec[1], "-_"))
+  std::cout << RED "|fnUSER" RESET << std::endl;
+  if (isValidStr(vec[1], "-_")){
     if (setUserInfo(user, vec))
         user.currentAction++;
+  }
   // else
-    //!ERR_ALREADYREGISTERED (462)
+    // !ERR_ALREADYREGISTERED (462)
 }
 
 void Parser::fnNICK(vec_str vec, userData& user){
+  std::cout << RED "|fnNICK" RESET << std::endl;
   if (isValidStr(vec[1], "-_")){
     user.nickName = vec[1];
     Sock.SendData(user.userFD, string("NICK ") + vec[1]);
   }
-  // else 
+  // else{
+  //     makeMessage(e_none, "%u %n :Erroneus nickname", user); //"<client> <nick> :Erroneus nickname"
+  // }
   //   // message nickname bad char
     
 }
 
 void Parser::fnJOIN(vec_str vec, userData& user){
+  std::cout << RED "|fnJOIN" RESET << std::endl;
   vec_str channel;
   vec_str key;
 
@@ -151,25 +165,30 @@ void Parser::fnJOIN(vec_str vec, userData& user){
     return;
   if (!vec[1].empty()){
     channel = Tokenize(vec[1], ',');
+    if (!vec[2].empty())
+      key = Tokenize(vec[2], ',');
     for (size_t i = 0; i < channel.size(); i++) {
-        if (channel[i][0] != '#' && channel[i][0] != '&'){
-          //messge invalid channel
+        if (!isValidStr(channel[i], "#&-_") || (channel[i][0] != '#' && channel[i][0] != '&') || channel[i].length() == 1){
+          if (!key.empty() && i < key.size())
+            key.erase(key.begin() + i);
+          channel.erase(channel.begin() + i);
+          i--;
         }
     }
   }
-
-  if (!vec[1].empty())
-    key = Tokenize(vec[2], ',');
-
   if (!channel.empty()){
+    std::string tmp("");
     for (size_t i = 0; i < channel.size(); i++) {
-        if (isValidStr(channel[i], "#&-_")){
-          // joinChanel(user, channel[i]);
-        }
+        if (i < key.size())
+          tmp = key[i];
+          // joinChanel(user, channel[i], tmp[i]);
     }
   }
-  
+  print_vec(channel, "CHANNEL");
+  print_vec(key, "KEY");
 }
+
+/// ####################################################################################################################
 
 void    Parser::ParseData(userData& user, vectorIT& index) {
     (void) index;
