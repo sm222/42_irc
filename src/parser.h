@@ -4,6 +4,8 @@
 #include "Channels.h" // Not sure if it belongs there
 #include <cstring>
 #include <iostream>
+#include <algorithm>
+// #include <cctype>
 
 
 
@@ -30,6 +32,11 @@ public:
     void        unknowCommand(userData &user);
     void        allReadyRegistered(userData &user);
     //*    //
+
+    void        fnUSER(vec_str vec, userData& user);
+    void        fnNICK(vec_str vec, userData& user);
+    void        fnJOIN(vec_str vec, userData& user);
+    void        fnPASS(vec_str vec, userData& user, vectorIT& index);
     
     // Im calling this in my socket class, everytime we get new Data from Client
     void        ParseData(userData& user, vectorIT& index);

@@ -1,7 +1,8 @@
 #include "parser.h"
+#include <cctype>
 
-Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
-Parser::~Parser(){}
+
+//FUNCTION
 
 bool	isBetween(std::string str, size_t pos, char c)
 {
@@ -19,21 +20,23 @@ bool	isBetween(std::string str, size_t pos, char c)
 	return (false);
 }
 
-//! shoud be modefy for bad arg in cmd
-//! @param user ERR_UNKNOWNERROR (400) 
-void Parser::badCmd(userData &user) {
-  Sock.SendData(user.userFD, string("400 ") + ServerName " " + user.recvString + " :ERR_UNKNOWNERROR" );
+bool isValidStr(std::string str, std::string other){
+  for (size_t i = 0; i < str.length(); i++) {
+    if (!isdigit(str[0]) || (isalpha(str[i]) && isdigit(str[i]) && other.find(str[i]) != std::string::npos))
+      return true;
+  }
+  return false;
 }
 
-void  Parser::unknowCommand(userData &user) {
-  Sock.SendData(user.userFD, string("421 ") + ServerName " " + user.recvString + " :unknow cmd" );
+int charCount(std::string str, char c){
+  return std::count(str.begin(), str.end(), c);
 }
 
 
-void  Parser::allReadyRegistered(userData &user) {
-  Sock.SendData(user.userFD, ServerName " :You may not reregister");
-}
+//CLASS
 
+Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
+Parser::~Parser(){}
 
 /// @brief use to build a message to send
 /// @param type 
@@ -91,8 +94,10 @@ vec_str Parser::Tokenize(std::string message, char c){
   }
   if (old_pos < message.length())
     vec.push_back(message.substr(old_pos));
+  std::cout << RED "|" RESET;
   for (size_t i = 0; i < vec.size(); ++i)
-      std::cout << "{" << i << "}" << vec[i] << "|" << std::endl;
+      std::cout <<  "[" << i << "]" YEL << vec[i] << RESET "|";
+  std::cout << std::endl;
   return (vec);
 }
 
@@ -113,54 +118,103 @@ vec_str Parser::Tokenize(std::string message, char c){
 *                                                *
 */
 
+void Parser::fnPASS(vec_str vec, userData& user, vectorIT& index){
+  if (isValidStr(vec[1], "-_!@$%?&*|+="))
+    if (testPassWord(vec[1], user, index))
+        user.currentAction = 10;
+}
+
+void Parser::fnUSER(vec_str vec, userData& user){
+  if (isValidStr(vec[1], "-_"))
+    if (setUserInfo(user, vec))
+        user.currentAction++;
+  // else
+    //!ERR_ALREADYREGISTERED (462)
+}
+
+void Parser::fnNICK(vec_str vec, userData& user){
+  if (isValidStr(vec[1], "-_")){
+    user.nickName = vec[1];
+    Sock.SendData(user.userFD, string("NICK ") + vec[1]);
+  }
+  // else 
+  //   // message nickname bad char
+    
+}
+
+void Parser::fnJOIN(vec_str vec, userData& user){
+  vec_str channel;
+  vec_str key;
+
+  (void)user;
+  if (vec.size() < 2)
+    return;
+  if (!vec[1].empty()){
+    channel = Tokenize(vec[1], ',');
+    for (size_t i = 0; i < channel.size(); i++) {
+        if (channel[i][0] != '#' && channel[i][0] != '&'){
+          //messge invalid channel
+        }
+    }
+  }
+
+  if (!vec[1].empty())
+    key = Tokenize(vec[2], ',');
+
+  if (!channel.empty()){
+    for (size_t i = 0; i < channel.size(); i++) {
+        if (isValidStr(channel[i], "#&-_")){
+          // joinChanel(user, channel[i]);
+        }
+    }
+  }
+  
+}
+
 void    Parser::ParseData(userData& user, vectorIT& index) {
     (void) index;
     Channels& AllChannels = Sock.channels;
     (void)AllChannels;
-    vec_str split = Tokenize(user.recvString, ' ');
+    vec_str token = Tokenize(user.recvString, ' ');
 
-    if (split.empty()) {
+    if (token.empty()) {
       std::cout << "empty\n"; //! fix segfault
       return ;
     }
 
     std::cout << "user - " << user.userName << "currentAction\t\t\t\t\t\t\t>" << user.currentAction << std::endl;
-    if (split[0] == "PASS" && LV(user.currentAction, e_notConfim)) {
-      if (testPassWord(split[1], user, index))
-        user.currentAction = 10;
+    if (token[0] == "PASS" && LV(user.currentAction, e_notConfim)) {
+      fnPASS(token, user, index);
     }
     else if (user.currentAction == 0) {
       kickUser(index, MSG_ErrSaslFail, user); //!if user send shit witout giving a valid password
     }
     //! user
-    else if (split[0] == "USER" && LV(user.currentAction, e_notNameSet)) {
-      if (setUserInfo(user, split))
-        user.currentAction++;
-        //!ERR_ALREADYREGISTERED (462)
+    else if (token[0] == "USER" && LV(user.currentAction, e_notNameSet)) {
+      fnUSER(token, user);
     }
     //? PONG :)
-    else if (split[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
-      Sock.SendData(user.userFD, string("PONG ") + split[1]);
+    else if (token[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
+      Sock.SendData(user.userFD, string("PONG ") + token[1]);
       std::cout << ORG << user.userName << RESET << " :PING, " << std::endl; //? dev can be remove
     }
-    else if (split[0] == "JOIN") {
-      joinChanel(user, split);
+    else if (token[0] == "JOIN") {
+      fnJOIN(token, user);
     }
-    else if (split[0] == "KICK") {
+    else if (token[0] == "KICK") {
       //KICK
     }
-    else if (split[0] == "INVITE") {
+    else if (token[0] == "INVITE") {
       //KICK
     }
-    else if (split[0] == "TOPIC") {
+    else if (token[0] == "TOPIC") {
       //KICK
     }
-    else if (split[0] == "MODE") {
+    else if (token[0] == "MODE") {
       //KICK
     }
-    else if (split[0] == "NICK") {
-      user.nickName = split[1];
-      Sock.SendData(user.userFD, string("NICK ") + split[1]);
+    else if (token[0] == "NICK") {
+      fnNICK(token, user);
     }
     //else
     //  unknowCommand(user);
