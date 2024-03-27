@@ -10,7 +10,6 @@
 using std::string;
 //type use
 typedef std::vector<std::string> vec_str;
-typedef Sock.channels cha;
 
 class Socket;
 
