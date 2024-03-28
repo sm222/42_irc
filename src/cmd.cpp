@@ -49,9 +49,7 @@ bool Parser::setUserInfo(userData& user, vec_str vec) {
   return true;
 }
 
-//?  * // join
-
-short     Parser::_tryJoinChanel(const userData& user, const string name, const string pass) {
+short     Parser::_tryJoinChannel(const userData& user, const string name, const string pass) {
   const string& _pass = Sock.channels.Channel_Get_Password(name);
   if (!_pass.empty() && _pass != pass) {
     //! bad PASSWORD
@@ -62,7 +60,7 @@ short     Parser::_tryJoinChanel(const userData& user, const string name, const 
   return true;
 }
 
-bool    Parser::joinChanel(const userData& user, const string& name, const string& pass) {
+bool    Parser::joinChannel(const userData& user, const string& name, const string& pass) {
   Channels&  chanRef = Sock.channels;
   if (!chanRef.Channel_AlreadyExist(name)) {
     if (!chanRef.Channel_Create(user.userName, name)) {
@@ -70,39 +68,11 @@ bool    Parser::joinChanel(const userData& user, const string& name, const strin
       return false;
     }
   }
-  if (!_tryJoinChanel(user, name, pass)) {
+  if (!_tryJoinChannel(user, name, pass)) {
     return false;
   }
   return true;
 }
-
-//! not final, old one stop using pls
-bool    Parser::joinChanel(const userData& user, const vec_str& vec) {
-  size_t  list = 1;
-
-  if (vec.size() > 1 && vec[list][0] == '#') {
-    const char  *tmp = vec[list].c_str() + 1;
-    if (Sock.channels.Channel_AlreadyExist(tmp)) {
-      Sock.channels.Channel_Join(user.userName, tmp);
-      Sock.SendData(user.userFD, makeMessage(e_none, string(":%n JOIN ") + vec[list], user));
-      return false;
-    }
-    else {
-      Sock.channels.Channel_Create(user.userName, tmp);
-      Sock.channels.Channel_Join(user.userName, tmp);
-      Sock.SendData(user.userFD, makeMessage(e_none, string(":%n JOIN ") + vec[list], user));
-      //? :Olivier JOIN #a    
-      //?  ^         ^   ^    
-      //?  |         |   |    
-      //?  |       CMD   |    
-      //?  NAME          |    
-      //?          CHANEL NANE
-    }
-  }
-  return true;
-}
-
-//?  * // pass
 
 
 bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {

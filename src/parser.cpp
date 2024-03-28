@@ -178,7 +178,7 @@ void Parser::fnJOIN(vec_str vec, userData& user){
     for (size_t i = 0; i < channel.size(); i++) {
         if (i < key.size())
           tmp = key[i];
-          joinChanel()
+        joinChannel(user, channel[i], tmp);
     }
   }
   print_vec(channel, "CHANNEL");

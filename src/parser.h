@@ -24,8 +24,7 @@ public:
     //TODO: v
     std::string makeMessage(t_code const type, const string msg , const userData& user);
     bool        setUserInfo(userData& user, vec_str vec);
-    bool        joinChanel(const userData& user, const std::vector<string>& vec);
-    bool        joinChanel(const userData& user, const string& name, const string& pass);
+    bool        joinChannel(const userData& user, const string& name, const string& pass);
     bool        testPassWord(std::string &pass, userData &user, vectorIT& index);
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);
@@ -44,7 +43,7 @@ public:
 
 private:
     Socket&     Sock;
-    short       _tryJoinChanel(const userData& user, const string name, const string pass);
+    short       _tryJoinChannel(const userData& user, const string name, const string pass);
     //          look if the user doing the acorder lever of Action
     #define     LV(userLv, askLv) (userLv >= askLv)
     //
