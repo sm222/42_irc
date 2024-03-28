@@ -44,7 +44,7 @@ bool Parser::setUserInfo(userData& user, vec_str vec) {
   //  return false;
   //}
   user.userName = vec[1];
-  Sock.SendData(user.userFD, makeMessage(e_welcom, "Welcome to the 42irc %n", user));
+  Sock.SendData(user.userFD, makeMessage(e_welcom, "Welcome to the 42irc %u", user));
   //std::cout << "name = " << user.userName << " ,nick name = " << user.nickName << std::endl;
   return true;
 }
@@ -52,7 +52,7 @@ bool Parser::setUserInfo(userData& user, vec_str vec) {
 short     Parser::_tryJoinChannel(const userData& user, const string name, const string pass) {
   const string& _pass = Sock.channels.Channel_Get_Password(name);
   if (!_pass.empty() && _pass != pass) {
-    //! bad PASSWORD
+    Sock.SendData(user.userFD, makeMessage(e_passmismatch, ":Password incorrect", user));
     return false;
   }
   if (!Sock.channels.Channel_Join(user.userName, name))
@@ -67,10 +67,13 @@ bool    Parser::joinChannel(const userData& user, const string& name, const stri
       //! can't make chanel
       return false;
     }
+    chanRef.Channel_Set_Password(name, pass);
   }
   if (!_tryJoinChannel(user, name, pass)) {
     return false;
   }
+  Sock.SendData(user.userName, makeMessage(e_none, string(":%n JOIN ") + name, user));
+  // sucsess!
   return true;
 }
 

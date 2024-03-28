@@ -61,7 +61,7 @@ typedef enum e_type {
   e_none = -1,      // -1
   e_welcom,         // 001
   e_rplTopic,       // 332
-  e_passmismatch,   // 464
+  e_passmismatch,   // 464 ERR_PASSWDMISMATCH
   e_errornickname   // 432
 } t_code;
 
