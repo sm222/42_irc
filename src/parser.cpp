@@ -26,7 +26,7 @@ bool	isBetween(std::string str, size_t pos, char c)
 /// @param other a string to add chars in the filter
 /// @return bool
 bool isValidStr(std::string str, std::string other){
-  if (!isdigit(str[0]))
+  if (isdigit(str[0]))
     return false;
   for (size_t i = 0; i < str.length(); i++) {
     if (isalnum(str[i]) || other.find(str[i]) != std::string::npos)
@@ -82,10 +82,6 @@ string  Parser::makeMessage(t_code const type, const string msg, const userData&
     return (result);
 }
 
-  //(void)user;
-  //(void)vec;
-  //Sock.
-
 vec_str Parser::Tokenize(std::string message, char c){
   vec_str vec;
   size_t pos = 0;
@@ -110,7 +106,6 @@ vec_str Parser::Tokenize(std::string message, char c){
   print_vec(vec, "TOKEN");
   return (vec);
 }
-
 
 /*
 * - asuming the currentAction = 0 at start, step 0 is to confim the password
@@ -183,7 +178,7 @@ void Parser::fnJOIN(vec_str vec, userData& user){
     for (size_t i = 0; i < channel.size(); i++) {
         if (i < key.size())
           tmp = key[i];
-          // joinChanel(user, channel[i], tmp[i]);
+          joinChanel()
     }
   }
   print_vec(channel, "CHANNEL");
