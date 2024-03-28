@@ -27,6 +27,33 @@ void  Parser::allReadyRegistered(userData &user) {
 //*           CMD         *//
 //*                       *//
 
+//?  * // mode
+
+//! not use working on it
+bool  Parser::setUserMode(userData& user, int type) {
+  (void)type;
+  Sock.channels.Channel_Get_IsUserChannelOP(user.userName, "test");
+}
+
+
+
+//?  * // topic
+
+//TOPIC
+
+bool  Parser::setTopic(const userData& user, const string& chanelName, const string& topic) {
+  (void)user;
+  if (Sock.channels.Channel_AlreadyExist(chanelName) && Sock.channels.Channel_Get_CanUserChangeTopic(chanelName))
+    Sock.channels.Channel_Set_Topic(chanelName, topic);
+}
+
+string  Parser::getTopic(const string& chanalName) {
+  if (Sock.channels.Channel_AlreadyExist(chanalName))
+    return Sock.channels.Channel_Get_Topic(chanalName);
+  return (string(""));
+}
+
+
 //?  * // kick
 
 void  Parser::kickUser(vectorIT& index, const string reasons, const userData &user) {
@@ -83,7 +110,7 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
     allReadyRegistered(user);
     return false;
   }
-  else if (pass == Sock.GetPassword() && user.currentAction == e_notConfim){
+  else if (pass == Sock.GetPassword()){
     std::cout << GRN << "Valid password" << RESET << std::endl;
     return true;
   }

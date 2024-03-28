@@ -26,6 +26,9 @@ public:
     bool        setUserInfo(userData& user, vec_str vec);
     bool        joinChannel(const userData& user, const string& name, const string& pass);
     bool        testPassWord(std::string &pass, userData &user, vectorIT& index);
+    bool        setTopic(const userData&  user, const string& chanelName, const string& topic);
+    string      getTopic(const string& chanalName);
+    bool        setUserMode(userData& user, int type);
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);
     void        badCmd(userData &user);
