@@ -3,7 +3,7 @@ https://modern.ircdocs.horse/
 
 
 /server add O_O 10.12.6.4/2000 -notls -password=a
-/set irc.server.O_O.username "Oli!"
+/set irc.server.O_O.username "Oli"
 /set irc.server.O_O.nicks "bob"
 /connect O_O
 /join #a
