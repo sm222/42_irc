@@ -29,10 +29,10 @@ bool isValidStr(std::string str, std::string other){
   if (isdigit(str[0]))
     return false;
   for (size_t i = 0; i < str.length(); i++) {
-    if (isalnum(str[i]) || other.find(str[i]) != std::string::npos)
-      return true;
+    if (!isalnum(str[i]) && other.find(str[i]) == std::string::npos)
+      return false;
   }
-  return false;
+  return true;
 }
 
 int charCount(std::string str, char c){
@@ -103,7 +103,6 @@ vec_str Parser::Tokenize(std::string message, char c){
   }
   if (old_pos < message.length())
     vec.push_back(message.substr(old_pos));
-  print_vec(vec, "TOKEN");
   return (vec);
 }
 
@@ -146,8 +145,8 @@ void Parser::fnNICK(vec_str vec, userData& user){
     // Sock.SendData(user.userFD,"NICK " + vec[1]);
   }
   else{
-    makeMessage(e_errornickname, "Erroneus nickname", user);
-    // Sock.SendData(user.userFD, "432 PRIVMSG :Erroneus nickname"); //"<client> <nick> :Erroneus nickname"
+    // makeMessage(e_errornickname, "Erroneus nickname", user);
+    Sock.SendData(user.userFD, "432 PRIVMSG :Erroneus nickname"); //"<client> <nick> :Erroneus nickname"
   }
   //   // message nickname bad char
 }
@@ -192,13 +191,14 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     Channels& AllChannels = Sock.channels;
     (void)AllChannels;
     vec_str token = Tokenize(user.recvString, ' ');
+    print_vec(token, "KEY");
 
     if (token.empty()) {
       std::cout << "empty\n"; //! fix segfault
       return ;
     }
 
-    std::cout << "user - " << user.userName << "currentAction\t\t\t\t\t\t\t>" << user.currentAction << std::endl;
+    // std::cout << "user - " << user.userName << "currentAction\t\t\t\t\t\t\t>" << user.currentAction << std::endl;
     if (token[0] == "PASS" && LV(user.currentAction, e_notConfim)) {
       fnPASS(token, user, index);
     }
@@ -212,7 +212,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     //? PONG :)
     else if (token[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
       Sock.SendData(user.userFD, string("PONG ") + token[1]);
-      std::cout << ORG << user.userName << RESET << " :PING, " << std::endl; //? dev can be remove
+      std::cout << ORG << user.userName << RESET << " :PING " << std::endl; //? dev can be remove
     }
     else if (token[0] == "JOIN") {
       fnJOIN(token, user);
@@ -235,7 +235,8 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     //else
     //  unknowCommand(user);
     //dev messasge  *v*
-    std::cout << "Received: " + user.recvString;    // Data Received
+
+    // std::cout << "Received: " + user.recvString;    // Data Received
 }
 
 
