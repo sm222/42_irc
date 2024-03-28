@@ -5,22 +5,6 @@
 
 //FUNCTION
 
-bool	isBetween(std::string str, size_t pos, char c)
-{
-	bool	between_c;
-
-	between_c = false;
-	if (pos == 0 || str.empty() || str.length() >= pos)
-		return (false);
-	for (size_t i = 0; i <= pos; i++) {
-		if (str[i] == c && !between_c)
-			between_c = !between_c;
-	}
-	if (between_c)
-		return (true);
-	return (false);
-}
-
 /// @brief check if str isalpha/isdigit and dont start with a digit
 /// @param str a string 
 /// @param other a string to add chars in the filter
@@ -178,6 +162,7 @@ void Parser::fnJOIN(vec_str vec, userData& user){
         if (i < key.size())
           tmp = key[i];
         joinChannel(user, channel[i], tmp);
+        std::cout << RED "|" RESET << "allo " << std::endl;
     }
   }
   print_vec(channel, "CHANNEL");
@@ -191,7 +176,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     Channels& AllChannels = Sock.channels;
     (void)AllChannels;
     vec_str token = Tokenize(user.recvString, ' ');
-    print_vec(token, "KEY");
+    print_vec(token, "token");
 
     if (token.empty()) {
       std::cout << "empty\n"; //! fix segfault

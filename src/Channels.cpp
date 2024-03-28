@@ -147,11 +147,10 @@ bool                            Channels::Channel_Join(const std::string& userNa
 
     // Already in Channel (False)
     UsersMap::iterator i = T->second.find(userName);
-    if (i != T->second.end() && !i->second.in_Invited_List) return false;
+    if (i != T->second.end()) return false;
 
-    // Add User to UserList (True)
-    i->second.in_Invited_List = false;
-    i->second.in_User_list = true;
+    // Add to Channel
+    T->second[userName] = _createNewUserStats(true, false, false);
     return true;
 
 }
