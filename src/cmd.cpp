@@ -58,11 +58,26 @@ short     Parser::_tryJoinChanel(const userData& user, const string name, const 
     //! bad PASSWORD
     return false;
   }
-  (void)user;
+  if (!Sock.channels.Channel_Join(user.userName, name))
+    return false;
   return true;
 }
 
-// ? not final, use as templet
+bool    Parser::joinChanel(const userData& user, const string& name, const string& pass) {
+  Channels&  chanRef = Sock.channels;
+  if (!chanRef.Channel_AlreadyExist(name)) {
+    if (!chanRef.Channel_Create(user.userName, name)) {
+      //! can't make chanel
+      return false;
+    }
+  }
+  if (!_tryJoinChanel(user, name, pass)) {
+    return false;
+  }
+  return true;
+}
+
+//! not final, old one stop using pls
 bool    Parser::joinChanel(const userData& user, const vec_str& vec) {
   size_t  list = 1;
 

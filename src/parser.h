@@ -23,6 +23,7 @@ public:
     std::string makeMessage(t_code const type, const string msg , const userData& user);
     bool        setUserInfo(userData& user, vec_str vec);
     bool        joinChanel(const userData& user, const std::vector<string>& vec);
+    bool        joinChanel(const userData& user, const string& name, const string& pass);
     bool        testPassWord(std::string &pass, userData &user, vectorIT& index);
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);

@@ -44,7 +44,7 @@ string  Parser::makeMessage(t_code const type, const string msg, const userData&
     string result;
     if (type > -1) {
       result = MType[type];
-      result += " " + user.nickName + " : ";
+      result += " " + user.nickName + " ";
     }
     else
       result = "";
