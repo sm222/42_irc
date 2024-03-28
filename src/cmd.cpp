@@ -44,7 +44,6 @@ bool Parser::setUserInfo(userData& user, vec_str vec) {
   //  return false;
   //}
   user.userName = vec[1];
-  user.nickName = vec[4].c_str() + 1;
   Sock.SendData(user.userFD, makeMessage(e_welcom, "Welcome to the 42irc %n", user));
   //std::cout << "name = " << user.userName << " ,nick name = " << user.nickName << std::endl;
   return true;

@@ -26,8 +26,10 @@ bool	isBetween(std::string str, size_t pos, char c)
 /// @param other a string to add chars in the filter
 /// @return bool
 bool isValidStr(std::string str, std::string other){
+  if (!isdigit(str[0]))
+    return false;
   for (size_t i = 0; i < str.length(); i++) {
-    if (!isdigit(str[0]) && isalpha(str[i]) && isdigit(str[i]) && other.find(str[i]) != std::string::npos)
+    if (isalnum(str[i]) || other.find(str[i]) != std::string::npos)
       return true;
   }
   return false;
@@ -60,7 +62,7 @@ string  Parser::makeMessage(t_code const type, const string msg, const userData&
     string result;
     if (type > -1) {
       result = MType[type];
-      result += " " + user.nickName + " : ";
+      result += " " + user.nickName + ":";
     }
     else
       result = "";
@@ -146,13 +148,13 @@ void Parser::fnNICK(vec_str vec, userData& user){
   std::cout << RED "|fnNICK" RESET << std::endl;
   if (isValidStr(vec[1], "-_")){
     user.nickName = vec[1];
-    Sock.SendData(user.userFD, string("NICK ") + vec[1]);
+    // Sock.SendData(user.userFD,"NICK " + vec[1]);
   }
-  // else{
-  //     makeMessage(e_none, "%u %n :Erroneus nickname", user); //"<client> <nick> :Erroneus nickname"
-  // }
+  else{
+    makeMessage(e_errornickname, "Erroneus nickname", user);
+    // Sock.SendData(user.userFD, "432 PRIVMSG :Erroneus nickname"); //"<client> <nick> :Erroneus nickname"
+  }
   //   // message nickname bad char
-    
 }
 
 void Parser::fnJOIN(vec_str vec, userData& user){
@@ -168,7 +170,7 @@ void Parser::fnJOIN(vec_str vec, userData& user){
     if (!vec[2].empty())
       key = Tokenize(vec[2], ',');
     for (size_t i = 0; i < channel.size(); i++) {
-        if (!isValidStr(channel[i], "#&-_") || (channel[i][0] != '#' && channel[i][0] != '&') || channel[i].length() == 1){
+        if (!isValidStr(channel[i], "#&") || (channel[i][0] != '#' && channel[i][0] != '&') || channel[i].length() == 1){
           if (!key.empty() && i < key.size())
             key.erase(key.begin() + i);
           channel.erase(channel.begin() + i);

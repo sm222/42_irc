@@ -58,16 +58,18 @@ enum e_ActionLv {
 
 
 typedef enum e_type {
-  e_none = -1,   // -1
-  e_welcom,      // 001
-  e_rplTopic,    // 332
-  e_passmismatch //464
+  e_none = -1,      // -1
+  e_welcom,         // 001
+  e_rplTopic,       // 332
+  e_passmismatch,   // 464
+  e_errornickname   // 432
 } t_code;
 
 const char* const MType[] = {
   "001",
   "332",
   "464",
+  "432 PRIVMSG",
   ""
 };
 
