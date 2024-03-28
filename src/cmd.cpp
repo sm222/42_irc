@@ -33,6 +33,7 @@ void  Parser::allReadyRegistered(userData &user) {
 bool  Parser::setUserMode(userData& user, int type) {
   (void)type;
   Sock.channels.Channel_Get_IsUserChannelOP(user.userName, "test");
+  return true;
 }
 
 
@@ -45,6 +46,7 @@ bool  Parser::setTopic(const userData& user, const string& chanelName, const str
   (void)user;
   if (Sock.channels.Channel_AlreadyExist(chanelName) && Sock.channels.Channel_Get_CanUserChangeTopic(chanelName))
     Sock.channels.Channel_Set_Topic(chanelName, topic);
+  return true;
 }
 
 string  Parser::getTopic(const string& chanalName) {
@@ -82,12 +84,15 @@ short     Parser::_tryJoinChannel(const userData& user, const string name, const
     Sock.SendData(user.userFD, makeMessage(e_passmismatch, ":Password incorrect", user));
     return false;
   }
-  if (!Sock.channels.Channel_Join(user.userName, name))
+  bool bozo = Sock.channels.Channel_Join(user.userName, name);
+  std::cout << "print bozo " << bozo << std::endl; 
+  if (!bozo)
     return false;
   return true;
 }
 
 bool    Parser::joinChannel(const userData& user, const string& name, const string& pass) {
+  std::cout << RED "|" RESET << "name:" << name << "pass:" << pass << std::endl; 
   Channels&  chanRef = Sock.channels;
   if (!chanRef.Channel_AlreadyExist(name)) {
     if (!chanRef.Channel_Create(user.userName, name)) {
@@ -95,6 +100,8 @@ bool    Parser::joinChannel(const userData& user, const string& name, const stri
       return false;
     }
     chanRef.Channel_Set_Password(name, pass);
+    Sock.SendData(user.userName, makeMessage(e_none, string(":%n JOIN ") + name, user));
+    return true;
   }
   if (!_tryJoinChannel(user, name, pass)) {
     return false;
