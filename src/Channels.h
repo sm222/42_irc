@@ -27,7 +27,7 @@ struct ChannelData {
     std::string     Password;
     bool            InviteOnly;
     int             MaxUserCount;
-    bool            CanUserChangeChannel;
+    bool            CanUserChangeTopic;
 };
 
 
@@ -85,6 +85,7 @@ public:
     std::vector<ChannelAndTopic>    Channel_Get_AllChannelsAndTopicName();
 
     // Operators Only
+    bool                            Channel_Remove_Operator(const std::string& user, const std::string& channelName);
     bool                            Channel_Set_Operator(const std::string& user, const std::string& channelName);
     bool                            Channel_Uninvite(const std::string& invitedUser, const std::string& channelName);
     bool                            Channel_Invite(const std::string& invitedUser, const std::string& channelName);

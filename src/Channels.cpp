@@ -71,9 +71,24 @@ bool                            Channels::Channel_AlreadyExist(const std::string
 bool                            Channels::Channel_Get_CanUserChangeTopic(const std::string& channelname) {
     // Return False if channel doesnt exist
     ChannelMap* T =_getChannelByName(channelname);
-    if (T) { return T->first.CanUserChangeChannel; }
+    if (T) { return T->first.CanUserChangeTopic; }
     return false;
 }
+
+bool                            Channels::Channel_Remove_Operator(const std::string& user, const std::string& channelName) {
+    ChannelMap* T = _getChannelByName(channelName);
+    if (T) {
+        for (UsersMap::iterator i = T->second.begin(); i != T->second.end(); i++) {
+            if (user == i->first) {
+                i->second = _createNewUserStats(true, false, false);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
 bool                            Channels::Channel_Get_InviteOnly(const std::string& channelname) {
     // Return False if channel doesnt exist
     ChannelMap* T =_getChannelByName(channelname);
@@ -82,7 +97,7 @@ bool                            Channels::Channel_Get_InviteOnly(const std::stri
 }
 void                            Channels::Channel_Set_CanUserChangeTopic(const std::string& channelname, const bool value) {
     ChannelMap* T =_getChannelByName(channelname);
-    if (T) { T->first.CanUserChangeChannel = value; }
+    if (T) { T->first.CanUserChangeTopic = value; }
 }
 void                            Channels::Channel_Set_InviteOnly(const std::string& channelname, const bool value) {
     ChannelMap* T =_getChannelByName(channelname);
@@ -112,7 +127,7 @@ bool                            Channels::Channel_Create(const std::string& chan
     T.first.Topic = "";
     T.first.Password = "";
     T.first.MaxUserCount = -1;
-    T.first.CanUserChangeChannel = false;
+    T.first.CanUserChangeTopic = true;
     T.first.InviteOnly = false;
 
     T.second[channelMaker] = _createNewUserStats(false, false, true);
