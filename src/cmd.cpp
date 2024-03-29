@@ -103,10 +103,8 @@ bool    Parser::joinChannel(const userData& user, const string& name, const stri
       return false;
     }
     chanRef.Channel_Set_Password(name, pass);
-    Sock.SendData(user.userName, makeMessage(e_none, string(":%n JOIN ") + name, user));
-    return true;
   }
-  if (!_tryJoinChannel(user, name, pass)) {
+  else if (!_tryJoinChannel(user, name, pass)) {
     return false;
   }
   Sock.SendData(user.userName, makeMessage(e_none, string(":%n JOIN ") + name, user));
