@@ -63,25 +63,10 @@ void  Parser::kickUser(vectorIT& index, const string reasons, const userData &us
     Sock.KickUser(index);
 }
 
-/// @brief not final but work for now
-/// @param user 
-/// @param vec 
-/// @return 
-bool Parser::setUserInfo(userData& user, vec_str vec) {
-  //if (user.currentAction > e_notNameSet) {
-  //  allReadyRegistered(user);
-  //  return false;
-  //}
-  user.userName = vec[1];
-  Sock.SendData(user.userFD, makeMessage(e_welcom, "Welcome to the 42irc %u", user));
-  //std::cout << "name = " << user.userName << " ,nick name = " << user.nickName << std::endl;
-  return true;
-}
-
 short     Parser::_tryJoinChannel(const userData& user, const string name, const string pass) {
   const string& _pass = Sock.channels.Channel_Get_Password(name);
   if (!_pass.empty() && _pass != pass) {
-    Sock.SendData(user.userFD, makeMessage(e_passmismatch, ":Password incorrect", user));
+    Sock.SendData(user.userFD, makeMessage(e_passmismatch, ":channel password incorrect", user));
     return false;
   }
   bool bozo = Sock.channels.Channel_Join(user.userName, name);
