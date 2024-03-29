@@ -48,7 +48,9 @@ bool                            Channels::Channel_Get_IsUserInChannel(const std:
 bool                            Channels::Channel_Get_IsUserChannelOP(const std::string& userName, const std::string& channelName) {
     // Return false if Channel doesnt exist
     ChannelMap* Chan = _getChannelByName(channelName);
-    if (!Chan) return false;
+    if (!Chan) {
+      return false;
+    }
 
     // Loop all the users
     for (UsersMap::iterator i = Chan->second.begin(); i != Chan->second.end(); i++) {
