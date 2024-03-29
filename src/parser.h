@@ -36,9 +36,9 @@ public:
     void        allReadyRegistered(userData &user);
     //*    //
 
-    void        fnUSER(vec_str vec, userData& user);
-    void        fnNICK(vec_str vec, userData& user);
     void        fnJOIN(vec_str vec, userData& user);
+    void        fnNICK(vec_str vec, userData& user, vectorIT& index);
+    void        fnUSER(vec_str vec, userData& user, vectorIT& index);
     void        fnPASS(vec_str vec, userData& user, vectorIT& index);
     
     // Im calling this in my socket class, everytime we get new Data from Client

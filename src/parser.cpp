@@ -112,25 +112,33 @@ void Parser::fnPASS(vec_str vec, userData& user, vectorIT& index){
     user.currentAction = 10;
 }
 
-void Parser::fnUSER(vec_str vec, userData& user){
+void Parser::fnUSER(vec_str vec, userData& user, vectorIT& index){
   std::cout << RED "|fnUSER" RESET << std::endl;
   if (isValidStr(vec[1], "-_")){
-    if (setUserInfo(user, vec))
-        user.currentAction++;
+    if (!Sock.GetUserByUsername(vec[1])){
+      user.userName = vec[1];
+      user.currentAction++;
+      Sock.SendData(user.userFD, makeMessage(e_welcom, "Welcome to the 42irc %u", user));
+      return;
+    }
+    kickUser(index, "904 " ServerName " :user alrady use", user);
   }
+  kickUser(index, "904 " ServerName " :invalide character for user", user);
   // else
     // !ERR_ALREADYREGISTERED (462)
 }
 
-void Parser::fnNICK(vec_str vec, userData& user){
+void Parser::fnNICK(vec_str vec, userData& user, vectorIT& index){
   std::cout << RED "|fnNICK" RESET << std::endl;
   if (isValidStr(vec[1], "-_")){
-    user.nickName = vec[1];
-    // Sock.SendData(user.userFD,"NICK " + vec[1]);
+    if (!Sock.GetUserByUsername(vec[1])){
+      user.nickName = vec[1];
+      return;
+    }
+    kickUser(index, "904 " ServerName " :user alrady use", user);
   }
   else{
-    // makeMessage(e_errornickname, "Erroneus nickname", user);
-    Sock.SendData(user.userFD, "432 PRIVMSG :Erroneus nickname"); //"<client> <nick> :Erroneus nickname"
+    Sock.SendData(user.userFD, makeMessage(e_errornickname, "Erroneus nickname", user)); //"<client> <nick> :Erroneus nickname"
   }
   //   // message nickname bad char
 }
@@ -143,9 +151,9 @@ void Parser::fnJOIN(vec_str vec, userData& user){
   (void)user;
   if (vec.size() < 2)
     return;
-  if (!vec[1].empty()){
+  if (vec.size() >= 2 && !vec[1].empty()){
     channel = Tokenize(vec[1], ',');
-    if (!vec[2].empty())
+    if (vec.size() >= 3 && !vec[2].empty())
       key = Tokenize(vec[2], ',');
     for (size_t i = 0; i < channel.size(); i++) {
         if (!isValidStr(channel[i], "#&") || (channel[i][0] != '#' && channel[i][0] != '&') || channel[i].length() == 1){
@@ -157,8 +165,8 @@ void Parser::fnJOIN(vec_str vec, userData& user){
     }
   }
   if (!channel.empty()){
-    std::string tmp("");
     for (size_t i = 0; i < channel.size(); i++) {
+        std::string tmp("");
         if (i < key.size())
           tmp = key[i];
         joinChannel(user, channel[i], tmp);
@@ -192,7 +200,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
     //! user
     else if (token[0] == "USER" && LV(user.currentAction, e_notNameSet)) {
-      fnUSER(token, user);
+      fnUSER(token, user, index);
     }
     //? PONG :)
     else if (token[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
@@ -215,7 +223,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
       //KICK
     }
     else if (token[0] == "NICK") {
-      fnNICK(token, user);
+      fnNICK(token, user, index);
     }
     //else
     //  unknowCommand(user);
