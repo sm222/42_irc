@@ -43,16 +43,19 @@ bool  Parser::setUserMode(userData& user, int type) {
 //TOPIC
 
 bool  Parser::setTopic(const userData& user, const string& chanelName, const string& topic) {
-  (void)user;
-  if (Sock.channels.Channel_AlreadyExist(chanelName) && Sock.channels.Channel_Get_CanUserChangeTopic(chanelName))
+  if (Sock.channels.Channel_AlreadyExist(chanelName)) {
+    if (!Sock.channels.Channel_Get_CanUserChangeTopic(chanelName) && !Sock.channels.Channel_Get_IsUserChannelOP(user.userName, chanelName))
+      return false;
     Sock.channels.Channel_Set_Topic(chanelName, topic);
-  return true;
+    return true;
+  }
+  return false;
 }
 
 string  Parser::getTopic(const string& chanalName) {
   if (Sock.channels.Channel_AlreadyExist(chanalName))
     return Sock.channels.Channel_Get_Topic(chanalName);
-  return (string(""));
+  return ("");
 }
 
 
