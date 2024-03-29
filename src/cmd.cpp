@@ -79,6 +79,20 @@ short     Parser::_tryJoinChannel(const userData& user, const string name, const
   return true;
 }
 
+string   Parser::_SendUserChannelStatus(const vec_str& userList, const string& name) {
+  string msg;
+  for (size_t i = 0; i < userList.size(); i++) {
+    const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
+    if (Sock.channels.Channel_Get_IsUserChannelOP(userList[i], name)) {
+      msg += "@" + tmpUser->nickName + " ";
+    }
+    else {
+      msg += tmpUser->nickName + " ";
+    }
+  }
+  return msg;
+}
+
 bool    Parser::joinChannel(const userData& user, const string& name, const string& pass) {
   std::cout << RED "|" RESET << "name:" << name << "pass:" << pass << std::endl; 
   Channels&  chanRef = Sock.channels;
@@ -97,9 +111,8 @@ bool    Parser::joinChannel(const userData& user, const string& name, const stri
   // sucsess!
   const vec_str& userList = Sock.channels.Channel_Get_AllUsers(name);
   string  msg = "353 " + user.nickName + " = " + name + " :";
-
   for (size_t i = 0; i < userList.size(); i++) {
-    const userData* tmpUser = Sock.GetUserByUsername(userList[i]); 
+    const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
     if (Sock.channels.Channel_Get_IsUserChannelOP(userList[i], name)) {
       msg += "@" + tmpUser->nickName + " ";
     }
@@ -107,7 +120,6 @@ bool    Parser::joinChannel(const userData& user, const string& name, const stri
       msg += tmpUser->nickName + " ";
     }
   }
-
   std::cout << ">> " << msg << std::endl;
   Sock.SendData(user.userFD, msg);
   Sock.SendData(user.userFD, string("366 ") + user.nickName + " " + name + " :End of /NAMES list");
