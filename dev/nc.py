@@ -4,14 +4,24 @@ import threading
 import time
 import sys
 
-HOST = '10.12.5.7'
+HOST = '10.12.6.8'
 PORT = 2000
 
 commands = [
     ("PASS a\r\n", 0.5),
     ("NICK sm222\r\n", 0.5),
     ("USER antoine 0 * :sm222\r\n", 0.5),
-    ("JOIN #a\r\n", 0.5)
+    ("JOIN #a\r\n", 0.5),
+    ("PRIVMSG #a :000\r\n", 0.5),
+    ("PRIVMSG #a :001\r\n", 0.5),
+    ("PRIVMSG #a :002\r\n", 0.5),
+    ("PRIVMSG #a :003\r\n", 0.5),
+    ("PRIVMSG #a :004\r\n", 0.5),
+    ("PRIVMSG #a :005\r\n", 0.5),
+    ("PRIVMSG #a :006\r\n", 0.5),
+    ("PRIVMSG #a :007\r\n", 0.5),
+    ("PRIVMSG #a :008\r\n", 0.5),
+    ("PRIVMSG #a :009\r\n", 0.5)
 ]
 
 def sendcommands(s):

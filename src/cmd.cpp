@@ -108,21 +108,14 @@ bool    Parser::joinChannel(const userData& user, const string& name, const stri
   }
   Sock.SendData(user.userName, makeMessage(e_none, string(":%n JOIN ") + name, user));
   Sock.SendData(user.userFD, string("332 ") + user.nickName + " :boze");
-  // sucsess!
   const vec_str& userList = Sock.channels.Channel_Get_AllUsers(name);
-  string  msg = "353 " + user.nickName + " = " + name + " :";
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
-    if (Sock.channels.Channel_Get_IsUserChannelOP(userList[i], name)) {
-      msg += "@" + tmpUser->nickName + " ";
-    }
-    else {
-      msg += tmpUser->nickName + " ";
-    }
+    string  msg = "353 " + tmpUser->nickName + " = " + name + " :";
+    msg += _SendUserChannelStatus(userList, name);
+    Sock.SendData(userList[i], msg);
+    Sock.SendData(userList[i], string("366 ") + tmpUser->nickName + " " + name + " :End of /NAMES list");
   }
-  std::cout << ">> " << msg << std::endl;
-  Sock.SendData(user.userFD, msg);
-  Sock.SendData(user.userFD, string("366 ") + user.nickName + " " + name + " :End of /NAMES list");
   return true;
 }
 
@@ -139,4 +132,21 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
   kickUser(index, MSG_PassMisMatch, user);
   std::cout << RED <<  "Bad password" << RESET << std::endl;
   return false;
+}
+
+//?  * // PRIVMSG
+//PRIVMSG #a :awd
+
+
+bool  Parser::privMsg(const string chanel, const string message, const string nick) {
+  if (!Sock.channels.Channel_AlreadyExist(chanel))
+    return false;
+  const vec_str userList =  Sock.channels.Channel_Get_AllUsers(chanel);
+  for (size_t i = 0; i < userList.size(); i++) {
+    const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
+    string msg = ":" + nick + " PRIVMSG " + chanel + " " + message;
+    if (tmpUser->nickName != nick)
+      Sock.SendData(tmpUser->userFD, msg);
+  }
+  return true;
 }

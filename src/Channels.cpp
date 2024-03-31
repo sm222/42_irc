@@ -321,7 +321,7 @@ void                            Channels::SOCKETONLY_kickuserfromallchannels(con
     // Iterate all the Channels
     for (ChannelGroup::iterator i = _channelGroup.begin(); i != _channelGroup.end(); i++) {
         std::string     channelName = i->first;
-        UsersMap        currentChannel = i->second.second; // Skip to the userlist right away
+        UsersMap&       currentChannel = i->second.second; // Skip to the userlist right away
 
         // Try to find Player, if exist, Erase
         UsersMap::iterator j = currentChannel.find(userName);

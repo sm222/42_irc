@@ -29,6 +29,7 @@ public:
     bool        setTopic(const userData&  user, const string& chanelName, const string& topic);
     string      getTopic(const string& chanalName);
     bool        setUserMode(userData& user, int type);
+    bool        privMsg(const string chanel, const string message, const string nick);
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);
     void        badCmd(userData &user);
@@ -46,7 +47,7 @@ public:
 
 private:
     Socket&     Sock;
-    string      Parser::_SendUserChannelStatus(const vec_str& userList, const string& name);
+    string      _SendUserChannelStatus(const vec_str& userList, const string& name);
     short       _tryJoinChannel(const userData& user, const string name, const string pass);
     //          look if the user doing the acorder lever of Action
     #define     LV(userLv, askLv) (userLv >= askLv)

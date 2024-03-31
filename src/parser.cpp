@@ -205,7 +205,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     //? PONG :)
     else if (token[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
       Sock.SendData(user.userFD, string("PONG ") + token[1]);
-      std::cout << ORG << user.userName << RESET << " :PING " << std::endl; //? dev can be remove
+      //std::cout << ORG << user.userName << RESET << " :PING " << std::endl; //? dev can be remove
     }
     else if (token[0] == "JOIN") {
       fnJOIN(token, user);
@@ -225,11 +225,14 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     else if (token[0] == "NICK") {
       fnNICK(token, user, index);
     }
+    else if (token[0] == "PRIVMSG") { //PRIVMSG #a :awd
+      privMsg(token[1], token[2], user.nickName);
+    }
     //else
     //  unknowCommand(user);
     //dev messasge  *v*
 
-    // std::cout << "Received: " + user.recvString;    // Data Received
+    std::cout << "Received: " + user.recvString;    // Data Received
 }
 
 
