@@ -90,6 +90,11 @@ bool                            Channels::Channel_Remove_Operator(const std::str
     return false;
 }
 
+int                             Channels::Channel_Get_CurrentUsersCount(const std::string& channelname) {
+    ChannelMap* T =_getChannelByName(channelname);
+    if (T) { return T->second.size(); }
+    return 0;
+}
 
 bool                            Channels::Channel_Get_InviteOnly(const std::string& channelname) {
     // Return False if channel doesnt exist
