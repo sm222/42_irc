@@ -30,6 +30,7 @@ public:
     string      getTopic(const string& chanalName);
     bool        setUserMode(userData& user, int type);
     bool        privMsg(const string chanel, const string message, const string nick);
+    bool        KickUserChannel(const userData &user, const string channel, const string nick, const string reson);
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);
     void        badCmd(userData &user);
@@ -47,6 +48,8 @@ public:
 
 private:
     Socket&     Sock;
+    vectorIT*   _index;
+    Channels&   _channels;
     string      _SendUserChannelStatus(const vec_str& userList, const string& name);
     short       _tryJoinChannel(const userData& user, const string name, const string pass);
     //          look if the user doing the acorder lever of Action

@@ -158,3 +158,30 @@ bool  Parser::privMsg(const string target, const string message, const string ni
   }
   return true;
 }
+
+//?  * // KICK
+
+
+// Received: KICK #a bob :bozo lala
+
+// :WiZ!jto@tolsun.oulu.fi KICK #Finnish John
+
+bool  Parser::KickUserChannel(const userData &user, const string channel, const string nick, const string reson) {
+  if (_channels.Channel_AlreadyExist(channel)) {
+    if (_channels.Channel_Get_IsUserInChannel(user.userName, channel) && 
+        _channels.Channel_Get_IsUserChannelOP(user.userName, channel)) {
+        const userData* tmpUser = Sock.GetUserByNickname(nick);
+        if (_channels.Channel_Get_IsUserInChannel(tmpUser->userName, channel)) {
+          kickUser(*_index, string(":") + user.nickName + " KICK " + channel + " " + tmpUser->nickName + " " + reson, *tmpUser);
+          return true;
+        }
+      else
+        std::cout << "// can't kick user not in chanel" << std::endl;
+    }
+    else
+      std::cout << "// is not in chanel or op" << std::endl;
+  }
+  else
+    std::cout << "//chanel don't exist\n";
+  return false;
+}

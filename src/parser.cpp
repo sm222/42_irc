@@ -34,7 +34,8 @@ void print_vec(vec_str vec, std::string name){
 
 //CLASS
 
-Parser::Parser(Socket& socketClass) : Sock(socketClass) {}
+Parser::Parser(Socket& socketClass) : Sock(socketClass), _channels(Sock.channels) {
+}
 Parser::~Parser(){}
 
 /// @brief use to build a message to send
@@ -180,9 +181,8 @@ void Parser::fnJOIN(vec_str vec, userData& user){
 /// ####################################################################################################################
 
 void    Parser::ParseData(userData& user, vectorIT& index) {
-    (void) index;
-    Channels& AllChannels = Sock.channels;
-    (void)AllChannels;
+    _channels = Sock.channels;
+    _index = &index;
     vec_str token = Tokenize(user.recvString, ' ');
     print_vec(token, "token");
 
