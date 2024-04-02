@@ -72,9 +72,7 @@ short     Parser::_tryJoinChannel(const userData& user, const string name, const
     Sock.SendData(user.userFD, makeMessage(e_passmismatch, ":channel password incorrect", user));
     return false;
   }
-  bool bozo = Sock.channels.Channel_Join(user.userName, name);
-  std::cout << "print bozo " << bozo << std::endl; 
-  if (!bozo)
+  if (!Sock.channels.Channel_Join(user.userName, name))
     return false;
   return true;
 }
@@ -94,7 +92,6 @@ string   Parser::_SendUserChannelStatus(const vec_str& userList, const string& n
 }
 
 bool    Parser::joinChannel(const userData& user, const string& name, const string& pass) {
-  std::cout << RED "|" RESET << "name:" << name << "pass:" << pass << std::endl; 
   Channels&  chanRef = Sock.channels;
   if (!chanRef.Channel_AlreadyExist(name)) {
     if (!chanRef.Channel_Create(user.userName, name)) {
@@ -138,13 +135,18 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
 //PRIVMSG #a :awd
 
 
-bool  Parser::privMsg(const string chanel, const string message, const string nick) {
-  if (!Sock.channels.Channel_AlreadyExist(chanel))
+bool  Parser::privMsg(const string target, const string message, const string nick) {
+  if (!Sock.channels.Channel_AlreadyExist(target)){
+    if (Sock.doesThisNicknameExist(target)){
+      Sock.SendData(Sock.GetUserByNickname(target)->userFD, ":" + nick + " PRIVMSG " + target + " " + message);
+      return true;
+    }
     return false;
-  const vec_str userList =  Sock.channels.Channel_Get_AllUsers(chanel);
+  }
+  const vec_str userList =  Sock.channels.Channel_Get_AllUsers(target);
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
-    string msg = ":" + nick + " PRIVMSG " + chanel + " " + message;
+    string msg = ":" + nick + " PRIVMSG " + target + " " + message;
     if (tmpUser->nickName != nick)
       Sock.SendData(tmpUser->userFD, msg);
   }

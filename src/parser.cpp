@@ -1,6 +1,11 @@
 #include "parser.h"
 #include "_header.h"
+#include <cassert>
 #include <cctype>
+#include <chrono>
+#include <string>
+#include <vector>
+#include <xlocale/_stdio.h>
 
 
 //FUNCTION
@@ -71,6 +76,9 @@ vec_str Parser::Tokenize(std::string message, char c){
   size_t pos = 0;
   size_t old_pos = 0;
   size_t end = message.find_last_of("\n");
+  size_t point = message.find(':', 0);
+  std::string _text;
+  std::string _cmds;
 
   if (end != std::string::npos)
     message.erase(end, 1);
@@ -79,16 +87,47 @@ vec_str Parser::Tokenize(std::string message, char c){
     message.erase(end, 1);
   if (message.empty())
     return vec;
-  while ((pos = message.find(c, old_pos)) != std::string::npos) {
-      std::string token = message.substr(old_pos, pos - old_pos);
-      if (!token.empty())
-        vec.push_back(token);
+  
+  if (point != std::string::npos){
+    _text = message.substr(message.find(':', 0));
+    _cmds = message.substr(0, message.find(':', 0));
+  }else {
+    _cmds = message;
+  }
+
+  while ((pos = _cmds.find(c, old_pos)) != std::string::npos) {
+    std::string token = _cmds.substr(old_pos, pos - old_pos);
+    if (!token.empty())
+      vec.push_back(token);
     old_pos = pos + 1;
   }
-  if (old_pos < message.length())
-    vec.push_back(message.substr(old_pos));
+  if (old_pos < _cmds.length())
+    vec.push_back(_cmds.substr(old_pos));
+
+   if (point != std::string::npos)
+    vec.push_back(_text);
   return (vec);
 }
+
+// void test(vec_str& vec, userData& user){
+//   std::string msg = user.recvString.substr(user.recvString.find(':', 0));
+//   int index;
+//   for (int i = 0; i < vec.size(); i++) {
+//     if (vec[i].find(':', 0) != std::string::npos){
+//       index = i;
+//       break;
+//     }
+//   }
+//   vec_str tmp;
+//   for (int i = 0; i <= index; i++) {
+//     if (i == index)
+//       tmp.push_back(msg);
+//     else
+//       tmp.push_back(vec[i]);
+//   }
+//   vec.clear();
+//   vec = tmp;
+// }
 
 /*
 * - asuming the currentAction = 0 at start, step 0 is to confim the password
@@ -106,13 +145,13 @@ vec_str Parser::Tokenize(std::string message, char c){
 *                                                *
 */
 
-void Parser::fnPASS(vec_str vec, userData& user, vectorIT& index){
+void Parser::fnPASS(vec_str& vec, userData& user, vectorIT& index){
   std::cout << RED "|fnPASS" RESET << std::endl;
   if (testPassWord(vec[1], user, index))
     user.currentAction = 10;
 }
 
-void Parser::fnUSER(vec_str vec, userData& user, vectorIT& index){
+void Parser::fnUSER(vec_str& vec, userData& user, vectorIT& index){
   std::cout << RED "|fnUSER" RESET << std::endl;
   if (isValidStr(vec[1], "-_")){
     if (!Sock.GetUserByUsername(vec[1])){
@@ -128,7 +167,7 @@ void Parser::fnUSER(vec_str vec, userData& user, vectorIT& index){
     // !ERR_ALREADYREGISTERED (462)
 }
 
-void Parser::fnNICK(vec_str vec, userData& user, vectorIT& index){
+void Parser::fnNICK(vec_str& vec, userData& user, vectorIT& index){
   std::cout << RED "|fnNICK" RESET << std::endl;
   if (isValidStr(vec[1], "-_")){
     if (!Sock.GetUserByUsername(vec[1])){
@@ -143,7 +182,7 @@ void Parser::fnNICK(vec_str vec, userData& user, vectorIT& index){
   //   // message nickname bad char
 }
 
-void Parser::fnJOIN(vec_str vec, userData& user){
+void Parser::fnJOIN(vec_str& vec, userData& user){
   std::cout << RED "|fnJOIN" RESET << std::endl;
   vec_str channel;
   vec_str key;
@@ -151,6 +190,11 @@ void Parser::fnJOIN(vec_str vec, userData& user){
   (void)user;
   if (vec.size() < 2)
     return;
+  if (user.recvString.find(':') != std::string::npos){
+     Sock.SendData(user.userFD, "479 :invalid character");
+     return;
+  }
+
   if (vec.size() >= 2 && !vec[1].empty()){
     channel = Tokenize(vec[1], ',');
     if (vec.size() >= 3 && !vec[2].empty())
@@ -161,7 +205,8 @@ void Parser::fnJOIN(vec_str vec, userData& user){
             key.erase(key.begin() + i);
           channel.erase(channel.begin() + i);
           i--;
-        }
+        }else
+          Sock.SendData(user.userFD, "479 :invalid character");
     }
   }
   if (!channel.empty()){
@@ -170,11 +215,23 @@ void Parser::fnJOIN(vec_str vec, userData& user){
         if (i < key.size())
           tmp = key[i];
         joinChannel(user, channel[i], tmp);
-        std::cout << RED "|" RESET << "allo " << std::endl;
     }
   }
   print_vec(channel, "CHANNEL");
   print_vec(key, "KEY");
+}
+
+void Parser::fnPMSG(vec_str& vec, userData& user){
+  if (vec.size() == 2)
+    privMsg(vec[1], vec[2], user.nickName);
+}
+
+//KICK #a bob : reason
+void Parser::fnKICK(vec_str& vec, userData& user){
+  // if (vec.size() == 3)
+  //   kickUserChannel(user, vec[1], vec[2], vec[3]);
+  // else if (vec.size() == 2)
+  //   kickUserChannel(user, vec[1], vec[2], "");
 }
 
 /// ####################################################################################################################
@@ -218,6 +275,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
     else if (token[0] == "TOPIC") {
       //KICK
+      fnKICK(token, user);
     }
     else if (token[0] == "MODE") {
       //KICK
@@ -226,13 +284,13 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
       fnNICK(token, user, index);
     }
     else if (token[0] == "PRIVMSG") { //PRIVMSG #a :awd
-      privMsg(token[1], token[2], user.nickName);
+      fnPMSG(token, user);
     }
     //else
     //  unknowCommand(user);
     //dev messasge  *v*
 
-    std::cout << "Received: " + user.recvString;    // Data Received
+    // std::cout << "Received: " + user.recvString;    // Data Received
 }
 
 
