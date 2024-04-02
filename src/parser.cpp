@@ -228,11 +228,11 @@ void Parser::fnPMSG(vec_str& vec, userData& user){
 }
 
 //KICK #a bob : reason
-void Parser::fnKICK(vec_str& vec, userData& user){
-  // if (vec.size() == 3)
-  //   kickUserChannel(user, vec[1], vec[2], vec[3]);
-  // else if (vec.size() == 2)
-  //   kickUserChannel(user, vec[1], vec[2], "");
+void Parser::fnKICK(vec_str& vec, userData& user, vectorIT& index){
+  if (vec.size() == 3)
+    KickUserChannel(user, vec[1], vec[2], vec[3], index);
+  else if (vec.size() == 2)
+    KickUserChannel(user, vec[1], vec[2], "", index);
 }
 
 /// ####################################################################################################################
@@ -268,6 +268,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
       fnJOIN(token, user);
     }
     else if (token[0] == "KICK") {
+      fnKICK(token, user, index);
       //KICK
     }
     else if (token[0] == "INVITE") {
@@ -275,7 +276,6 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
     else if (token[0] == "TOPIC") {
       //KICK
-      fnKICK(token, user);
     }
     else if (token[0] == "MODE") {
       //KICK

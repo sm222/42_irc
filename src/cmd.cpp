@@ -62,8 +62,11 @@ string  Parser::getTopic(const string& chanalName) {
 //?  * // kick
 
 void  Parser::kickUser(vectorIT& index, const string reasons, const userData &user) {
+    std::cout << "kick\n";
     Sock.SendData(user.userFD, reasons);
+    std::cout << "kick1\n";
     Sock.KickUser(index);
+    std::cout << "kick2\n";
 }
 
 short     Parser::_tryJoinChannel(const userData& user, const string name, const string pass) {
@@ -163,13 +166,21 @@ bool  Parser::privMsg(const string target, const string message, const string ni
 
 // :WiZ!jto@tolsun.oulu.fi KICK #Finnish John
 
-bool  Parser::KickUserChannel(const userData &user, const string channel, const string nick, const string reson) {
+bool  Parser::KickUserChannel(const userData &user, const string channel, const string nick, const string reson, vectorIT& index) {
+  (void)index;
+  std::cout << "ici - 1\n";
   if (_channels.Channel_AlreadyExist(channel)) {
+    std::cout << "ici\n";
     if (_channels.Channel_Get_IsUserInChannel(user.userName, channel) && 
         _channels.Channel_Get_IsUserChannelOP(user.userName, channel)) {
         const userData* tmpUser = Sock.GetUserByNickname(nick);
+        std::cout << "ici2\n";
         if (_channels.Channel_Get_IsUserInChannel(tmpUser->userName, channel)) {
-          kickUser(*_index, string(":") + user.nickName + " KICK " + channel + " " + tmpUser->nickName + " " + reson, *tmpUser);
+          string msg = string(":") + user.nickName + " KICK " + channel + " " + tmpUser->nickName + " " + reson;
+          std::cout << msg << std::endl;
+          std::cout << tmpUser << "\n";
+          _channels.Channel_Leave(tmpUser->userName, channel);
+          privMsg(channel, msg, user.nickName);
           return true;
         }
       else
