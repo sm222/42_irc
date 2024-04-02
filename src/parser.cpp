@@ -1,8 +1,6 @@
 #include "parser.h"
 #include "_header.h"
-#include <cassert>
 #include <cctype>
-#include <chrono>
 #include <string>
 #include <vector>
 #include <xlocale/_stdio.h>
@@ -223,16 +221,18 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
 }
 
 void Parser::fnPMSG(vec_str& vec, userData& user){
+  std::cout << RED "|fnPMSG" RESET << std::endl;
   if (vec.size() == 2)
     privMsg(vec[1], vec[2], user.nickName);
 }
 
 //KICK #a bob : reason
 void Parser::fnKICK(vec_str& vec, userData& user){
-  // if (vec.size() == 3)
-  //   kickUserChannel(user, vec[1], vec[2], vec[3]);
-  // else if (vec.size() == 2)
-  //   kickUserChannel(user, vec[1], vec[2], "");
+  std::cout << RED "|fnKICK" RESET << std::endl;
+  if (vec.size() == 3)
+    KickUserChannel(user, vec[1], vec[2], vec[3]);
+  else if (vec.size() == 2)
+    KickUserChannel(user, vec[1], vec[2], "");
 }
 
 /// ####################################################################################################################
@@ -268,17 +268,13 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
       fnJOIN(token, user);
     }
     else if (token[0] == "KICK") {
-      //KICK
-    }
-    else if (token[0] == "INVITE") {
-      //KICK
-    }
-    else if (token[0] == "TOPIC") {
-      //KICK
       fnKICK(token, user);
     }
+    else if (token[0] == "INVITE") {
+    }
+    else if (token[0] == "TOPIC") {
+    }
     else if (token[0] == "MODE") {
-      //KICK
     }
     else if (token[0] == "NICK") {
       fnNICK(token, user, index);
