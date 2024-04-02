@@ -136,13 +136,16 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
 
 
 bool  Parser::privMsg(const string target, const string message, const string nick) {
-  if (!Sock.channels.Channel_AlreadyExist(target)){
-    if (Sock.doesThisNicknameExist(target)){
-      Sock.SendData(Sock.GetUserByNickname(target)->userFD, ":" + nick + " PRIVMSG " + target + " " + message);
-      return true;
-    }
+  //* send mesagge to one user if no channel find
+  if (!Sock.channels.Channel_AlreadyExist(target)) {
+      if (Sock.doesThisNicknameExist(target)) {
+        const userData *tmpUser = Sock.GetUserByNickname(target);
+        Sock.SendData(tmpUser->userFD, string(":") + nick + " PRIVMSG " + target + " " + message);
+        return true;
+      }
     return false;
   }
+  //* send message to all user
   const vec_str userList =  Sock.channels.Channel_Get_AllUsers(target);
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
@@ -151,4 +154,31 @@ bool  Parser::privMsg(const string target, const string message, const string ni
       Sock.SendData(tmpUser->userFD, msg);
   }
   return true;
+}
+
+//?  * // KICK
+
+
+// Received: KICK #a bob :bozo lala
+
+// :WiZ!jto@tolsun.oulu.fi KICK #Finnish John
+
+bool  Parser::KickUserChannel(const userData &user, const string channel, const string nick, const string reson) {
+  if (_channels.Channel_AlreadyExist(channel)) {
+    if (_channels.Channel_Get_IsUserInChannel(user.userName, channel) && 
+        _channels.Channel_Get_IsUserChannelOP(user.userName, channel)) {
+        const userData* tmpUser = Sock.GetUserByNickname(nick);
+        if (_channels.Channel_Get_IsUserInChannel(tmpUser->userName, channel)) {
+          kickUser(*_index, string(":") + user.nickName + " KICK " + channel + " " + tmpUser->nickName + " " + reson, *tmpUser);
+          return true;
+        }
+      else
+        std::cout << "// can't kick user not in chanel" << std::endl;
+    }
+    else
+      std::cout << "// is not in chanel or op" << std::endl;
+  }
+  else
+    std::cout << "//chanel don't exist\n";
+  return false;
 }
