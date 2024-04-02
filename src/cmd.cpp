@@ -138,13 +138,21 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
 //PRIVMSG #a :awd
 
 
-bool  Parser::privMsg(const string chanel, const string message, const string nick) {
-  if (!Sock.channels.Channel_AlreadyExist(chanel))
+bool  Parser::privMsg(const string target, const string message, const string nick) {
+  //* send mesagge to one user if no channel find
+  if (!Sock.channels.Channel_AlreadyExist(target)) {
+      if (Sock.doesThisNicknameExist(target)) {
+        const userData *tmpUser = Sock.GetUserByNickname(target);
+        Sock.SendData(tmpUser->userFD, string(":") + nick + " PRIVMSG " + target + " " + message);
+        return true;
+      }
     return false;
-  const vec_str userList =  Sock.channels.Channel_Get_AllUsers(chanel);
+  }
+  //* send message to all user
+  const vec_str userList =  Sock.channels.Channel_Get_AllUsers(target);
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
-    string msg = ":" + nick + " PRIVMSG " + chanel + " " + message;
+    string msg = ":" + nick + " PRIVMSG " + target + " " + message;
     if (tmpUser->nickName != nick)
       Sock.SendData(tmpUser->userFD, msg);
   }
