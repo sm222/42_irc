@@ -241,7 +241,7 @@ void Parser::fnPART(vec_str& vec, userData& user){
 
   if (vec.size() < 2)
     return;
-  if (vec.size() >= 2 && !vec[1].empty())
+  if (vec.size() == 3 && !vec[1].empty())
     channel = Tokenize(vec[1], ',');
   if (channel.size() > 0){
     for (size_t i = 0; i < channel.size(); i++) {
@@ -255,7 +255,7 @@ void Parser::fnPART(vec_str& vec, userData& user){
 
   if (!channel.empty()){
     for (size_t i = 0; i < channel.size(); i++) {
-    // quit all channel
+      userPart(channel[i], user.userName, vec[2]);
     }
   }
 }
@@ -267,7 +267,7 @@ void Parser::fnQUIT(vec_str& vec, userData& user){
   else{ 
     Sock.SendData(user.userFD, ":" + user.nickName + " QUIT");
   }
-  //quit all channel
+  KickUserAllChannel(user, vec[1]);
 }
 
 /// ####################################################################################################################
@@ -316,8 +316,10 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
       fnPMSG(token, user);
     }
     else if (token[0] == "PART") {
+      fnPART(token, user);
     }
     else if (token[0] == "QUIT") {
+      fnQUIT(token, user);
     }
     //else
     //  unknowCommand(user);
