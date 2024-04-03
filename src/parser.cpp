@@ -303,7 +303,8 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     else if (token[0] == "KICK") {
       fnKICK(token, user);
     }
-    else if (token[0] == "INVITE") {
+    else if (token[0] == "INVITE") { //INVITE|[1]nick_name_0|[2]#b|
+      
     }
     else if (token[0] == "TOPIC") {
     }
