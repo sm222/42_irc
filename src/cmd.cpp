@@ -192,3 +192,15 @@ bool  Parser::KickUserChannel(const userData &user, const string channel, const 
     std::cout << "//chanel don't exist\n";
   return false;
 }
+
+bool Parser::KickUserAllChannel(const userData &user){
+  vec_str vec = _channels.User_GetAllChannels(user.userName);
+  if (vec.size() > 0){
+    for (int i = 0; i < vec.size(); i++) {
+      
+    }
+  }
+  else
+    return false;
+  return true;
+}
