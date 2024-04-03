@@ -191,14 +191,34 @@ bool  Parser::KickUserChannel(const userData &user, const string channel, const 
   return false;
 }
 
-bool Parser::KickUserAllChannel(const userData &user){
-  vec_str vec = _channels.User_GetAllChannels(user.userName);
-  if (vec.size() > 0){
-    for (int i = 0; i < vec.size(); i++) {
-      
+
+//?  * // PART
+
+bool  Parser::userPart(const string channel , const string userName, const string reson) {
+  if (_channels.Channel_AlreadyExist(channel)) {
+    if (_channels.Channel_Get_IsUserInChannel(userName, channel)) {
+      vec_str channelUser = _channels.Channel_Get_AllUsers(channel);
+      const userData* leaver = Sock.GetUserByUsername(userName);
+      for (size_t i = 0; i < channelUser.size(); i++) {
+        const userData* tmpUser = Sock.GetUserByUsername(channelUser[i]);
+        Sock.SendData(tmpUser->userFD, string(":") + leaver->nickName + " PART " + channel + " " + reson);
+      }
+      _channels.Channel_Leave(userName, channel);
+      return true;
     }
   }
-  else
+  return false;
+}
+
+
+
+bool Parser::KickUserAllChannel(const userData& user, const string reson) {
+  vec_str channelList = _channels.User_GetAllChannels(user.userName);
+  if (channelList.size() == 0)
     return false;
+  //*                                              //
+  for (size_t i = 0; i < channelList.size(); i++) {
+    userPart(channelList[i], user.userName, reson);
+  }
   return true;
 }

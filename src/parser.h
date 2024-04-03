@@ -31,7 +31,8 @@ public:
     bool        setUserMode(userData& user, int type);
     bool        privMsg(const string chanel, const string message, const string nick, bool self = false);
     bool        KickUserChannel(const userData &user, const string channel, const string nick, const string reson);
-    bool        KickUserAllChannel(const userData &user);
+    bool        KickUserAllChannel(const userData& user, const string reson);
+    bool        userPart(const string channel , const string userName, const string reson);
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);
     void        badCmd(userData &user);
