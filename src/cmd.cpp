@@ -168,13 +168,10 @@ bool  Parser::privMsg(const string target, const string message, const string ni
 // :WiZ!jto@tolsun.oulu.fi KICK #Finnish John
 
 bool  Parser::KickUserChannel(const userData &user, const string channel, const string nick, const string reson) {
-  std::cout << "ici - 1\n";
   if (_channels.Channel_AlreadyExist(channel)) {
-    std::cout << "ici\n";
     if (_channels.Channel_Get_IsUserInChannel(user.userName, channel) && 
         _channels.Channel_Get_IsUserChannelOP(user.userName, channel)) {
         const userData* tmpUser = Sock.GetUserByNickname(nick);
-        std::cout << "ici2\n";
         if (_channels.Channel_Get_IsUserInChannel(tmpUser->userName, channel)) {
           string msg = string(":") + user.nickName + " KICK " + channel + " " + tmpUser->nickName + " " + reson;
           const vec_str userList =  Sock.channels.Channel_Get_AllUsers(channel);

@@ -23,7 +23,7 @@ tell application "iTerm"
         repeat with aSession in allSessions
             tell aSession
                 write text "bash " & scriptPath & " -d"
-                delay 1.5 # Increased delay between commands to ensure smooth execution
+                delay 2 # Increased delay between commands to ensure smooth execution
             end tell
         end repeat
     end tell
