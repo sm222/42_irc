@@ -138,7 +138,8 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
 //PRIVMSG #a :awd
 
 
-bool  Parser::privMsg(const string target, const string message, const string nick) {
+
+bool  Parser::privMsg(const string target, const string message, const string nick, bool self) {
   //* send mesagge to one user if no channel find
   if (!Sock.channels.Channel_AlreadyExist(target)) {
       if (Sock.doesThisNicknameExist(target)) {
@@ -153,7 +154,7 @@ bool  Parser::privMsg(const string target, const string message, const string ni
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
     string msg = ":" + nick + " PRIVMSG " + target + " " + message;
-    if (tmpUser->nickName != nick)
+    if (tmpUser->nickName != nick || self == true)
       Sock.SendData(tmpUser->userFD, msg);
   }
   return true;
@@ -177,10 +178,12 @@ bool  Parser::KickUserChannel(const userData &user, const string channel, const 
         std::cout << "ici2\n";
         if (_channels.Channel_Get_IsUserInChannel(tmpUser->userName, channel)) {
           string msg = string(":") + user.nickName + " KICK " + channel + " " + tmpUser->nickName + " " + reson;
-          std::cout << msg << std::endl;
-          std::cout << tmpUser << "\n";
+          const vec_str userList =  Sock.channels.Channel_Get_AllUsers(channel);
+          for (size_t i = 0; i < userList.size(); i++) {
+            const userData* usrMsg = Sock.GetUserByUsername(userList[i]);
+            Sock.SendData(usrMsg->userFD, msg);
+          }
           _channels.Channel_Leave(tmpUser->userName, channel);
-          privMsg(channel, msg, user.nickName);
           return true;
         }
       else

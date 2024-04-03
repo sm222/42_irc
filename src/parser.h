@@ -29,7 +29,7 @@ public:
     bool        setTopic(const userData&  user, const string& chanelName, const string& topic);
     string      getTopic(const string& chanalName);
     bool        setUserMode(userData& user, int type);
-    bool        privMsg(const string chanel, const string message, const string nick);
+    bool        privMsg(const string chanel, const string message, const string nick, bool self = false);
     bool        KickUserChannel(const userData &user, const string channel, const string nick, const string reson, vectorIT& index);
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);
