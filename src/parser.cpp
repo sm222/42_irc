@@ -186,7 +186,7 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
   vec_str channel;
   vec_str key;
 
-  (void)user;
+  //error verification
   if (vec.size() < 2)
     return;
   if (user.recvString.find(':') != std::string::npos){
@@ -194,6 +194,7 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
      return;
   }
 
+  //channel and key logical
   if (vec.size() >= 2 && !vec[1].empty()){
     channel = Tokenize(vec[1], ',');
     if (vec.size() >= 3 && !vec[2].empty())
@@ -208,6 +209,8 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
           Sock.SendData(user.userFD, "479 :invalid character");
     }
   }
+
+  //join channel
   if (!channel.empty()){
     for (size_t i = 0; i < channel.size(); i++) {
         std::string tmp("");
@@ -216,8 +219,6 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
         joinChannel(user, channel[i], tmp);
     }
   }
-  print_vec(channel, "CHANNEL");
-  print_vec(key, "KEY");
 }
 
 void Parser::fnPMSG(vec_str& vec, userData& user){
@@ -233,6 +234,16 @@ void Parser::fnKICK(vec_str& vec, userData& user){
     KickUserChannel(user, vec[1], vec[2], vec[3]);
   else if (vec.size() == 2)
     KickUserChannel(user, vec[1], vec[2], "");
+}
+
+// void Parser::fnPART(vec_str& vec, userData& user){
+// }
+
+void Parser::fnQUIT(vec_str& vec, userData& user){
+  if (vec.size() == 2)
+    Sock.SendData(user.userFD, ":" + user.nickName + " QUIT " + vec[1]);
+  else
+    Sock.SendData(user.userFD, ":" + user.nickName + " QUIT");
 }
 
 /// ####################################################################################################################
@@ -255,11 +266,9 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     else if (user.currentAction == 0) {
       kickUser(index, MSG_ErrSaslFail, user); //!if user send shit witout giving a valid password
     }
-    //! user
     else if (token[0] == "USER" && LV(user.currentAction, e_notNameSet)) {
       fnUSER(token, user, index);
     }
-    //? PONG :)
     else if (token[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
       Sock.SendData(user.userFD, string("PONG ") + token[1]);
       //std::cout << ORG << user.userName << RESET << " :PING " << std::endl; //? dev can be remove
@@ -281,6 +290,10 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
     else if (token[0] == "PRIVMSG") { //PRIVMSG #a :awd
       fnPMSG(token, user);
+    }
+    else if (token[0] == "PART") {
+    }
+    else if (token[0] == "QUIT") {
     }
     //else
     //  unknowCommand(user);

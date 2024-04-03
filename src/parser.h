@@ -41,6 +41,8 @@ public:
     void        fnJOIN(vec_str& vec, userData& user);
     void        fnPMSG(vec_str& vec, userData& user);
     void        fnKICK(vec_str& vec, userData& user);
+    void        fnPART(vec_str& vec, userData& user);
+    void        fnQUIT(vec_str& vec, userData& user);
     void        fnNICK(vec_str& vec, userData& user, vectorIT& index);
     void        fnUSER(vec_str& vec, userData& user, vectorIT& index);
     void        fnPASS(vec_str& vec, userData& user, vectorIT& index);
