@@ -236,16 +236,38 @@ void Parser::fnKICK(vec_str& vec, userData& user){
     KickUserChannel(user, vec[1], vec[2], "");
 }
 
-// void Parser::fnPART(vec_str& vec, userData& user){
-// }
+void Parser::fnPART(vec_str& vec, userData& user){
+  vec_str channel;
+
+  if (vec.size() < 2)
+    return;
+  if (vec.size() >= 2 && !vec[1].empty())
+    channel = Tokenize(vec[1], ',');
+  if (channel.size() > 0){
+    for (size_t i = 0; i < channel.size(); i++) {
+        if (!isValidStr(channel[i], "#&") || (channel[i][0] != '#' && channel[i][0] != '&') || channel[i].length() == 1){
+          channel.erase(channel.begin() + i);
+          i--;
+        }else
+          Sock.SendData(user.userFD, "479 :invalid character");
+    }
+  }
+
+  if (!channel.empty()){
+    for (size_t i = 0; i < channel.size(); i++) {
+    // quit all channel
+    }
+  }
+}
 
 void Parser::fnQUIT(vec_str& vec, userData& user){
   if (vec.size() == 2){
     Sock.SendData(user.userFD, ":" + user.nickName + " QUIT " + vec[1]);
   }
-  else{
+  else{ 
     Sock.SendData(user.userFD, ":" + user.nickName + " QUIT");
   }
+  //quit all channel
 }
 
 /// ####################################################################################################################

@@ -180,8 +180,8 @@ bool  Parser::KickUserChannel(const userData &user, const string channel, const 
           _channels.Channel_Leave(tmpUser->userName, channel);
           return true;
         }
-      else
-        std::cout << "// can't kick user not in chanel" << std::endl;
+        else
+          std::cout << "// can't kick user not in chanel" << std::endl;
     }
     else
       std::cout << "// is not in chanel or op" << std::endl;
@@ -194,7 +194,7 @@ bool  Parser::KickUserChannel(const userData &user, const string channel, const 
 bool Parser::KickUserAllChannel(const userData &user){
   vec_str vec = _channels.User_GetAllChannels(user.userName);
   if (vec.size() > 0){
-    for (int i = 0; i < vec.size(); i++) {
+    for (size_t i = 0; i < vec.size(); i++) {
       
     }
   }
