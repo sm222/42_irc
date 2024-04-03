@@ -38,7 +38,18 @@ ip:
 	@echo -n 'cd ' 
 	@pwd
 
-wee:
+client:
 	@docker run -ti weechat/weechat
+
+wee:
+	@./dev/run_weechat.sh
+
+wee-d:
+	@./dev/run_weechat.sh -d
+
+term:
+	@./dev/double_term.sh
+
+shit: term run
 
 .PHONY: all clean fclean re leak run docker

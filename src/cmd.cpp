@@ -167,8 +167,7 @@ bool  Parser::privMsg(const string target, const string message, const string ni
 
 // :WiZ!jto@tolsun.oulu.fi KICK #Finnish John
 
-bool  Parser::KickUserChannel(const userData &user, const string channel, const string nick, const string reson, vectorIT& index) {
-  (void)index;
+bool  Parser::KickUserChannel(const userData &user, const string channel, const string nick, const string reson) {
   std::cout << "ici - 1\n";
   if (_channels.Channel_AlreadyExist(channel)) {
     std::cout << "ici\n";

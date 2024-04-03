@@ -13,13 +13,13 @@ https://modern.ircdocs.horse/
 
 PING 
 
-/server add O_O 10.12.6.4/2000 -notls -password=a
+/server add O_O 10.12.6.3/2000 -notls -password=a
 /set irc.server.O_O.username "Oli2"
 /set irc.server.O_O.nicks "bob2"
 /connect O_O
 
 
-/server add O_O 10.12.6.4/2000 -notls -password=a
+/server add O_O 10.12.6.3/2000 -notls -password=a
 /set irc.server.O_O.username "Oli3"
 /set irc.server.O_O.nicks "bob3"
 /connect O_O

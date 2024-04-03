@@ -30,7 +30,7 @@ public:
     string      getTopic(const string& chanalName);
     bool        setUserMode(userData& user, int type);
     bool        privMsg(const string chanel, const string message, const string nick, bool self = false);
-    bool        KickUserChannel(const userData &user, const string channel, const string nick, const string reson, vectorIT& index);
+    bool        KickUserChannel(const userData &user, const string channel, const string nick, const string reson);
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);
     void        badCmd(userData &user);
@@ -40,7 +40,9 @@ public:
 
     void        fnJOIN(vec_str& vec, userData& user);
     void        fnPMSG(vec_str& vec, userData& user);
-    void        fnKICK(vec_str& vec, userData& user, vectorIT& index);
+    void        fnKICK(vec_str& vec, userData& user);
+    void        fnPART(vec_str& vec, userData& user);
+    void        fnQUIT(vec_str& vec, userData& user);
     void        fnNICK(vec_str& vec, userData& user, vectorIT& index);
     void        fnUSER(vec_str& vec, userData& user, vectorIT& index);
     void        fnPASS(vec_str& vec, userData& user, vectorIT& index);
