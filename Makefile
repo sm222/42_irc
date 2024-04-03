@@ -26,8 +26,8 @@ leak: all
 run: re $(TARGET) ip
 	@./$(TARGET) 2000 a
 
-docker:
-	docker run -it weechat/weechat
+docker-clean:
+	@docker ps -q --filter ancestor=weechat/weechat | xargs docker stop
 
 docker-clear:
 	@docker kill $$(docker ps -q) || true

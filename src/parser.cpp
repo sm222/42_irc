@@ -169,7 +169,7 @@ void Parser::fnUSER(vec_str& vec, userData& user, vectorIT& index){
 void Parser::fnNICK(vec_str& vec, userData& user, vectorIT& index){
   std::cout << RED "|fnNICK" RESET << std::endl;
   if (isValidStr(vec[1], "-_")){
-    if (!Sock.GetUserByUsername(vec[1])){
+    if (!Sock.GetUserByNickname(vec[1])){
       user.nickName = vec[1];
       return;
     }
@@ -223,7 +223,7 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
 
 void Parser::fnPMSG(vec_str& vec, userData& user){
   std::cout << RED "|fnPMSG" RESET << std::endl;
-  if (vec.size() == 2)
+  if (vec.size() == 3)
     privMsg(vec[1], vec[2], user.nickName);
 }
 
@@ -240,10 +240,12 @@ void Parser::fnKICK(vec_str& vec, userData& user){
 // }
 
 void Parser::fnQUIT(vec_str& vec, userData& user){
-  if (vec.size() == 2)
+  if (vec.size() == 2){
     Sock.SendData(user.userFD, ":" + user.nickName + " QUIT " + vec[1]);
-  else
+  }
+  else{
     Sock.SendData(user.userFD, ":" + user.nickName + " QUIT");
+  }
 }
 
 /// ####################################################################################################################
