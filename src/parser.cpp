@@ -169,7 +169,7 @@ void Parser::fnUSER(vec_str& vec, userData& user, vectorIT& index){
 void Parser::fnNICK(vec_str& vec, userData& user, vectorIT& index){
   std::cout << RED "|fnNICK" RESET << std::endl;
   if (isValidStr(vec[1], "-_")){
-    if (!Sock.GetUserByUsername(vec[1])){
+    if (!Sock.GetUserByNickname(vec[1])){
       user.nickName = vec[1];
       return;
     }
