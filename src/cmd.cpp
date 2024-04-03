@@ -62,11 +62,8 @@ string  Parser::getTopic(const string& chanalName) {
 //?  * // kick
 
 void  Parser::kickUser(vectorIT& index, const string reasons, const userData &user) {
-    std::cout << "kick\n";
     Sock.SendData(user.userFD, reasons);
-    std::cout << "kick1\n";
     Sock.KickUser(index);
-    std::cout << "kick2\n";
 }
 
 short     Parser::_tryJoinChannel(const userData& user, const string name, const string pass) {
@@ -150,11 +147,12 @@ bool  Parser::privMsg(const string target, const string message, const string ni
     return false;
   }
   //* send message to all user
+  (void)self;
   const vec_str userList =  Sock.channels.Channel_Get_AllUsers(target);
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
     string msg = ":" + nick + " PRIVMSG " + target + " " + message;
-    if (tmpUser->nickName != nick || self == true)
+    if (tmpUser->nickName != nick)
       Sock.SendData(tmpUser->userFD, msg);
   }
   return true;
