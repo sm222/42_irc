@@ -4,6 +4,25 @@ Channels::Channels() {}
 
 // +++ Public +++
 
+
+std::vector<std::string>    Channels::User_GetAllChannels(const std::string& userName) {
+    std::vector<std::string> T;
+
+    // Iterate all the Channels
+    for (ChannelGroup::iterator i = _channelGroup.begin(); i != _channelGroup.end(); i++) {
+        std::string     channelName = i->first;
+        UsersMap&       currentChannel = i->second.second; // Skip to the userlist right away
+
+        // Try to find Player, if exist, Pushback
+        UsersMap::iterator j = currentChannel.find(userName);
+        if (j != currentChannel.end()) {
+            T.push_back(channelName);
+        }
+    }
+    return T;
+}
+
+
 std::string                     Channels::Channel_Get_Password(const std::string& channelname) {
     ChannelMap* Chan = _getChannelByName(channelname);
     if (!Chan) return "";

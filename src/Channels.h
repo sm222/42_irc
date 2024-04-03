@@ -66,6 +66,7 @@ public:
     bool                            Channel_Leave(const std::string& userName, const std::string& channelName);
 
     // Getter
+    std::vector<std::string>        User_GetAllChannels(const std::string& userName);
     int                             Channel_Get_CurrentUsersCount(const std::string& channelname);
     int                             Channel_Get_MaxUsersCount(const std::string& channelname);
     bool                            Channel_Get_IsUserInChannel(const std::string& userName, const std::string& channelName);
