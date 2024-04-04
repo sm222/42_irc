@@ -305,7 +305,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
       fnPASS(token, user, index);
     }
     else if (user.currentAction == 0) {
-      kickUser(index, MSG_ErrSaslFail, user); //!if user send shit witout giving a valid password
+      kickUser(index, ERR_PASSWDMISMATCH, user); //!if user send shit witout giving a valid password
     }
     else if (token[0] == "USER" && LV(user.currentAction, e_notNameSet)) {
       fnUSER(token, user, index);

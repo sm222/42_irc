@@ -133,7 +133,7 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
     std::cout << GRN << "Valid password" << RESET << std::endl;
     return true;
   }
-  kickUser(index, MSG_PassMisMatch, user);
+  kickUser(index, ERR_PASSWDMISMATCH, user);
   std::cout << RED <<  "Bad password" << RESET << std::endl;
   return false;
 }

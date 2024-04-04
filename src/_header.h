@@ -51,19 +51,26 @@ enum e_ActionLv {
 // info //
 #define RPL_TOPIC(nick, channel, topic)         "332 " + nick +  " " + channel + " " + topic        //<client> <channel> :<topic>
 #define ERR_NEEDMOREPARAMS(cmd)                 "461 " + cmd + " :Not enough parameters"
+#define ERR_PASSWDMISMATCH                      "464 :Password incorrect"
+
+//user
+#define ERR_USERNOTINCHANNEL()                  "441 " + nick + " " + channel + " :They aren't on that channel"
+#define ERR_USERONCHANNEL(user, channel)        "443 " + user + " " + channel + " :is already on channel"
+#define ERR_NOLOGIN(user)                       "444 " + user + " :User not logged in"
 
 //nickName
 #define ERR_NONICKNAMEGIVEN                     "431 :No nickname given"
-#define ERR_NICKNAMEINUSE(nick)                 "433 " + nick + " :Nickname is already in use"
 #define ERR_ERRONEUSNICKNAME(nick)              "432 " + nick +  " :Erroneous nickname"
+#define ERR_NICKNAMEINUSE(nick)                 "433 " + nick + " :Nickname is already in use"
+#define ERR_WASNOSUCHNICK(nick)                 "406 " + nick + " :There was no such nickname"
 
 //kick
-#define ERR_NOTONCHANNEL(channel)               "442 " + channel + " :You're not on that channel"
 #define ERR_NOSUCHNICK(nick)                    "401 " + nick + " :No such nick/channel"
+#define ERR_NOTONCHANNEL(channel)               "442 " + channel + " :You're not on that channel"
 
 //join
-#define ERR_INVITEONLYCHAN(channel)             "473 " + channel + " :Cannot join channel (+i)"
 #define ERR_CHANNELISFULL(channel)              "471 " + channel + " :Cannot join channel (+l)"
+#define ERR_INVITEONLYCHAN(channel)             "473 " + channel + " :Cannot join channel (+i)"
 #define ERR_BADCHANNELKEY(channel)              "475 " + channel + " :Cannot join channel (+k)"
 
 //channel
@@ -79,8 +86,10 @@ enum e_ActionLv {
 #define ERR_NOTEXTTOSEND                        "412 :No text to send"
 
 //topic
-#define ERR_NOTOPLEVEL(mask)                    "413 " + mask + " :No toplevel domain specified"
 #define ERR_TOOMANYTARGETS(target, mag)         target + ":407 recipients. " + msg
+#define ERR_NOTOPLEVEL(mask)                    "413 " + mask + " :No toplevel domain specified"
+
+#define MSG_ErrSaslFail          "904 " ServerName " :SASL authentication failed"
 
 typedef enum e_type {
   e_none = -1,      // -1
