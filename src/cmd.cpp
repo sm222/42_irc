@@ -10,17 +10,21 @@
 //! don't use need to modefiy
 //! shoud be modefy for bad arg in cmd
 //! @param user ERR_UNKNOWNERROR (400) 
-void Parser::badCmd(userData &user) {
+void Parser::badCmd(userData& user) {
   Sock.SendData(user.userFD, string("400 ") + ServerName " " + user.recvString + " :ERR_UNKNOWNERROR" );
 }
 
-void  Parser::unknowCommand(userData &user) {
+void  Parser::unknowCommand(userData& user) {
   Sock.SendData(user.userFD, string("421 ") + ServerName " " + user.recvString + " :unknow cmd" );
 }
 
 
-void  Parser::allReadyRegistered(userData &user) {
+void  Parser::allReadyRegistered(userData& user) {
   Sock.SendData(user.userFD, ServerName " :You may not reregister");
+}
+
+void Parser::notInChannel(const userData& user, const string channel) {
+  Sock.SendData(user.userFD, string("441 " + user.nickName + " " + channel + " :They aren't on that channel"));
 }
 
 //*                       *//
@@ -43,18 +47,18 @@ bool  Parser::setUserMode(userData& user, int type) {
 //TOPIC
 
 bool  Parser::setTopic(const userData& user, const string& chanelName, const string& topic) {
-  if (Sock.channels.Channel_AlreadyExist(chanelName)) {
-    if (!Sock.channels.Channel_Get_CanUserChangeTopic(chanelName) && !Sock.channels.Channel_Get_IsUserChannelOP(user.userName, chanelName))
+  if (_channels.Channel_AlreadyExist(chanelName)) {
+    if (!_channels.Channel_Get_CanUserChangeTopic(chanelName) && !_channels.Channel_Get_IsUserChannelOP(user.userName, chanelName))
       return false;
-    Sock.channels.Channel_Set_Topic(chanelName, topic);
+    _channels.Channel_Set_Topic(chanelName, topic);
     return true;
   }
   return false;
 }
 
 string  Parser::getTopic(const string& chanalName) {
-  if (Sock.channels.Channel_AlreadyExist(chanalName))
-    return Sock.channels.Channel_Get_Topic(chanalName);
+  if (_channels.Channel_AlreadyExist(chanalName))
+    return _channels.Channel_Get_Topic(chanalName);
   return ("");
 }
 
@@ -67,12 +71,12 @@ void  Parser::kickUser(vectorIT& index, const string reasons, const userData &us
 }
 
 short     Parser::_tryJoinChannel(const userData& user, const string name, const string pass) {
-  const string& _pass = Sock.channels.Channel_Get_Password(name);
+  const string& _pass = _channels.Channel_Get_Password(name);
   if (!_pass.empty() && _pass != pass) {
     Sock.SendData(user.userFD, makeMessage(e_passmismatch, ":channel password incorrect", user));
     return false;
   }
-  if (!Sock.channels.Channel_Join(user.userName, name))
+  if (!_channels.Channel_Join(user.userName, name))
     return false;
   return true;
 }
@@ -92,19 +96,17 @@ string   Parser::_SendUserChannelStatus(const vec_str& userList, const string& n
 }
 
 bool    Parser::joinChannel(const userData& user, const string& name, const string& pass) {
-  Channels&  chanRef = Sock.channels;
-  if (!chanRef.Channel_AlreadyExist(name)) {
-    if (!chanRef.Channel_Create(user.userName, name)) {
-      //! can't make chanel
-      return false;
+  if (!_channels.Channel_AlreadyExist(name)) {
+    if (!_channels.Channel_Create(user.userName, name)) {
+      return false;    //! can't make chanel
     }
-    chanRef.Channel_Set_Password(name, pass);
+    _channels.Channel_Set_Password(name, pass);
   }
   else if (!_tryJoinChannel(user, name, pass)) {
     return false;
   }
   Sock.SendData(user.userName, makeMessage(e_none, string(":%n JOIN ") + name, user));
-  Sock.SendData(user.userFD, string("332 ") + user.nickName + " :boze");
+  Sock.SendData(user.userFD, string("332 ") + user.nickName + " :"+ getTopic(name));
   const vec_str& userList = Sock.channels.Channel_Get_AllUsers(name);
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
@@ -147,12 +149,17 @@ bool  Parser::privMsg(const string target, const string message, const string ni
     return false;
   }
   //* send message to all user
-  (void)self;
+  const userData*  sender = Sock.GetUserByNickname(nick);
+  if (!_channels.Channel_Get_IsUserInChannel(sender->userName, target)) {
+    //! user not in channel
+    notInChannel(*sender, target);
+    return false;
+  }
   const vec_str userList =  Sock.channels.Channel_Get_AllUsers(target);
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
     string msg = ":" + nick + " PRIVMSG " + target + " " + message;
-    if (tmpUser->nickName != nick)
+    if (tmpUser->nickName != nick || self)
       Sock.SendData(tmpUser->userFD, msg);
   }
   return true;

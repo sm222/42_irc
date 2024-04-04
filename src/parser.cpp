@@ -190,8 +190,8 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
   if (vec.size() < 2)
     return;
   if (user.recvString.find(':') != std::string::npos){
-     Sock.SendData(user.userFD, "479 :invalid character");
-     return;
+      Sock.SendData(user.userFD, "479 :invalid character");
+      return;
   }
 
   //channel and key logical
