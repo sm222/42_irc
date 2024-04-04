@@ -39,6 +39,7 @@ public:
     void        notInChannel(const userData& user, const string channel);
     void        unknowCommand(userData &user);
     void        allReadyRegistered(userData &user);
+    void        noSuchNick(const userData& user, const string nick);
     //*    //
 
     void        fnJOIN(vec_str& vec, userData& user);

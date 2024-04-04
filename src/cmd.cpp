@@ -27,6 +27,11 @@ void Parser::notInChannel(const userData& user, const string channel) {
   Sock.SendData(user.userFD, string("441 " + user.nickName + " " + channel + " :They aren't on that channel"));
 }
 
+//<client> :There was no such nickname"ERR_WASNOSUCHNICK (406) 
+void Parser::noSuchNick(const userData& user, const string nick) {
+  Sock.SendData(user.userFD, string("406 ") + user.nickName + " " + nick + " :There was no such nickname");
+}
+
 //*                       *//
 //*           CMD         *//
 //*                       *//
@@ -188,7 +193,7 @@ bool  Parser::KickUserChannel(const userData &user, const string channel, const 
           return true;
         }
         else
-          std::cout << "// can't kick user not in chanel" << std::endl;
+          noSuchNick(user, nick);
     }
     else
       std::cout << "// is not in chanel or op" << std::endl;
