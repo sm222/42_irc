@@ -46,16 +46,41 @@ enum e_ActionLv {
 #define ServerName  "42irc"
 
 // base //
-#define MSG_Welcome         (user) "001 " ServerName " :Welcome to the 42irc " + user             //<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]
+#define RPL_WELCOME(user, nick)                 "001 " + nick + " :Welcome to the 42irc " + user   //<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]
 
 // info //
-#define MSG_RplTopic        (channel, topic) "332 " ServerName " " + channel + " " + topic        //<client> <channel> :<topic>
+#define RPL_TOPIC(nick, channel, topic)         "332 " + nick +  " " + channel + " " + topic        //<client> <channel> :<topic>
+#define ERR_NEEDMOREPARAMS(cmd)                 "461 " + cmd + " :Not enough parameters"
 
-// error //
-#define MSG_ERR_UNKNOWNERROR     "400 " ServerName " :SASL authentication failed"
-#define MSG_PassMisMatch         "464 " ServerName " :password incorect"                                                //<client> :Password incorrect
-#define MSG_ErrSaslFail          "904 " ServerName " :SASL authentication failed"
+//nickName
+#define ERR_NONICKNAMEGIVEN                     "431 :No nickname given"
+#define ERR_NICKNAMEINUSE(nick)                 "433 " + nick + " :Nickname is already in use"
+#define ERR_ERRONEUSNICKNAME(nick)              "432 " + nick +  " :Erroneous nickname"
 
+//kick
+#define ERR_NOTONCHANNEL(channel)               "442 " + channel + " :You're not on that channel"
+#define ERR_NOSUCHNICK(nick)                    "401 " + nick + " :No such nick/channel"
+
+//join
+#define ERR_INVITEONLYCHAN(channel)             "473 " + channel + " :Cannot join channel (+i)"
+#define ERR_CHANNELISFULL(channel)              "471 " + channel + " :Cannot join channel (+l)"
+#define ERR_BADCHANNELKEY(channel)              "475 " + channel + " :Cannot join channel (+k)"
+
+//channel
+#define RPL_INVITING(nick, channel)             "341 " + channel + " " + nick
+#define ERR_NOSUCHCHANNEL(channel)              "403 " + channel + " :No such channel"
+#define ERR_CANNOTSENDTOCHAN(channel)           "404 " + channel + " :Cannot send to channel"
+#define ERR_BADCHANNAME                         "479 :bad channel name/invalid charater"
+#define ERR_CHANOPRIVSNEEDED(channel)           "482 " + channel + " :You're not channel operator"
+
+//
+#define RPL_AWAY(nick, msg)                     "301 " + nick + " :" + msg
+#define ERR_NORECIPIENT(cmd)                    "411 :No recipient given (" + cmd + ")"
+#define ERR_NOTEXTTOSEND                        "412 :No text to send"
+
+//topic
+#define ERR_NOTOPLEVEL(mask)                    "413 " + mask + " :No toplevel domain specified"
+#define ERR_TOOMANYTARGETS(target, mag)         target + ":407 recipients. " + msg
 
 typedef enum e_type {
   e_none = -1,      // -1
