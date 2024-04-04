@@ -35,6 +35,16 @@ void print_vec(vec_str vec, std::string name){
   std::cout << std::endl;
 }
 
+std::string supchar(const std::string &str, char c){
+	std::string tmp = "";
+  if (str.empty())
+    return tmp;
+	for (size_t i = 0; i < str.length(); i++)
+		if (str[i] != c)
+			tmp += str[i];
+	return tmp;
+}
+
 //CLASS
 
 Parser::Parser(Socket& socketClass) : Sock(socketClass), _channels(Sock.channels) {
@@ -74,16 +84,12 @@ vec_str Parser::Tokenize(std::string message, char c){
   vec_str vec;
   size_t pos = 0;
   size_t old_pos = 0;
-  size_t end = message.find_last_of("\n");
+  message = supchar(message, '\r');
+  message = supchar(message, '\n');
   size_t point = message.find(':', 0);
   std::string _text;
   std::string _cmds;
 
-  if (end != std::string::npos)
-    message.erase(end, 1);
-  end = message.find_last_of("\r");
-  if (end != std::string::npos)
-    message.erase(end, 1);
   if (message.empty())
     return vec;
   
@@ -102,8 +108,7 @@ vec_str Parser::Tokenize(std::string message, char c){
   }
   if (old_pos < _cmds.length())
     vec.push_back(_cmds.substr(old_pos));
-
-   if (point != std::string::npos)
+  if (point != std::string::npos)
     vec.push_back(_text);
   return (vec);
 }
@@ -168,6 +173,16 @@ void Parser::fnUSER(vec_str& vec, userData& user, vectorIT& index){
 
 void Parser::fnNICK(vec_str& vec, userData& user, vectorIT& index){
   std::cout << RED "|fnNICK" RESET << std::endl;
+  if (!user.nickName.empty()){
+    if (!Sock.doesThisNicknameExist(vec[1])){
+      user.nickName = vec[1];
+      //send all user new nick name
+    }
+    else{
+      //nick name alrady user
+    }
+    return;
+  }
   if (isValidStr(vec[1], "-_")){
     if (!Sock.GetUserByNickname(vec[1])){
       user.nickName = vec[1];
@@ -175,10 +190,8 @@ void Parser::fnNICK(vec_str& vec, userData& user, vectorIT& index){
     }
     kickUser(index, "904 " ServerName " :user alrady use", user);
   }
-  else{
-    Sock.SendData(user.userFD, makeMessage(e_errornickname, "Erroneus nickname", user)); //"<client> <nick> :Erroneus nickname"
-  }
-  //   // message nickname bad char
+  else
+    kickUser(index, makeMessage(e_errornickname, "Erroneus nickname", user), user);
 }
 
 void Parser::fnJOIN(vec_str& vec, userData& user){
@@ -200,7 +213,7 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
     if (vec.size() >= 3 && !vec[2].empty())
       key = Tokenize(vec[2], ',');
     for (size_t i = 0; i < channel.size(); i++) {
-        if (!isValidStr(channel[i], "#&") || (channel[i][0] != '#' && channel[i][0] != '&') || channel[i].length() == 1){
+        if (channel[i].length() == 1 || !isValidStr(channel[i], "#&") || (channel[i][0] != '#' && channel[i][0] != '&')){
           if (!key.empty() && i < key.size())
             key.erase(key.begin() + i);
           channel.erase(channel.begin() + i);
@@ -249,7 +262,7 @@ void Parser::fnPART(vec_str& vec, userData& user){
           channel.erase(channel.begin() + i);
           i--;
         }else
-          Sock.SendData(user.userFD, "479 :invalid character");
+          Sock.SendData(user.userFD, ERR_BADCHANNAME);
     }
   }
 
@@ -261,13 +274,16 @@ void Parser::fnPART(vec_str& vec, userData& user){
 }
 
 void Parser::fnQUIT(vec_str& vec, userData& user){
-  if (vec.size() == 2){
-    Sock.SendData(user.userFD, ":" + user.nickName + " QUIT " + vec[1]);
-  }
-  else{ 
+  if (vec.size() == 1){ 
     Sock.SendData(user.userFD, ":" + user.nickName + " QUIT");
+    KickUserAllChannel(user, vec[1]);
   }
-  KickUserAllChannel(user, vec[1]);
+  else if (vec.size() == 2){
+    Sock.SendData(user.userFD, ":" + user.nickName + " QUIT " + vec[1]);
+    KickUserAllChannel(user, vec[1]);
+  }
+  else
+    unknowCommand(user);
 }
 
 /// ####################################################################################################################
@@ -276,7 +292,8 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     _channels = Sock.channels;
     _index = &index;
     vec_str token = Tokenize(user.recvString, ' ');
-    print_vec(token, "token");
+    if(token[0] != "PING")
+      print_vec(token, "token");
 
     if (token.empty()) {
       std::cout << "empty\n"; //! fix segfault
@@ -295,7 +312,6 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
     else if (token[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
       Sock.SendData(user.userFD, string("PONG ") + token[1]);
-      //std::cout << ORG << user.userName << RESET << " :PING " << std::endl; //? dev can be remove
     }
     else if (token[0] == "JOIN") {
       fnJOIN(token, user);
