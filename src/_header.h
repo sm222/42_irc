@@ -82,6 +82,10 @@ enum e_ActionLv {
 #define ERR_NOTOPLEVEL(mask)                    "413 " + mask + " :No toplevel domain specified"
 #define ERR_TOOMANYTARGETS(target, mag)         target + ":407 recipients. " + msg
 
+#define MSG_PassMisMatch                        "464 " ServerName " :password incorect"
+#define MSG_ErrSaslFail                         "904 " ServerName " :SASL authentication failed"
+
+
 typedef enum e_type {
   e_none = -1,      // -1
   e_welcom,         // 001
