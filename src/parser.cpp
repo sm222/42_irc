@@ -324,44 +324,53 @@ void Parser::fnQUIT(vec_str& vec, userData& user){
   }
 }
 
-// void Parser::fnMODE(vec_str& vec, userData& user){
-//   //MODE #CHANNEL +/-ITKOL
-//   std::string flag = "";
-//   if (vec.size() < 3){
-//     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
-//     return;
-//   }
-//   if (vec[2][0] == '+' || vec[2][0] == '-'){
-//     flag += vec[2][0];
-//   }else{
-//     Sock.SendData(user.userFD, ERR_UMODEUNKNOWNFLAG);
-//     return;
-//   }
-//   if (vec.size() < 3 && vec[2].find_first_of("tkol") != std::string::npos){
-//     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
-//     return;
-//   }
+void Parser::fnMODE(vec_str& vec, userData& user){
+  //MODE #CHANNEL +/-ITKOL
+  std::string flag = "";
+  if (vec.size() < 3){
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    return;
+  }
+  if (vec[2][0] == '+' || vec[2][0] == '-'){
+    flag += vec[2][0];
+  }else{
+    Sock.SendData(user.userFD, ERR_UMODEUNKNOWNFLAG);
+    return;
+  }
+  if (vec.size() < 3 && vec[2].find_first_of("tkol") != std::string::npos){
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    return;
+  }
 
-//   for (size_t i = 1; i < vec[2].length(); i++) {
-//     switch (vec[2][0]) {
-//       case 'i':
-//         //ModeI(user, flag, channel);
-//         break;
-//       case 't':
-//         //ModeT(user, flag, );
-//         break;
-//       case 'k':
-//         //ModeK(user, flag, );
-//         break;
-//       case 'o':
-//         //ModeO(user, flag, );
-//         break;
-//       case 'l':
-//         //ModeL(user, flag, );
-//         break;
-//     }
-//   }
-// }
+  for (size_t i = 1; i < vec[2].length(); i++) {
+    switch (vec[2][0]) {
+      case 'i':
+        printf("i");
+        //ModeI(user, flag, channel);
+        break;
+      case 't':
+        printf("t");
+        //ModeT(user, flag, channel);
+        break;
+      case 'k':
+        printf("k");
+        //ModeK(user, flag, channel);
+        break;
+      case 'o':
+        printf("o");
+        //ModeO(user, flag, channel);
+        break;
+      case 'l':
+        printf("l");
+        //ModeL(user, flag, channel);
+        break;
+      default:
+        Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+        return;
+        break;
+    }
+  }
+}
 
 /// ####################################################################################################################
 
@@ -387,6 +396,9 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     else if (token[0] == "USER" && LV(user.currentAction, e_notNameSet)) {
       fnUSER(token, user, index);
     }
+    else if (token[0] == "NICK") {
+      fnNICK(token, user, index);
+    }
     else if (token[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
       Sock.SendData(user.userFD, string("PONG ") + token[1]);
     }
@@ -397,14 +409,11 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
       fnKICK(token, user);
     }
     else if (token[0] == "INVITE") { //INVITE|[1]nick_name_0|[2]#b|
-      
     }
     else if (token[0] == "TOPIC") {
     }
     else if (token[0] == "MODE") {
-    }
-    else if (token[0] == "NICK") {
-      fnNICK(token, user, index);
+      fnMODE(token, user);
     }
     else if (token[0] == "PRIVMSG") { //PRIVMSG #a :awd
       fnPMSG(token, user);
