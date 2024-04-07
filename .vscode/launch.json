@@ -10,19 +10,18 @@
       "request": "launch",
       "program": "${workspaceFolder}/ircserv",
       "args": ["2000", "a"],
-      "stopAtEntry": false,
+      "stopAtEntry": true,
       "cwd": "${fileDirname}",
       "environment": [],
-      "externalConsole": false,
-      "MIMode": "lldb"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Debug",
-      "program": "${workspaceFolder}/ircserv",
-      "args": ["2000", "a"],
-      "cwd": "${workspaceFolder}"
+      "externalConsole": true,
+      "MIMode": "lldb",
+      "setupCommands": [
+        {
+            "description": "Enable all-exceptions",
+            "text": "catch throw",
+            "ignoreFailures": true
+        }
+      ]
     }
   ]
 }
