@@ -33,13 +33,15 @@ void Parser::noSuchNick(const userData& user, const string nick) {
 }
 
 
-bool  Parser::_testInChannel(const userData& user, const string channelName) {
+bool  Parser::_testInChannel(const userData& user, const string channelName, const userData* ask) {
   if (channelName.empty()) {
     // no name
     return false;
   }
+  //bool test = ask ? 0 : 1;
+  //std::cout << ">>" << test << std::endl;
   if (!_channels.Channel_AlreadyExist(channelName)) {
-    Sock.SendData(user.userFD, ERR_NOSUCHCHANNEL(channelName));
+    Sock.SendData(ask ? ask->userFD : user.userFD, ERR_NOSUCHCHANNEL(channelName));
     return false;
   }
   if (!_channels.Channel_Get_IsUserInChannel(user.userName, channelName)) {
@@ -260,6 +262,7 @@ bool  Parser::userPart(const string channel , const string userName, const strin
 
 
 
+
 bool Parser::KickUserAllChannel(const userData& user, const string reson) {
   vec_str channelList = _channels.User_GetAllChannels(user.userName);
   if (channelList.size() == 0)
@@ -296,3 +299,5 @@ bool    Parser::ModeI(const userData& user, const string mode, const string targ
     std::cout << "no";
   return true;
 }
+//join #a,#b,#c
+//10.12.2.5

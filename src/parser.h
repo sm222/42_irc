@@ -63,7 +63,7 @@ private:
     string      _SendUserChannelStatus(const vec_str& userList, const string& name);
     short       _tryJoinChannel(const userData& user, const string name, const string pass);
     bool        _testOp(const userData& user, const string channelName);
-    bool        _testInChannel(const userData& user, const string channelName);
+    bool        _testInChannel(const userData& user, const string channelName, const userData* ask = NULL);
     //          look if the user doing the acorder lever of Action
     #define     LV(userLv, askLv) (userLv >= askLv)
     //
