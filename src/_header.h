@@ -95,6 +95,10 @@ enum e_ActionLv {
 
 #define MSG_ErrSaslFail                         "904 " ServerName " :SASL authentication failed"
 
+#define MSG_PassMisMatch                        "464 " ServerName " :password incorect"
+#define MSG_ErrSaslFail                         "904 " ServerName " :SASL authentication failed"
+
+
 typedef enum e_type {
   e_none = -1,      // -1
   e_welcom,         // 001

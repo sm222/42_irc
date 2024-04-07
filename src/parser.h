@@ -33,6 +33,7 @@ public:
     bool        KickUserChannel(const userData &user, const string channel, const string nick, const string reson);
     bool        KickUserAllChannel(const userData& user, const string reson);
     bool        userPart(const string channel , const string userName, const string reson);
+    bool        ModeI(const userData&  user, const string mode, const string targerNick, const string channel);
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);
     void        badCmd(userData &user);
@@ -59,8 +60,11 @@ private:
     Socket&     Sock;
     vectorIT*   _index;
     Channels&   _channels;
+    //*ft v
     string      _SendUserChannelStatus(const vec_str& userList, const string& name);
     short       _tryJoinChannel(const userData& user, const string name, const string pass);
+    bool        _testOp(const userData& user, const string channelName);
+    bool        _testInChannel(const userData& user, const string channelName, const userData* ask = NULL);
     //          look if the user doing the acorder lever of Action
     #define     LV(userLv, askLv) (userLv >= askLv)
     //
