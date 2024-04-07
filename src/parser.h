@@ -5,6 +5,7 @@
 #include <cstring>
 #include <iostream>
 #include <algorithm>
+#include <string>
 // #include <cctype>
 
 
@@ -43,6 +44,8 @@ public:
     void        noSuchNick(const userData& user, const string nick);
     //*    //
 
+    bool        chaIsValid(std::string str);
+    bool        keyIsValid(std::string str);
     void        fnJOIN(vec_str& vec, userData& user);
     void        fnPMSG(vec_str& vec, userData& user);
     void        fnKICK(vec_str& vec, userData& user);

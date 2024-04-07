@@ -148,15 +148,33 @@ vec_str Parser::Tokenize(std::string message, char c){
 *                                                *
 *                                                *
 */
+bool Parser::chaIsValid(std::string str){
+   if (str.length() == 1 || !isValidStr(str, "#&") || (str[0] != '#' && str[0] != '&')){
+    return false;
+   }
+   return true;
+}
+
+bool Parser::keyIsValid(std::string str){
+   return isValidStr(str, "!@$%?&*");
+}
 
 void Parser::fnPASS(vec_str& vec, userData& user, vectorIT& index){
   std::cout << RED "|fnPASS" RESET << std::endl;
+  if (vec.size() < 2){
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    return;
+  }
   if (testPassWord(vec[1], user, index))
     user.currentAction = 10;
 }
 
 void Parser::fnUSER(vec_str& vec, userData& user, vectorIT& index){
   std::cout << RED "|fnUSER" RESET << std::endl;
+  if (vec.size() < 2){
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    return;
+  }
   if (isValidStr(vec[1], "-_")){
     if (!Sock.GetUserByUsername(vec[1])){
       user.userName = vec[1];
@@ -174,6 +192,10 @@ void Parser::fnUSER(vec_str& vec, userData& user, vectorIT& index){
 
 void Parser::fnNICK(vec_str& vec, userData& user, vectorIT& index){
   std::cout << RED "|fnNICK" RESET << std::endl;
+  if (vec.size() < 2){
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    return;
+  }
   if (!user.nickName.empty()){
     if (!Sock.doesThisNicknameExist(vec[1])){
       user.nickName = vec[1];
@@ -186,7 +208,6 @@ void Parser::fnNICK(vec_str& vec, userData& user, vectorIT& index){
   }
   if (isValidStr(vec[1], "-_")){
     if (!Sock.GetUserByNickname(vec[1])){
-      printf("2");
       user.nickName = vec[1];
       return;
     }
@@ -203,8 +224,10 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
   vec_str key;
 
   //error verification
-  if (vec.size() < 2)
+  if (vec.size() < 2){
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString));
     return;
+  }
   if (user.recvString.find(':') != std::string::npos){
       Sock.SendData(user.userFD, "479 :invalid character");
       return;
@@ -239,6 +262,10 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
 
 void Parser::fnPMSG(vec_str& vec, userData& user){
   std::cout << RED "|fnPMSG" RESET << std::endl;
+  if (vec.size() < 3){
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    return;
+  }
   if (vec.size() == 3)
     privMsg(vec[1], vec[2], user.nickName);
 }
@@ -246,18 +273,25 @@ void Parser::fnPMSG(vec_str& vec, userData& user){
 //KICK #a bob : reason
 void Parser::fnKICK(vec_str& vec, userData& user){
   std::cout << RED "|fnKICK" RESET << std::endl;
+  if (vec.size() < 3){
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    return;
+  }
   if (vec.size() == 3)
-    KickUserChannel(user, vec[1], vec[2], vec[3]);
-  else if (vec.size() == 2)
     KickUserChannel(user, vec[1], vec[2], "");
+  else if (vec.size() == 4)
+    KickUserChannel(user, vec[1], vec[2], vec[3]);
 }
 
+//PART #channel *reason
 void Parser::fnPART(vec_str& vec, userData& user){
   vec_str channel;
 
-  if (vec.size() < 2)
+  if (vec.size() < 2){
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString));
     return;
-  if (vec.size() == 3 && !vec[1].empty())
+  }
+  if (vec.size() >= 2 && !vec[1].empty())
     channel = Tokenize(vec[1], ',');
   if (channel.size() > 0){
     for (size_t i = 0; i < channel.size(); i++) {
@@ -271,26 +305,62 @@ void Parser::fnPART(vec_str& vec, userData& user){
 
   if (!channel.empty()){
     for (size_t i = 0; i < channel.size(); i++) {
-      userPart(channel[i], user.userName, vec[2]);
+      std::string tmp = "";
+      if (vec.size() == 3)
+        tmp = vec[2];
+      userPart(channel[i], user.userName, tmp);
     }
   }
 }
 
+//QUIT *reason
 void Parser::fnQUIT(vec_str& vec, userData& user){
-  if (vec.size() == 1){ 
+  if (vec.size() == 2){ 
     Sock.SendData(user.userFD, ":" + user.nickName + " QUIT");
     KickUserAllChannel(user, vec[1]);
-  }
-  else if (vec.size() == 2){
+  }else{
     Sock.SendData(user.userFD, ":" + user.nickName + " QUIT " + vec[1]);
     KickUserAllChannel(user, vec[1]);
   }
-  else
-    unknowCommand(user);
 }
 
 // void Parser::fnMODE(vec_str& vec, userData& user){
+//   //MODE #CHANNEL +/-ITKOL
+//   std::string flag = "";
+//   if (vec.size() < 3){
+//     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+//     return;
+//   }
+//   if (vec[2][0] == '+' || vec[2][0] == '-'){
+//     flag += vec[2][0];
+//   }else{
+//     Sock.SendData(user.userFD, ERR_UMODEUNKNOWNFLAG);
+//     return;
+//   }
+//   if (vec.size() < 3 && vec[2].find_first_of("tkol") != std::string::npos){
+//     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+//     return;
+//   }
 
+//   for (size_t i = 1; i < vec[2].length(); i++) {
+//     switch (vec[2][0]) {
+//       case 'i':
+//         //ModeI(user, flag, channel);
+//         break;
+//       case 't':
+//         //ModeT(user, flag, );
+//         break;
+//       case 'k':
+//         //ModeK(user, flag, );
+//         break;
+//       case 'o':
+//         //ModeO(user, flag, );
+//         break;
+//       case 'l':
+//         //ModeL(user, flag, );
+//         break;
+//     }
+//   }
 // }
 
 /// ####################################################################################################################

@@ -54,7 +54,7 @@ enum e_ActionLv {
 #define ERR_PASSWDMISMATCH                      "464 :Password incorrect"
 
 //user
-#define ERR_USERNOTINCHANNEL()                  "441 " + nick + " " + channel + " :They aren't on that channel"
+#define ERR_USERNOTINCHANNEL(nick, channel)     "441 " + nick + " " + channel + " :They aren't on that channel"
 #define ERR_USERONCHANNEL(user, channel)        "443 " + user + " " + channel + " :is already on channel"
 #define ERR_NOLOGIN(user)                       "444 " + user + " :User not logged in"
 
@@ -91,7 +91,7 @@ enum e_ActionLv {
 
 //mode
 #define ERR_UMODEUNKNOWNFLAG                    "501 :Unknown MODE flag"
-#define ERR_UNKNOWNMODE                         "472 " + char + " :is unknown mode char to me for " + channel
+#define ERR_UNKNOWNMODE(char, channel)          "472 " + char + " :is unknown mode char to me for " + channel
 
 #define MSG_ErrSaslFail                         "904 " ServerName " :SASL authentication failed"
 
