@@ -278,8 +278,6 @@ void Parser::fnKICK(vec_str& vec, userData& user){
     return;
   }
   if (vec.size() == 4)
-    KickUserChannel(user, vec[1], vec[2], "");
-  else if (vec.size() == 4)
     KickUserChannel(user, vec[1], vec[2], vec[3]);
   else if (vec.size() == 3)
     KickUserChannel(user, vec[1], vec[2], "");

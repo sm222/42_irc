@@ -45,7 +45,6 @@ bool  Parser::_testInChannel(const userData& user, const string channelName, con
     return false;
   }
   if (!_channels.Channel_Get_IsUserInChannel(user.userName, channelName)) {
-    std::cout << "ici\n";
     notInChannel(user, channelName, ask);
     return false;
   }
@@ -259,25 +258,41 @@ bool Parser::KickUserAllChannel(const userData& user, const string reson) {
 //?  * // MODE
 
 /* 
-*i  Définir/supprimer le canal sur invitation uniquement
-*t  Définir/supprimer les restrictions de la commande TOPIC pour les opérateurs de canaux
-*k  Définir/supprimer la clé du canal (mot de passe
-*o  Donner/retirer le privilège de l’opérateur de cana
+*i  Définir/supprimer le canal sur invitation uniquement // ? --
+*t  Définir/supprimer les restrictions de la commande TOPIC pour les opérateurs de canaux // ? --
+*k  Définir/supprimer la clé du canal (mot de passe // !
+*o  Donner/retirer le privilège de l’opérateur de cana // !
 *l  Définir/supprimer la limite d’utilisateurs pour le canal
 */
 
 
 
-bool    Parser::ModeI(const userData& user, const string mode, const string targerNick, const string channel) {
-  (void)user;
-  (void)mode;
-  (void)targerNick;
-  (void)channel;
-  if (!_channels.Channel_AlreadyExist(channel)) {
-  }
-  if (!Sock.doesThisNicknameExist(targerNick))
-    std::cout << "no";
+bool    Parser::ModeI(const userData& user, const bool mode, const string channel) {
+  if (!_testOp(user, channel))
+    return false;
+  _channels.Channel_Set_InviteOnly(channel, mode);
   return true;
 }
+
+bool    Parser::ModeT(const userData& user, const bool mode, const string channel) {
+  if (!_testOp(user, channel))
+    return false;
+  _channels.Channel_Set_CanUserChangeTopic(channel, mode);
+  return true;
+}
+
+/*
+*? /  k
+*? /  o
+*/
+
+bool   Parser::ModeL(const userData& user, const int number, const string channel) {
+  if (!_testOp(user, channel))
+    return false;
+  _channels.Channel_Set_MaxUsersCount(channel, number);
+  return true;
+}
+
+
 //join #a,#b,#c
 //10.12.2.5
