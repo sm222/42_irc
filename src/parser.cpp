@@ -165,6 +165,7 @@ void Parser::fnUSER(vec_str& vec, userData& user, vectorIT& index){
       return;
     }
     kickUser(index, "904 " ServerName " :user alrady use", user);
+    return;
   }
   kickUser(index, "904 " ServerName " :invalide character for user", user);
   // else
@@ -179,19 +180,21 @@ void Parser::fnNICK(vec_str& vec, userData& user, vectorIT& index){
       //send all user new nick name
     }
     else{
-      //nick name alrady user
+      kickUser(index, ERR_NICKNAMEINUSE(vec[1]), user);
     }
     return;
   }
   if (isValidStr(vec[1], "-_")){
     if (!Sock.GetUserByNickname(vec[1])){
+      printf("2");
       user.nickName = vec[1];
       return;
     }
-    kickUser(index, "904 " ServerName " :user alrady use", user);
+    kickUser(index, ERR_NICKNAMEINUSE(vec[1]), user);
+    return;
   }
   else
-    kickUser(index, makeMessage(e_errornickname, "Erroneus nickname", user), user);
+    kickUser(index, ERR_ERRONEUSNICKNAME(vec[1]), user);
 }
 
 void Parser::fnJOIN(vec_str& vec, userData& user){
@@ -285,6 +288,10 @@ void Parser::fnQUIT(vec_str& vec, userData& user){
   else
     unknowCommand(user);
 }
+
+// void Parser::fnMODE(vec_str& vec, userData& user){
+
+// }
 
 /// ####################################################################################################################
 

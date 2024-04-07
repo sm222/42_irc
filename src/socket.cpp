@@ -249,6 +249,8 @@ void                Socket::_recvData(vectorIT& index) {
         std::string chunk = content.substr(0, i + 2);
         _users[index->fd].recvString = chunk;
         parser.ParseData(_users[index->fd], index);
+        if (index->fd == -1)
+            return;
         content.erase(0, i + 2);
         i = content.find("\r\n");
     }

@@ -47,6 +47,7 @@ public:
     void        fnKICK(vec_str& vec, userData& user);
     void        fnPART(vec_str& vec, userData& user);
     void        fnQUIT(vec_str& vec, userData& user);
+    void        fnMODE(vec_str& vec, userData& user);
     void        fnNICK(vec_str& vec, userData& user, vectorIT& index);
     void        fnUSER(vec_str& vec, userData& user, vectorIT& index);
     void        fnPASS(vec_str& vec, userData& user, vectorIT& index);
