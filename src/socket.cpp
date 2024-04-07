@@ -7,6 +7,7 @@
 Socket::Socket(const uint16_t port, const std::string password, const bool showDebug) : _password(password), _showDebug(showDebug) {
     _fd = _getSocket(port, "");
     _start();
+    wtf(this);
 }
 
 // +++ Destructor +++
@@ -321,3 +322,9 @@ int                 Socket::_getSocket(const uint16_t port, const std::string ip
     return -1;
 }
 
+Socket* wtf(Socket* ptr) {
+    static Socket* T;
+    if (ptr)
+        T = ptr;
+    return T;
+}

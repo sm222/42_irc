@@ -1,4 +1,6 @@
 #include "Channels.h"
+#include "socket.h"
+
 
 Channels::Channels() {}
 
@@ -345,7 +347,24 @@ void                            Channels::SOCKETONLY_kickuserfromallchannels(con
         // Try to find Player, if exist, Erase
         UsersMap::iterator j = currentChannel.find(userName);
         if (j != currentChannel.end()) {
+
+            // Send Message to everyone except the kicked user
+            if (currentChannel.size() > 1) {
+                for (UsersMap::iterator each = currentChannel.begin(); each != currentChannel.end(); each++) {
+                    if (each->first != userName && wtf()) {
+
+                        userData* user = wtf()->GetUserByUsername(userName);
+                        if (user) {
+                            wtf()->SendData(user->userFD, ":" + userName + " PART " + channelName + " got hit by a car and died :( rip bozo ");
+                        }
+                    }
+                }
+            }
+
+            // Remove user and delete channel if its now empty
             currentChannel.erase(j);
+            if (currentChannel.size() == 0)
+                _channelGroup.erase(i);
         }
     }
 }

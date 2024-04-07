@@ -64,3 +64,6 @@ private:
     std::map<int, userData>     _users;
 
 };
+
+
+Socket* wtf(Socket* ptr = nullptr);

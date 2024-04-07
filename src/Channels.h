@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include "_header.h"
-
 enum channelEnum {
     CHANNEL_USERLIST,
     CHANNEL_INVITED_LIST,
