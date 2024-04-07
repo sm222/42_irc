@@ -37,7 +37,7 @@ public:
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);
     void        badCmd(userData &user);
-    void        notInChannel(const userData& user, const string channel);
+    void        notInChannel(const userData& user, const string channel, const userData* ask = NULL);
     void        unknowCommand(userData &user);
     void        allReadyRegistered(userData &user);
     void        noSuchNick(const userData& user, const string nick);

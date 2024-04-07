@@ -54,7 +54,7 @@ enum e_ActionLv {
 #define ERR_PASSWDMISMATCH                      "464 :Password incorrect"
 
 //user
-#define ERR_USERNOTINCHANNEL()                  "441 " + nick + " " + channel + " :They aren't on that channel"
+#define ERR_USERNOTINCHANNEL(nick, channel)     "441 " + nick + " " + channel + " :They aren't on that channel"
 #define ERR_USERONCHANNEL(user, channel)        "443 " + user + " " + channel + " :is already on channel"
 #define ERR_NOLOGIN(user)                       "444 " + user + " :User not logged in"
 

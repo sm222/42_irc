@@ -23,8 +23,10 @@ void  Parser::allReadyRegistered(userData& user) {
   Sock.SendData(user.userFD, ServerName " :You may not reregister");
 }
 
-void Parser::notInChannel(const userData& user, const string channel) {
-  Sock.SendData(user.userFD, string("441 " + user.nickName + " " + channel + " :They aren't on that channel"));
+void Parser::notInChannel(const userData& user, const string channel, const userData* ask) {
+  const userData& msg = ask ? *ask : user;
+  Sock.SendData(msg.userFD, ERR_USERNOTINCHANNEL(msg.nickName, channel));
+  
 }
 
 //<client> :There was no such nickname"ERR_WASNOSUCHNICK (406) 
@@ -38,14 +40,13 @@ bool  Parser::_testInChannel(const userData& user, const string channelName, con
     // no name
     return false;
   }
-  //bool test = ask ? 0 : 1;
-  //std::cout << ">>" << test << std::endl;
   if (!_channels.Channel_AlreadyExist(channelName)) {
     Sock.SendData(ask ? ask->userFD : user.userFD, ERR_NOSUCHCHANNEL(channelName));
     return false;
   }
   if (!_channels.Channel_Get_IsUserInChannel(user.userName, channelName)) {
-    notInChannel(user, channelName);
+    std::cout << "ici\n";
+    notInChannel(user, channelName, ask);
     return false;
   }
   return true;
@@ -205,34 +206,13 @@ bool  Parser::privMsg(const string target, const string message, const string ni
 // :WiZ!jto@tolsun.oulu.fi KICK #Finnish John
 
 bool  Parser::KickUserChannel(const userData &user, const string channel, const string nick, const string reson) {
-  //if (_channels.Channel_AlreadyExist(channel)) {
-  //  if (_channels.Channel_Get_IsUserInChannel(user.userName, channel) && 
-  //      _channels.Channel_Get_IsUserChannelOP(user.userName, channel)) {
-  //      const userData* tmpUser = Sock.GetUserByNickname(nick);
-  //      if (_channels.Channel_Get_IsUserInChannel(tmpUser->userName, channel)) {
-  //        string msg = string(":") + user.nickName + " KICK " + channel + " " + tmpUser->nickName + " " + reson;
-  //        const vec_str userList =  Sock.channels.Channel_Get_AllUsers(channel);
-  //        for (size_t i = 0; i < userList.size(); i++) {
-  //          const userData* usrMsg = Sock.GetUserByUsername(userList[i]);
-  //          Sock.SendData(usrMsg->userFD, msg);
-  //        }
-  //        _channels.Channel_Leave(tmpUser->userName, channel);
-  //        return true;
-  //      }
-  //      else
-  //        noSuchNick(user, nick);
-  //  }
-  //  else
-  //    std::cout << "// is not in chanel or op" << std::endl;
-  //}
-  //else
-  //  std::cout << "//chanel don't exist\n";
-  //return false;
   if (!_testOp(user, channel))
     return false;
   const userData* tmpUser = Sock.GetUserByNickname(nick);
-  if (!tmpUser || !_testInChannel(*tmpUser, channel)) //! need to fix + send messe to bad person
+  if (!tmpUser || !_testInChannel(*tmpUser, channel, &user)) {
+    Sock.SendData(user.userFD, ERR_USERNOTINCHANNEL(user.nickName, channel));
     return false;
+  }
   string msg = string(":") + user.nickName + " KICK " + channel + " " + tmpUser->nickName + " " + reson;
   const vec_str userList =  Sock.channels.Channel_Get_AllUsers(channel);
   for (size_t i = 0; i < userList.size(); i++) {
