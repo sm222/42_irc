@@ -1,7 +1,7 @@
 #include "socket.h"
 #include "signal.h"
 
-#define DEBUGGING_MODE false
+#define DEBUGGING_MODE true
 
 // +++ Constructor +++
 Socket::Socket(const uint16_t port, const std::string password, const bool showDebug) : _password(password), _showDebug(showDebug) {
@@ -31,16 +31,16 @@ bool                Socket::doesThisNicknameExist(const std::string& nickname) {
     return false;
 }
 void                Socket::KickUser(vectorIT& index) {
-    close(index->fd);
 
     userData* user = GetUserByFD(index->fd);
     if (user && user->userName != "") {
         channels.SOCKETONLY_kickuserfromallchannels(user->userName);
     }
+    close(index->fd);
     _users.erase(index->fd);
     index->fd = -1;             // We set this to -1 to remove it AFTER the Vector for loop
     _updatePolls(true);         // Definitely remove the user from Polls listing on next iteration
-    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][KickUser] User removed with Success" << std::endl;
+    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][KickUser] [" + user->userName + "] removed with Success" << std::endl;
 }
 void                Socket::SendData(const int& userFD, std::string data) {
 

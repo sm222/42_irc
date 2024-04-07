@@ -224,7 +224,12 @@ bool                            Channels::Channel_Leave(const std::string& userN
     if (T) {
         for (UsersMap::iterator i = T->second.begin(); i != T->second.end(); i++) {
             if (userName == i->first) {
+                printf("Channel leave -> User left\n");
                 T->second.erase(i);
+                if (T->second.size() == 0) {
+                    printf("Channel leave -> Empty -> Delete\n");
+                    Channel_Delete(channelName);
+                }
                 return true;
             }
         }
@@ -341,21 +346,29 @@ void                            Channels::PrintALLChannelContent() {
 void                            Channels::SOCKETONLY_kickuserfromallchannels(const std::string& userName) {
     // Iterate all the Channels
     for (ChannelGroup::iterator i = _channelGroup.begin(); i != _channelGroup.end(); i++) {
+        printf("A\n");
         std::string     channelName = i->first;
         UsersMap&       currentChannel = i->second.second; // Skip to the userlist right away
 
         // Try to find Player, if exist, Erase
         UsersMap::iterator j = currentChannel.find(userName);
+
+        printf("B -> Chan:[%s] User:[%s]\n", channelName.c_str(), userName.c_str());
+        PrintChannelContent(channelName);
         if (j != currentChannel.end()) {
 
             // Send Message to everyone except the kicked user
+            printf("C\n");
             if (currentChannel.size() > 1) {
+                printf("D\n");
                 for (UsersMap::iterator each = currentChannel.begin(); each != currentChannel.end(); each++) {
+                    printf("E\n");
                     if (each->first != userName && wtf()) {
-
+                        printf("F\n");
                         userData* user = wtf()->GetUserByUsername(userName);
                         if (user) {
-                            wtf()->SendData(user->userFD, ":" + userName + " PART " + channelName + " got hit by a car and died :( rip bozo ");
+                            printf("G\n");
+                            wtf()->SendData(user->userFD, ":" + userName + " PART " + channelName + " :got hit by a car and died :( rip bozo ");
                         }
                     }
                 }
@@ -364,7 +377,10 @@ void                            Channels::SOCKETONLY_kickuserfromallchannels(con
             // Remove user and delete channel if its now empty
             currentChannel.erase(j);
             if (currentChannel.size() == 0)
+            {
+                printf("Abrupt -> Deleted Channel...\n");
                 _channelGroup.erase(i);
+            }
         }
     }
 }

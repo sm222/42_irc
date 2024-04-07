@@ -10,7 +10,7 @@
 
 class Socket {
 public:
-    Socket(uint16_t port, const std::string password, const bool showDebug = false);
+    Socket(uint16_t port, const std::string password, const bool showDebug = true);
     ~Socket();
  
     // Channels
@@ -36,10 +36,6 @@ public:
     userData*                   GetUserByFD(const int& fd);
 private:
     // +++ Sockets & Errors +++
-
-
-
-    
 
 
     int                         _getSocket(const uint16_t port, const std::string ip);
