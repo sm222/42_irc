@@ -124,4 +124,10 @@ struct userData {
     std::string recvString;     // <--- Received Data
     std::string nickName;
     std::string userName;
+    std::string IP;             // Rate limiter
+};
+
+struct rateLimiting {
+  time_t        lastTimer;
+  int           spamCount;
 };

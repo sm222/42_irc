@@ -10,8 +10,6 @@ int main(int argc, char **args) {
         return 1;
     }
 
-
-
     // ++++++++++++++ Port ++++++++++++++
     uint16_t port;
     try {

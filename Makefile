@@ -1,7 +1,8 @@
 CC		= c++
-#FLAGS	= -Wall -Wextra -Werror -g	# std98 is VERY strict on linux...
-FLAGS	= -Wall -Wextra -Werror -std=c++98 -pedantic -g
+FLAGS	= -Wall -Wextra -Werror -g
+#FLAGS	= -Wall -Wextra -Werror -std=c++98 -pedantic -g
 #FLAGS	= -Wall -Wextra -Werror -std=c++98 -O2
+#FLAGS	= -g 
 
 TARGET		= ircserv
 OBJECTS		:= $(patsubst src/%.cpp,obj/%.o,$(wildcard src/*.cpp))
@@ -34,7 +35,7 @@ docker-clear:
 	@docker system prune -af || true
 
 ip:
-	@ifconfig -l | xargs -n1 ipconfig getifaddr | grep 10.
+	@ifconfig -l | xargs -n1 ipconfig getifaddr | grep 10. || true
 	@echo -n 'cd ' 
 	@pwd
 

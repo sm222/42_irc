@@ -3,7 +3,6 @@
 #include <cctype>
 #include <string>
 #include <vector>
-#include <xlocale/_stdio.h>
 
 
 //FUNCTION
