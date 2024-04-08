@@ -12,6 +12,7 @@
 #include <string.h>         // memset
 #include <vector>           // vector
 #include <map>              // map 
+#include <utility>          // map 
 
 // Others
 #include "exception.h"

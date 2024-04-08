@@ -340,9 +340,9 @@ void                            Channels::PrintALLChannelContent() {
 }
 
 // Socket uses this when user leave the server
-std::vector<std::pair<std::string, std::string>>    Channels::SOCKETONLY_kickuserfromallchannels(const std::string& userName) {
+std::vector<std::pair<std::string, std::string> >    Channels::SOCKETONLY_kickuserfromallchannels(const std::string& userName) {
 
-    std::vector<std::pair<std::string, std::string>> PeopleToPm;
+    std::vector<std::pair<std::string, std::string> > PeopleToPm;
 
     // Iterate all the Channels
     for (ChannelGroup::iterator i = _channelGroup.begin(); i != _channelGroup.end(); i++) {
@@ -363,7 +363,7 @@ std::vector<std::pair<std::string, std::string>>    Channels::SOCKETONLY_kickuse
 
                     // If this user isnt target -> Add to Vector
                     if (each->first != userName) {
-                        PeopleToPm.push_back({each->first, channelName});
+                        PeopleToPm.push_back(std::pair<std::string, std::string>(each->first, channelName));
                     }
                 }
             }

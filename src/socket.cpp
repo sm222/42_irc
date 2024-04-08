@@ -36,7 +36,7 @@ void                Socket::KickUser(vectorIT& index) {
     close(index->fd);
     userData* user = GetUserByFD(index->fd);
     if (user && user->userName != "") {
-       std::vector<std::pair<std::string, std::string>> T = channels.SOCKETONLY_kickuserfromallchannels(user->userName);
+       std::vector<std::pair<std::string, std::string> > T = channels.SOCKETONLY_kickuserfromallchannels(user->userName);
        for (size_t i = 0; i < T.size(); i++) {
         userData* user = GetUserByUsername(T[i].first);
         if (user) {
@@ -56,7 +56,7 @@ void                Socket::SendData(const int& userFD, std::string data) {
     }
     else {
         data += "\r\n";
-        ssize_t bytesSent = send(userFD, data.c_str(), data.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
+        ssize_t bytesSent = send(userFD, data.c_str(), data.size(), MSG_DONTWAIT | 0);
         if (bytesSent == -1 ) {
 
             if (_showDebug) std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SendData] Broken pipe -> Kicking [" + GetUserByFD(userFD)->userName + "]" << std::endl;
@@ -328,6 +328,7 @@ int                 Socket::_getSocket(const uint16_t port, const std::string ip
         // if you don't set this, the port will be busy everytime you stop & restart the server
         // -------------------------------------------------------------
         int optval = 1;
+         int optval1 = 1;
         if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)  { close(sock); continue; }
         
         //                          Set Non Blocking

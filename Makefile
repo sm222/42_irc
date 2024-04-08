@@ -1,7 +1,7 @@
 CC		= c++
-FLAGS	= -Wall -Wextra -Werror -g
-#FLAGS	= -Wall -Wextra -Werror -std=c++98 -pedantic -g
-#FLAGS	= -Wall -Wextra -Werror -std=c++98 -O2
+#FLAGS	= -Wall -Wextra -Werror -g
+FLAGS	= -Wall -Wextra -Werror -std=c++98 -pedantic -g
+# FLAGS	= -Wall -Wextra -Werror -std=c++98 -O2
 #FLAGS	= -g 
 
 TARGET		= ircserv

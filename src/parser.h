@@ -55,9 +55,11 @@ public:
     void        fnPART(vec_str& vec, userData& user);
     void        fnQUIT(vec_str& vec, userData& user);
     void        fnMODE(vec_str& vec, userData& user);
-    void        fnNICK(vec_str& vec, userData& user, vectorIT& index);
-    void        fnUSER(vec_str& vec, userData& user, vectorIT& index);
-    void        fnPASS(vec_str& vec, userData& user, vectorIT& index);
+    void        fnNICK(vec_str& vec, userData& user);
+    void        fnUSER(vec_str& vec, userData& user);
+    void        fnPASS(vec_str& vec, userData& user);
+    void        fnTOPIC(vec_str& vec, userData& user);
+    void        fnINVITE(vec_str& vec, userData& user);
     
     // Im calling this in my socket class, everytime we get new Data from Client
     void        ParseData(userData& user, vectorIT& index);

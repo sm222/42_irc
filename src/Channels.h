@@ -115,7 +115,7 @@ public:
     void                            PrintChannelContent(const std::string& channelName);
 
     // ----- DO NOT USE -----
-    std::vector<std::pair<std::string, std::string>>    SOCKETONLY_kickuserfromallchannels(const std::string& userName);
+    std::vector<std::pair<std::string, std::string> >    SOCKETONLY_kickuserfromallchannels(const std::string& userName);
 private:
     ChannelGroup                    _channelGroup;
     ChannelMap*                     _getChannelByName(const std::string& channelName);
