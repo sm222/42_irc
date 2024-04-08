@@ -34,11 +34,14 @@ public:
     bool        KickUserChannel(const userData &user, const string channel, const string nick, const string reson);
     bool        KickUserAllChannel(const userData& user, const string reson);
     bool        userPart(const string channel , const string userName, const string reson);
-    bool        ModeI(const userData&  user, const string mode, const string targerNick, const string channel);
+    // !mode
+    bool        ModeI(const userData& user, const bool mode, const string channel);
+    bool        ModeT(const userData& user, const bool mode, const string channel);
+    bool        ModeL(const userData& user, const int number, const string channel);
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);
     void        badCmd(userData &user);
-    void        notInChannel(const userData& user, const string channel);
+    void        notInChannel(const userData& user, const string channel, const userData* ask = NULL);
     void        unknowCommand(userData &user);
     void        allReadyRegistered(userData &user);
     void        noSuchNick(const userData& user, const string nick);

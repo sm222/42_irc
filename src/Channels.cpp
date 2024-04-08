@@ -1,5 +1,6 @@
 #include "Channels.h"
 
+
 Channels::Channels() {}
 
 // +++ Public +++
@@ -223,6 +224,9 @@ bool                            Channels::Channel_Leave(const std::string& userN
         for (UsersMap::iterator i = T->second.begin(); i != T->second.end(); i++) {
             if (userName == i->first) {
                 T->second.erase(i);
+                if (T->second.size() == 0) {
+                    Channel_Delete(channelName);
+                }
                 return true;
             }
         }
@@ -336,18 +340,45 @@ void                            Channels::PrintALLChannelContent() {
 }
 
 // Socket uses this when user leave the server
-void                            Channels::SOCKETONLY_kickuserfromallchannels(const std::string& userName) {
+std::vector<std::pair<std::string, std::string>>    Channels::SOCKETONLY_kickuserfromallchannels(const std::string& userName) {
+
+    std::vector<std::pair<std::string, std::string>> PeopleToPm;
+
     // Iterate all the Channels
     for (ChannelGroup::iterator i = _channelGroup.begin(); i != _channelGroup.end(); i++) {
         std::string     channelName = i->first;
         UsersMap&       currentChannel = i->second.second; // Skip to the userlist right away
 
-        // Try to find Player, if exist, Erase
+        // Try to find User
         UsersMap::iterator j = currentChannel.find(userName);
+
+        // If User is in Channel
         if (j != currentChannel.end()) {
+
+            // If there's one than one user in channel
+            if (currentChannel.size() > 1) {
+
+                // For Each users in channel
+                for (UsersMap::iterator each = currentChannel.begin(); each != currentChannel.end(); each++) {
+
+                    // If this user isnt target -> Add to Vector
+                    if (each->first != userName) {
+                        PeopleToPm.push_back({each->first, channelName});
+                    }
+                }
+            }
+
+            // Remove user from Channel
             currentChannel.erase(j);
+
+            // Delete channel if Channel is now empty
+            if (currentChannel.size() == 0) {
+                _channelGroup.erase(i);
+            }
+
         }
     }
+    return PeopleToPm;
 }
 
 // +++ Private +++

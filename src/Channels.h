@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include "_header.h"
-
 enum channelEnum {
     CHANNEL_USERLIST,
     CHANNEL_INVITED_LIST,
@@ -116,7 +115,7 @@ public:
     void                            PrintChannelContent(const std::string& channelName);
 
     // ----- DO NOT USE -----
-    void                            SOCKETONLY_kickuserfromallchannels(const std::string& userName);
+    std::vector<std::pair<std::string, std::string>>    SOCKETONLY_kickuserfromallchannels(const std::string& userName);
 private:
     ChannelGroup                    _channelGroup;
     ChannelMap*                     _getChannelByName(const std::string& channelName);

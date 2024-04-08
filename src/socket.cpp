@@ -1,7 +1,10 @@
 #include "socket.h"
 #include "signal.h"
+#include <ctime>
 
 #define DEBUGGING_MODE false
+#define RATE_LIMITING_SECONDS           1       // Reset the Action Counter after X seconds
+#define MAX_COUNT_PER_RATE_LIMITING     10      // X Actions ( before the RATE_LIMITING_SECONDS ) to kick the user
 
 // +++ Constructor +++
 Socket::Socket(const uint16_t port, const std::string password, const bool showDebug) : _password(password), _showDebug(showDebug) {
@@ -31,15 +34,20 @@ bool                Socket::doesThisNicknameExist(const std::string& nickname) {
 }
 void                Socket::KickUser(vectorIT& index) {
     close(index->fd);
-
     userData* user = GetUserByFD(index->fd);
     if (user && user->userName != "") {
-        channels.SOCKETONLY_kickuserfromallchannels(user->userName);
+       std::vector<std::pair<std::string, std::string>> T = channels.SOCKETONLY_kickuserfromallchannels(user->userName);
+       for (size_t i = 0; i < T.size(); i++) {
+        userData* user = GetUserByUsername(T[i].first);
+        if (user) {
+            SendData(user->userFD, ":" + user->userName + " PART " + T[i].second + " :got shitted on by pigeon");
+        }
+       }
     }
     _users.erase(index->fd);
     index->fd = -1;             // We set this to -1 to remove it AFTER the Vector for loop
     _updatePolls(true);         // Definitely remove the user from Polls listing on next iteration
-    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][KickUser] User removed with Success" << std::endl;
+    if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][KickUser] [" + user->userName + "] removed with Success" << std::endl;
 }
 void                Socket::SendData(const int& userFD, std::string data) {
 
@@ -48,11 +56,22 @@ void                Socket::SendData(const int& userFD, std::string data) {
     }
     else {
         data += "\r\n";
-        ssize_t bytesSent = send(userFD, data.c_str(), data.size(), MSG_DONTWAIT);
-        if (bytesSent == -1) {
-            if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SendData] Error while sending data... send returned -1 ..." << std::endl;
+        ssize_t bytesSent = send(userFD, data.c_str(), data.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
+        if (bytesSent == -1 ) {
+
+            if (_showDebug) std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][SendData] Broken pipe -> Kicking [" + GetUserByFD(userFD)->userName + "]" << std::endl;
+
+            // Broken Pipe -> Find Bozo and Throw him in the Bin
+            for (std::vector<pollfd>::iterator it = _polls.begin(); it != _polls.end(); it++) {
+                if (it->fd == userFD) {
+                    KickUser(it);
+                    break;
+                }
+            }
+
         }
     }
+
 }
 void                Socket::SendData(const std::string& userName, std::string data) {
     for (std::map<int, userData>::iterator i = _users.begin(); i != _users.end(); i++) {
@@ -93,7 +112,7 @@ userData*           Socket::GetUserByFD(const int& fd) {
 }
 // +++ Private +++
 void                Socket::_start() {
-    _newUser(_fd);
+    _newUser(_fd, "<HOST>");
 
     int     ret;
     initSignal();
@@ -151,7 +170,7 @@ void                Socket::_start() {
     
     }
 }
-void                Socket::_newUser(const int& fd) {
+void                Socket::_newUser(const int& fd, const std::string& IP) {
 
     // Adding the socket info of the user in polls
     // Poll wants an array, and a vector is perfect for that
@@ -167,6 +186,7 @@ void                Socket::_newUser(const int& fd) {
     newUserData.nickName = "";
     newUserData.userName = "";
     newUserData.recvString = "";
+    newUserData.IP = IP;
 
     _users[fd] = newUserData;
     _polls.push_back(newuser);
@@ -221,7 +241,14 @@ void                Socket::_acceptConnection() {
     socklen_t       clientInfo = sizeof(clientAddr);
     int newUser = accept(_fd, (sockaddr*)&clientAddr, &clientInfo);
 
-    if  (newUser != -1) { _newUser(newUser); }
+
+
+    if  (newUser != -1) {
+        uint32_t ipAddress = ntohl(clientAddr.sin_addr.s_addr);
+        std::string clientIP = std::to_string((ipAddress >> 24) & 0xFF) + "." + std::to_string((ipAddress >> 16) & 0xFF) + "." + std::to_string((ipAddress >> 8) & 0xFF) + "." + std::to_string(ipAddress & 0xFF);
+        if (_showDebug) std::cout << "[DEBUG] [src/socket.cpp] [_acceptConnection] New Client IP: " << clientIP << std::endl;
+        _newUser(newUser, clientIP);
+    }
 
     else                { if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][_acceptConnection] Error while accepting new user..." << std::endl; }
 
@@ -240,8 +267,11 @@ void                Socket::_recvData(vectorIT& index) {
     }
     buffer[len] = '\0';
     
-
-
+    // Rate
+    _rateLimit(_users[index->fd].IP);
+    if (index->fd == -1)
+        return;
+    
 
     std::string content = _users[index->fd].recvString + buffer;
     size_t i = content.find("\r\n");
@@ -321,3 +351,56 @@ int                 Socket::_getSocket(const uint16_t port, const std::string ip
     return -1;
 }
 
+
+
+
+void        Socket::_rateLimit(const std::string& IP) {
+
+    (void)IP;
+
+    // // New Client -> Create Map Slot
+    // if (_ratelimiter.find(IP) == _ratelimiter.end()) {
+    //     rateLimiting T;
+    //     T.lastTimer = time(nullptr);
+    //     T.spamCount = 1;
+    //     _ratelimiter[IP] = T;
+    // }
+
+    // // Already Exist -> Check if time has passed, if so, reset, otherwise, append, and kick if user is spamming
+    // else {
+    //     time_t now = time(nullptr);
+
+    //     // Timer Expired -> Reset Stats
+    //     if (difftime(_ratelimiter[IP].lastTimer, now) > RATE_LIMITING_SECONDS) {
+    //         _ratelimiter[IP].lastTimer = now;
+    //         _ratelimiter[IP].spamCount = 1;
+    //     }
+
+    //     // Still in Timer -> Append and kick if needed
+    //     else {
+    //         _ratelimiter[IP].spamCount++;
+
+    //         // User is Spamming -> Throw in bin
+    //         if (_ratelimiter[IP].spamCount >= MAX_COUNT_PER_RATE_LIMITING) {
+
+    //             if (_showDebug) std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][_rateLimit] SPAM DETECTED ! Kicking:" << std::endl;
+
+    //             // Kick ALL user with that IP
+    //             // This is pretty lame, but spamming is also F******G Lame
+    //             for (std::map<int, userData>::iterator it = _users.begin(); it != _users.end(); it++) {
+    //                 if (it->second.IP == IP) {
+
+    //                     for (std::vector<pollfd>::iterator p = _polls.begin(); p != _polls.end(); p++) {
+    //                         if (p->fd == it->second.userFD) {
+    //                             KickUser(p);
+    //                             break;
+    //                         }
+    //                     }
+    //                 }
+    //             }
+
+    //         }
+    //     }
+    // }
+
+}

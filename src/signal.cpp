@@ -12,7 +12,8 @@ bool*   signalStop() {
 }
 
 void initSignal() {
-    signal(SIGINT, signalReceived);  
+    signal(SIGINT, signalReceived);
     signal(SIGTERM, signalReceived);
     signal(SIGQUIT, signalReceived);
+    //signal(SIGPIPE, SIG_IGN);             no want
 }
