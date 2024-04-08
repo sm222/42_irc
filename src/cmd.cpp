@@ -105,7 +105,7 @@ void  Parser::kickUser(vectorIT& index, const string reasons, const userData &us
 short     Parser::_tryJoinChannel(const userData& user, const string name, const string pass) {
   const string& _pass = _channels.Channel_Get_Password(name);
   if (!_pass.empty() && _pass != pass) {
-    Sock.SendData(user.userFD, makeMessage(e_passmismatch, ":channel password incorrect", user));
+    Sock.SendData(user.userFD, ERR_PASSWDMISMATCH);
     return false;
   }
   if (!_channels.Channel_Join(user.userName, name))

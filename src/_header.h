@@ -93,11 +93,6 @@ enum e_ActionLv {
 #define ERR_UMODEUNKNOWNFLAG                    "501 :Unknown MODE flag"
 #define ERR_UNKNOWNMODE(char, channel)          "472 " + char + " :is unknown mode char to me for " + channel
 
-#define MSG_ErrSaslFail                         "904 " ServerName " :SASL authentication failed"
-
-#define MSG_PassMisMatch                        "464 " ServerName " :password incorect"
-#define MSG_ErrSaslFail                         "904 " ServerName " :SASL authentication failed"
-
 
 typedef enum e_type {
   e_none = -1,      // -1

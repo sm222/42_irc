@@ -179,7 +179,7 @@ void Parser::fnUSER(vec_str& vec, userData& user, vectorIT& index){
     if (!Sock.GetUserByUsername(vec[1])){
       user.userName = vec[1];
       user.currentAction++;
-      Sock.SendData(user.userFD, makeMessage(e_welcom, "Welcome to the 42irc %u", user));
+      Sock.SendData(user.userFD, RPL_WELCOME(user.userName, user.nickName) );
       return;
     }
     kickUser(index, "904 " ServerName " :user alrady use", user);
