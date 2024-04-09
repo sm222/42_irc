@@ -81,7 +81,11 @@ bool  Parser::setUserMode(userData& user, int type) {
 //TOPIC
 
 bool  Parser::setTopic(const userData& user, const string& channelName, const string& topic) {
-  if (_testOp(user, channelName)) {
+  if (_channels.Channel_Get_CanUserChangeTopic(channelName)) {
+    _channels.Channel_Set_Topic(channelName, topic);
+    return true;
+  }
+  else if (_testOp(user, channelName)) {
     _channels.Channel_Set_Topic(channelName, topic);
     return true;
   }
@@ -103,6 +107,7 @@ void  Parser::kickUser(vectorIT& index, const string reasons, const userData &us
 }
 
 short     Parser::_tryJoinChannel(const userData& user, const string name, const string pass) {
+  //if (_channels.Channel_Get_InviteOnly(name))
   const string& _pass = _channels.Channel_Get_Password(name);
   if (!_pass.empty() && _pass != pass) {
     Sock.SendData(user.userFD, ERR_PASSWDMISMATCH);
@@ -281,10 +286,26 @@ bool    Parser::ModeT(const userData& user, const bool mode, const string channe
   return true;
 }
 
-/*
-*? /  k
-*? /  o
-*/
+
+bool    Parser::ModeK(const userData& user, const string pass, const string channel) {
+  if (!_testOp(user, channel))
+    return false;
+  _channels.Channel_Set_Password(channel, pass);
+  return true;
+}
+
+bool    Parser::ModeO(const userData& user, const string nick, const string channel) {
+  if (!_testOp(user, channel))
+    return false;
+  const userData* tmpUser = Sock.GetUserByNickname(nick);
+  if (!tmpUser) {
+    Sock.SendData(user.userFD, ERR_NOLOGIN(nick));
+    return false;
+  }
+  if (!_testInChannel(*tmpUser, channel, &user))
+    return false;
+  _channels.Channel_Set_Operator(tmpUser->userName, channel);
+}
 
 bool   Parser::ModeL(const userData& user, const int number, const string channel) {
   if (!_testOp(user, channel))
