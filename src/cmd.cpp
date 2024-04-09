@@ -272,14 +272,14 @@ bool Parser::KickUserAllChannel(const userData& user, const string reson) {
 
 
 
-bool    Parser::ModeI(const userData& user, const bool mode, const string channel) {
+bool    Parser::ModeI(const userData& user, const string channel, const bool mode) {
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_InviteOnly(channel, mode);
   return true;
 }
 
-bool    Parser::ModeT(const userData& user, const bool mode, const string channel) {
+bool    Parser::ModeT(const userData& user, const string channel, const bool mode) {
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_CanUserChangeTopic(channel, mode);
@@ -287,7 +287,7 @@ bool    Parser::ModeT(const userData& user, const bool mode, const string channe
 }
 
 
-bool    Parser::ModeK(const userData& user, const string pass, const string channel) {
+bool    Parser::ModeK(const userData& user, const string channel, const string pass) {
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_Password(channel, pass);
@@ -311,7 +311,7 @@ bool    Parser::ModeO(const userData& user, const string channel, const string n
   return true;
 }
 
-bool   Parser::ModeL(const userData& user, const int number, const string channel) {
+bool   Parser::ModeL(const userData& user, const string channel, const int number) {
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_MaxUsersCount(channel, number);

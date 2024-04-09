@@ -357,11 +357,11 @@ void Parser::fnMODE(vec_str& vec, userData& user){
     switch (vec[2][i]) {
       case 'i':
         printf("i\n");
-        ModeI(user, mode, vec[1]);
+        ModeI(user, vec[1], mode);
         break;
       case 't':
         printf("t\n");
-        ModeT(user, mode, vec[1]);
+        ModeT(user, vec[1], mode);
         break;
       case 'k':
         printf("k\n");
@@ -383,12 +383,12 @@ void Parser::fnMODE(vec_str& vec, userData& user){
         printf("l\n");
         if (mode == true && vec.size() > j && !vec[j].empty())
           try {
-            ModeL(user, stoi(vec[j]), vec[1]);
+            ModeL(user, vec[1], stoi(vec[j]));
           } catch (const std::exception& e) {
             Sock.SendData(user.userFD, ":invalide number");
           }
         else
-          ModeL(user, -1, vec[1]);
+          ModeL(user, vec[1], -1);
         j++;
         break;
       default:
