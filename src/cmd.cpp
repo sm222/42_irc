@@ -294,9 +294,18 @@ bool    Parser::ModeK(const userData& user, const string pass, const string chan
   return true;
 }
 
-/*
-*? /  o
-*/
+bool    Parser::ModeO(const userData& user, const string nick, const string channel) {
+  if (!_testOp(user, channel))
+    return false;
+  const userData* tmpUser = Sock.GetUserByNickname(nick);
+  if (!tmpUser) {
+    Sock.SendData(user.userFD, ERR_NOLOGIN(nick));
+    return false;
+  }
+  if (!_testInChannel(*tmpUser, channel, &user))
+    return false;
+  _channels.Channel_Set_Operator(tmpUser->userName, channel);
+}
 
 bool   Parser::ModeL(const userData& user, const int number, const string channel) {
   if (!_testOp(user, channel))

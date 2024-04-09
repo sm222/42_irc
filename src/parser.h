@@ -37,6 +37,7 @@ public:
     // !mode
     bool        ModeI(const userData& user, const bool mode, const string channel);
     bool        ModeT(const userData& user, const bool mode, const string channel);
+    bool        ModeO(const userData& user, const string nick, const string channel);
     bool        ModeL(const userData& user, const int number, const string channel);
     bool        ModeK(const userData& user, const string pass, const string channel);
     //*    //
