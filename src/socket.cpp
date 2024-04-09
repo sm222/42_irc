@@ -328,7 +328,6 @@ int                 Socket::_getSocket(const uint16_t port, const std::string ip
         // if you don't set this, the port will be busy everytime you stop & restart the server
         // -------------------------------------------------------------
         int optval = 1;
-         int optval1 = 1;
         if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)  { close(sock); continue; }
         
         //                          Set Non Blocking

@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "_header.h"
 #include <cctype>
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -31,7 +32,7 @@ int charCount(std::string str, char c){
 void print_vec(vec_str vec, std::string name){
   if (vec.empty())
     return;
-  std::cout << RED "|" RESET << name;
+  std::cout << MAG "|" RESET << name;
   for (size_t i = 0; i < vec.size(); ++i)
       std::cout <<  "[" << i << "]" YEL << vec[i] << RESET "|";
   std::cout << std::endl;
@@ -241,13 +242,13 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
     if (vec.size() >= 3 && !vec[2].empty())
       key = Tokenize(vec[2], ',');
     for (size_t i = 0; i < channel.size(); i++) {
-        if (!chaIsValid(channel[i])){
-          if (!key.empty() && i < key.size())
-            key.erase(key.begin() + i);
-          channel.erase(channel.begin() + i);
-          i--;
-        }else
-          Sock.SendData(user.userFD, "479 :invalid character");
+      if (!chaIsValid(channel[i])){
+        if (!key.empty() && i < key.size())
+          key.erase(key.begin() + i);
+        channel.erase(channel.begin() + i);
+        Sock.SendData(user.userFD, ERR_BADCHANNAME);
+        i--;
+      }
     }
   }
 
@@ -285,7 +286,8 @@ void Parser::fnKICK(vec_str& vec, userData& user){
     KickUserChannel(user, vec[1], vec[2], vec[3]);
 }
 
-//PART #channel *reason
+//PART #channel 
+//PART #channel :reason
 void Parser::fnPART(vec_str& vec, userData& user){
   vec_str channel;
 
@@ -297,11 +299,11 @@ void Parser::fnPART(vec_str& vec, userData& user){
     channel = Tokenize(vec[1], ',');
   if (channel.size() > 0){
     for (size_t i = 0; i < channel.size(); i++) {
-        if (!isValidStr(channel[i], "#&") || (channel[i][0] != '#' && channel[i][0] != '&') || channel[i].length() == 1){
-          channel.erase(channel.begin() + i);
-          i--;
-        }else
-          Sock.SendData(user.userFD, ERR_BADCHANNAME);
+      if (!chaIsValid(channel[i])){
+        channel.erase(channel.begin() + i);
+        Sock.SendData(user.userFD, ERR_BADCHANNAME);
+        i--;
+      }
     }
   }
 
@@ -326,51 +328,71 @@ void Parser::fnQUIT(vec_str& vec, userData& user){
   KickUserAllChannel(user, vec[1]);
 }
 
+//MODE #CHANNEL +/-ITKOL
+//MODE #CHANNEL +/-ITKOL param param param
 void Parser::fnMODE(vec_str& vec, userData& user){
-  //MODE #CHANNEL +/-ITKOL
-  std::string flag = "";
+  bool mode = false;
   if (vec.size() < 2){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
     return;
   }else if(vec.size() == 2){
     //send all mode in this channel
+    return;
   }
   else if (vec.size() < 3 && vec[2].find_first_of("tkol") != std::string::npos){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
     return;
   }
-  if (vec[2][0] == '+' || vec[2][0] == '-'){
-    flag += vec[2][0];
-  }else{
+
+  if (vec[2][0] == '+'){
+    mode = true;
+  }
+  else if (vec[2][0] != '-'){
     Sock.SendData(user.userFD, ERR_UMODEUNKNOWNFLAG);
     return;
   }
 
+  size_t j = 4;
   for (size_t i = 1; i < vec[2].length(); i++) {
-    switch (vec[2][0]) {
+    switch (vec[2][i]) {
       case 'i':
-        printf("i");
-        //ModeI(user, flag, channel);
+        printf("i\n");
+        ModeI(user, mode, vec[1]);
         break;
       case 't':
-        printf("t");
-        //ModeT(user, flag, channel);
+        printf("t\n");
+        ModeT(user, mode, vec[1]);
         break;
       case 'k':
-        printf("k");
-        //ModeK(user, flag, channel);
+        printf("k\n");
+        // if (mode == true && vec.size() > j && !vec[j].empty())
+        //   ModeK(user, vec[j], vec[1]);
+        // else
+        //   ModeK(user, "", vec[1]);
+        j++;
         break;
       case 'o':
-        printf("o");
-        //ModeO(user, flag, channel);
+        printf("o\n");
+        // if (mode == true && vec.size() > j && !vec[j].empty())
+        // ModeO(user, vec[j], vec[1]);
+        // else 
+        // ModeO(user, vec[j], vec[1]);
+        j++;
         break;
       case 'l':
-        printf("l");
-        //ModeL(user, flag, channel);
+        printf("l\n");
+        if (mode == true && vec.size() > j && !vec[j].empty())
+          try {
+            ModeL(user, stoi(vec[j]), vec[1]);
+          } catch (const std::exception& e) {
+            Sock.SendData(user.userFD, ":invalide number");
+          }
+        else
+          ModeL(user, -1, vec[1]);
+        j++;
         break;
       default:
         Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
-        return;
         break;
     }
   }
@@ -378,21 +400,24 @@ void Parser::fnMODE(vec_str& vec, userData& user){
 
 //topic #channel :topic
 void Parser::fnTOPIC(vec_str& vec, userData& user){
-  if (vec.size() < 2){
+  if (vec.size() < 3){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString));
     return;
   }
-  if (vec.size() >= 3 && isValidStr(vec[2], "", true)){
+  if (isValidStr(vec[2], "", true)){
     setTopic(user, vec[1], vec[2]);
   }
 }
 
+//INVITE nick #channel
 void Parser::fnINVITE(vec_str& vec, userData& user){
   if (vec.size() < 3){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString));
     return;
   }
-  // if ()
+  else{
+    //invite(user, nick, channel);
+  }
 }
 
 /// ####################################################################################################################
@@ -410,45 +435,19 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     }
 
     // std::cout << "user - " << user.userName << "currentAction\t\t\t\t\t\t\t>" << user.currentAction << std::endl;
-    if (token[0] == "PASS" && LV(user.currentAction, e_notConfim)) {
-      fnPASS(token, user);
-    }
-    else if (user.currentAction == 0) {
-      kickUser(index, ERR_PASSWDMISMATCH, user); //!if user send shit witout giving a valid password
-    }
-    else if (token[0] == "USER" && LV(user.currentAction, e_notNameSet)) {
-      fnUSER(token, user);
-    }
-    else if (token[0] == "NICK") {
-      fnNICK(token, user);
-    }
-    else if (token[0] == "PING" && LV(user.currentAction, e_ConfimUser)) {
-      Sock.SendData(user.userFD, "PONG " + token[1]);
-    }
-    else if (token[0] == "JOIN") {
-      fnJOIN(token, user);
-    }
-    else if (token[0] == "KICK") {
-      fnKICK(token, user);
-    }
-    else if (token[0] == "INVITE") { //INVITE|[1]nick_name_0|[2]#b|
-      fnINVITE(token, user);
-    }
-    else if (token[0] == "TOPIC") {
-      fnTOPIC(token, user);
-    }
-    else if (token[0] == "MODE") {
-      fnMODE(token, user);
-    }
-    else if (token[0] == "PRIVMSG") { //PRIVMSG #a :awd
-      fnPMSG(token, user);
-    }
-    else if (token[0] == "PART") {
-      fnPART(token, user);
-    }
-    else if (token[0] == "QUIT") {
-      fnQUIT(token, user);
-    }
+    if (token[0] == "PING" && LV(user.currentAction, e_ConfimUser)) { Sock.SendData(user.userFD, "PONG " + token[1]); }
+    else if (token[0] == "PASS" && LV(user.currentAction, e_notConfim)) { fnPASS(token, user); }
+    else if (user.currentAction == 0) { kickUser(index, ERR_PASSWDMISMATCH, user); } //!if user send shit witout giving a valid password
+    else if (token[0] == "USER" && LV(user.currentAction, e_notNameSet)) { fnUSER(token, user); }
+    else if (token[0] == "PRIVMSG") { fnPMSG(token, user);}
+    else if (token[0] == "NICK")    { fnNICK(token, user); }
+    else if (token[0] == "JOIN")    { fnJOIN(token, user); }
+    else if (token[0] == "KICK")    { fnKICK(token, user); }
+    else if (token[0] == "MODE")    { fnMODE(token, user); }
+    else if (token[0] == "PART")    { fnPART(token, user); }
+    else if (token[0] == "QUIT")    { fnQUIT(token, user); }
+    else if (token[0] == "TOPIC")   { fnTOPIC(token, user); }
+    else if (token[0] == "INVITE")  { fnINVITE(token, user); }
     //else
     //  unknowCommand(user);
     //dev messasge  *v*
