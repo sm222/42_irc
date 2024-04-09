@@ -35,11 +35,11 @@ public:
     bool        KickUserAllChannel(const userData& user, const string reson);
     bool        userPart(const string channel , const string userName, const string reson);
     // !mode
-    bool        ModeI(const userData& user, const bool mode, const string channel);
-    bool        ModeT(const userData& user, const bool mode, const string channel);
-    bool        ModeO(const userData& user, const string nick, const string channel);
-    bool        ModeL(const userData& user, const int number, const string channel);
-    bool        ModeK(const userData& user, const string pass, const string channel);
+    bool        ModeI(const userData& user, const string channel, const bool mode);
+    bool        ModeT(const userData& user, const string channel, const bool mode);
+    bool        ModeO(const userData& user, const string channel, const string nick);
+    bool        ModeL(const userData& user, const string channel, const int number);
+    bool        ModeK(const userData& user, const string channel, const string pass);
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);
     void        badCmd(userData &user);
