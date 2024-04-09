@@ -142,15 +142,17 @@ bool    Parser::joinChannel(const userData& user, const string& name, const stri
   else if (!_tryJoinChannel(user, name, pass)) {
     return false;
   }
-  Sock.SendData(user.userName, makeMessage(e_none, string(":%n JOIN ") + name, user));
+  Sock.SendData(user.userFD, makeMessage(e_none, string(":%n JOIN ") + name, user));
   Sock.SendData(user.userFD, string("332 ") + user.nickName + " :"+ getTopic(name));
   const vec_str& userList = Sock.channels.Channel_Get_AllUsers(name);
+  string  msg = "353 " + user.nickName + " = " + name + " :";
+  msg += _SendUserChannelStatus(userList, name);
+  Sock.SendData(user.userFD, msg);
+  Sock.SendData(user.userFD, string("366 ") + user.nickName + " " + name + " :End of /NAMES list");
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
-    string  msg = "353 " + tmpUser->nickName + " = " + name + " :";
-    msg += _SendUserChannelStatus(userList, name);
-    Sock.SendData(userList[i], msg);
-    Sock.SendData(userList[i], string("366 ") + tmpUser->nickName + " " + name + " :End of /NAMES list");
+
+    Sock.SendData(tmpUser->userFD, makeMessage(e_none, string(":%n JOIN ") + name, *tmpUser));
   }
   return true;
 }
