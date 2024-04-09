@@ -294,7 +294,7 @@ bool    Parser::ModeK(const userData& user, const string pass, const string chan
   return true;
 }
 
-bool    Parser::ModeO(const userData& user, const string nick, const string channel) {
+bool    Parser::ModeO(const userData& user, const string channel, const string nick, const bool mode) {
   if (!_testOp(user, channel))
     return false;
   const userData* tmpUser = Sock.GetUserByNickname(nick);
@@ -304,7 +304,11 @@ bool    Parser::ModeO(const userData& user, const string nick, const string chan
   }
   if (!_testInChannel(*tmpUser, channel, &user))
     return false;
-  _channels.Channel_Set_Operator(tmpUser->userName, channel);
+  if (mode)
+    _channels.Channel_Set_Operator(tmpUser->userName, channel);
+  else
+    _channels.Channel_Remove_Operator(tmpUser->userName, channel);
+  return true;
 }
 
 bool   Parser::ModeL(const userData& user, const int number, const string channel) {
