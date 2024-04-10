@@ -80,15 +80,37 @@ bool  Parser::setUserMode(userData& user, int type) {
 
 //TOPIC
 
+  //332   "<client> <channel> :<topic>"
+bool  Parser::_sendTopicTo(const string channel, const userData* user) {
+  if (!_channels.Channel_AlreadyExist(channel))
+    return false;
+  if (user && _channels.Channel_Get_IsUserInChannel(user->userName, channel)) {
+    Sock.SendData(user->userFD, string("332 ") + user->nickName + ' ' + channel + " " +  getTopic(channel));
+    return true;
+  }
+  const vec_str& userList = _channels.Channel_Get_AllUsers(channel);
+  for (size_t i = 0; i < userList.size(); i++) {
+    const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
+    if (tmpUser) {
+      Sock.SendData(tmpUser->userFD, string("332 ") + tmpUser->nickName + ' ' + channel + " " +  getTopic(channel));
+    }
+  }
+  return true;
+}
+
 bool  Parser::setTopic(const userData& user, const string& channelName, const string& topic) {
   if (_channels.Channel_Get_CanUserChangeTopic(channelName)) {
     _channels.Channel_Set_Topic(channelName, topic);
+    _sendTopicTo(channelName);
+    //                       <------------- HERE
     return true;
   }
   else if (_testOp(user, channelName)) {
     _channels.Channel_Set_Topic(channelName, topic);
+    _sendTopicTo(channelName);
     return true;
   }
+  std::cout << "ici\n";
   return false;
 }
 
@@ -132,27 +154,27 @@ string   Parser::_SendUserChannelStatus(const vec_str& userList, const string& n
   return msg;
 }
 
-bool    Parser::joinChannel(const userData& user, const string& name, const string& pass) {
-  if (!_channels.Channel_AlreadyExist(name)) {
-    if (!_channels.Channel_Create(user.userName, name)) {
+bool    Parser::joinChannel(const userData& user, const string& channel, const string& pass) {
+  if (!_channels.Channel_AlreadyExist(channel)) {
+    if (!_channels.Channel_Create(user.userName, channel)) {
       return false;    //! can't make chanel
     }
-    _channels.Channel_Set_Password(name, pass);
+    _channels.Channel_Set_Password(channel, pass);
   }
-  else if (!_tryJoinChannel(user, name, pass)) {
+  else if (!_tryJoinChannel(user, channel, pass))
     return false;
-  }
-  Sock.SendData(user.userFD, makeMessage(e_none, string(":%n JOIN ") + name, user));
-  Sock.SendData(user.userFD, string("332 ") + user.nickName + " :"+ getTopic(name));
-  const vec_str& userList = Sock.channels.Channel_Get_AllUsers(name);
-  string  msg = "353 " + user.nickName + " = " + name + " :";
-  msg += _SendUserChannelStatus(userList, name);
+  Sock.SendData(user.userFD, string(":") + user.nickName + " JOIN " + channel);
+  _sendTopicTo(channel, &user);
+  std::cout << "ici\n";
+  const vec_str& userList = Sock.channels.Channel_Get_AllUsers(channel);
+  string  msg = "353 " + user.nickName + " = " + channel + " :";
+  msg += _SendUserChannelStatus(userList, channel);
   Sock.SendData(user.userFD, msg);
-  Sock.SendData(user.userFD, string("366 ") + user.nickName + " " + name + " :End of /NAMES list");
+  Sock.SendData(user.userFD, string("366 ") + user.nickName + " " + channel + " :End of /NAMES list");
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
-
-    Sock.SendData(tmpUser->userFD, makeMessage(e_none, string(":%n JOIN ") + name, *tmpUser));
+    if (user.userFD != tmpUser->userFD)
+      Sock.SendData(tmpUser->userFD, string(":") + user.nickName + " JOIN " + channel);
   }
   return true;
 }

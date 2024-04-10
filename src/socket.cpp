@@ -32,23 +32,26 @@ bool                Socket::doesThisNicknameExist(const std::string& nickname) {
     }
     return false;
 }
+
+
 void                Socket::KickUser(vectorIT& index) {
     close(index->fd);
     userData* user = GetUserByFD(index->fd);
     if (user && user->userName != "") {
-       std::vector<std::pair<std::string, std::string> > T = channels.SOCKETONLY_kickuserfromallchannels(user->userName);
-       for (size_t i = 0; i < T.size(); i++) {
-        userData* user = GetUserByUsername(T[i].first);
-        if (user) {
-            SendData(user->userFD, ":" + user->userName + " PART " + T[i].second + " :got shitted on by pigeon");
+        std::vector<std::pair<std::string, std::string> > T = channels.SOCKETONLY_kickuserfromallchannels(user->userName);
+        for (size_t i = 0; i < T.size(); i++) {
+        userData* tmp = GetUserByUsername(T[i].first);
+        if (tmp) {
+            SendData(tmp->userFD, ":" + user->nickName + " PART " + T[i].second + " :got disconected ~ bozo ~");
         }
-       }
+      }
     }
     _users.erase(index->fd);
     index->fd = -1;             // We set this to -1 to remove it AFTER the Vector for loop
     _updatePolls(true);         // Definitely remove the user from Polls listing on next iteration
     if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][KickUser] [" + user->userName + "] removed with Success" << std::endl;
 }
+
 void                Socket::SendData(const int& userFD, std::string data) {
 
     if (_users.find(userFD) == _users.end()) { 

@@ -4,7 +4,7 @@ import threading
 import time
 import sys
 
-HOST = '10.12.6.3'
+HOST = '10.12.6.7'
 PORT = 2000
 
 commands = [
@@ -74,8 +74,7 @@ commands = [
     ("PRIVMSG #c :017\r\n", 0.01),
     ("PRIVMSG #c :018\r\n", 0.01),
     ("PRIVMSG #c :019\r\n", 0.01),
-    ("PRIVMSG #c :020\r\n", 0.01),
-    ("QUIT :bye bye\r\n", 0.5)
+    ("PRIVMSG #c :020\r\n", 0.01)
 ]
 
 def sendcommands(s):
@@ -105,4 +104,5 @@ if __name__ == "__main__":
         send_thread.start()
         recv_thread.start()
         send_thread.join()
+        sys.exit(1)
         #recv_thread.join()

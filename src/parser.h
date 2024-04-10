@@ -25,7 +25,7 @@ public:
     //TODO: v
     std::string makeMessage(t_code const type, const string msg , const userData& user);
     bool        setUserInfo(userData& user, vec_str vec);
-    bool        joinChannel(const userData& user, const string& name, const string& pass);
+    bool        joinChannel(const userData& user, const string& channel, const string& pass);
     bool        testPassWord(std::string &pass, userData &user, vectorIT& index);
     bool        setTopic(const userData&  user, const string& chanelName, const string& topic);
     string      getTopic(const string& chanalName);
@@ -75,6 +75,7 @@ private:
     short       _tryJoinChannel(const userData& user, const string name, const string pass);
     bool        _testOp(const userData& user, const string channelName);
     bool        _testInChannel(const userData& user, const string channelName, const userData* ask = NULL);
+    bool        _sendTopicTo(const string channel, const userData* user = NULL);
     //          look if the user doing the acorder lever of Action
     #define     LV(userLv, askLv) (userLv >= askLv)
     //
