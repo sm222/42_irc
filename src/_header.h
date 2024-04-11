@@ -51,6 +51,8 @@ enum e_ActionLv {
 
 // info //
 #define RPL_TOPIC(nick, channel, topic)         "332 " + nick +  " " + channel + " " + topic        //<client> <channel> :<topic>
+#define ERR_UNKNOWNERROR(cmd, reason)           "400 " + cmd + " :" + reason
+#define ERR_UNKNOWNCOMMAND(cmd)                 "421 " + cmd + " :Unknown command"
 #define ERR_NEEDMOREPARAMS(cmd)                 "461 " + cmd + " :Not enough parameters"
 #define ERR_PASSWDMISMATCH                      "464 :Password incorrect"
 

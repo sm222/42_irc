@@ -4,30 +4,16 @@
 //*         ERROR         *//
 //*                       *//
 
-
-
-//! don't use need to modefiy
-//! shoud be modefy for bad arg in cmd
-//! @param user ERR_UNKNOWNERROR (400) 
-void Parser::badCmd(userData& user) {
-  Sock.SendData(user.userFD, string("400 ") + ServerName " " + user.recvString + " :ERR_UNKNOWNERROR" );
-}
-
-void  Parser::unknowCommand(userData& user) {
-  Sock.SendData(user.userFD, string("421 ") + ServerName " " + user.recvString + " :unknow cmd" );
-}
-
-
 void  Parser::allReadyRegistered(userData& user) {
-  Sock.SendData(user.userFD, ServerName " :You may not reregister");
+  Sock.SendData(user.userFD, user.nickName + " :You may not reregister");
 }
 
 void Parser::notInChannel(const userData& user, const string channel, const userData* ask) {
   const userData& msg = ask ? *ask : user;
   Sock.SendData(msg.userFD, ERR_USERNOTINCHANNEL(msg.nickName, channel));
-  
 }
 
+<<<<<<< HEAD
 //<client> :There was no such nickname"ERR_WASNOSUCHNICK (406) 
 void Parser::noSuchNick(const userData& user, const string nick) {
   Sock.SendData(user.userFD, string("406 ") + user.nickName + " " + nick + " :There was no such nickname");
@@ -46,6 +32,8 @@ void    Parser::_sendChannel(const string message, const string channel, const b
   }
 }
 
+=======
+>>>>>>> oli
 bool  Parser::_testInChannel(const userData& user, const string channelName, const userData* ask) {
   if (channelName.empty()) {
     // no name

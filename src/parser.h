@@ -43,11 +43,8 @@ public:
     bool        ModeK(const userData& user, const string channel, const string pass);
     //*    //
     void        kickUser(vectorIT& index, const string reasons, const userData &user);
-    void        badCmd(userData &user);
     void        notInChannel(const userData& user, const string channel, const userData* ask = NULL);
-    void        unknowCommand(userData &user);
     void        allReadyRegistered(userData &user);
-    void        noSuchNick(const userData& user, const string nick);
     //*    //
 
     bool        chaIsValid(std::string str);

@@ -452,9 +452,6 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     else if (token[0] == "QUIT")    { fnQUIT(token, user); }
     else if (token[0] == "TOPIC")   { fnTOPIC(token, user); }
     else if (token[0] == "INVITE")  { fnINVITE(token, user); }
-    //else
-    //  unknowCommand(user);
-    //dev messasge  *v*
 
     // std::cout << "Received: " + user.recvString;    // Data Received
 }
