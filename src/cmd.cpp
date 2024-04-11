@@ -65,17 +65,6 @@ bool  Parser::_testOp(const userData& user, const string channelName) {
 //*           CMD         *//
 //*                       *//
 
-//?  * // mode
-
-//! not use working on it
-bool  Parser::setUserMode(userData& user, int type) {
-  (void)type;
-  Sock.channels.Channel_Get_IsUserChannelOP(user.userName, "test");
-  return true;
-}
-
-
-
 //?  * // topic
 
 //TOPIC
@@ -109,7 +98,6 @@ bool  Parser::setTopic(const userData& user, const string& channelName, const st
     _sendTopicTo(channelName);
     return true;
   }
-  std::cout << "ici\n";
   return false;
 }
 
@@ -127,15 +115,17 @@ void  Parser::kickUser(vectorIT& index, const string reasons, const userData &us
     Sock.KickUser(index);
 }
 
-short     Parser::_tryJoinChannel(const userData& user, const string name, const string pass) {
-  //if (_channels.Channel_Get_InviteOnly(name))
-  const string& _pass = _channels.Channel_Get_Password(name);
+short     Parser::_tryJoinChannel(const userData& user, const string channel, const string pass) {
+  const string& _pass = _channels.Channel_Get_Password(channel);
   if (!_pass.empty() && _pass != pass) {
     Sock.SendData(user.userFD, ERR_PASSWDMISMATCH);
     return false;
   }
-  if (!_channels.Channel_Join(user.userName, name))
+  if (!_channels.Channel_Join(user.userName, channel)) {
+    if (_channels.Channel_Get_InviteOnly(channel))
+      Sock.SendData(user.userFD, "473 " + user.nickName + " " + channel + " :Cannot join channel (+i)");
     return false;
+  }
   return true;
 }
 

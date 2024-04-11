@@ -73,7 +73,7 @@ private:
     Channels&   _channels;
     //*ft v
     string      _SendUserChannelStatus(const vec_str& userList, const string& name);
-    short       _tryJoinChannel(const userData& user, const string name, const string pass);
+    short       _tryJoinChannel(const userData& user, const string channel, const string pass);
     bool        _testOp(const userData& user, const string channelName);
     bool        _testInChannel(const userData& user, const string channelName, const userData* ask = NULL);
     bool        _sendTopicTo(const string channel, const userData* user = NULL);
