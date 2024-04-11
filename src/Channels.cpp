@@ -119,7 +119,9 @@ int                             Channels::Channel_Get_CurrentUsersCount(const st
 bool                            Channels::Channel_Get_InviteOnly(const std::string& channelname) {
     // Return False if channel doesnt exist
     ChannelMap* T =_getChannelByName(channelname);
-    if (T) { return T->first.InviteOnly; }
+    if (T) { 
+        return T->first.InviteOnly; 
+    }
     return false;
 }
 void                            Channels::Channel_Set_CanUserChangeTopic(const std::string& channelname, const bool value) {
@@ -128,7 +130,9 @@ void                            Channels::Channel_Set_CanUserChangeTopic(const s
 }
 void                            Channels::Channel_Set_InviteOnly(const std::string& channelname, const bool value) {
     ChannelMap* T =_getChannelByName(channelname);
-    if (T) { T->first.InviteOnly = value; }
+    if (T) { 
+        T->first.InviteOnly = value;
+    }
 }
 std::string                     Channels::Channel_Get_Topic(const std::string& channelName) {
     // Return [NULL] if the channel doesnt exist
@@ -170,11 +174,15 @@ bool                            Channels::Channel_Join(const std::string& userNa
     if (!T) return false;                                                          
 
     // Channel on Invite Only && User NOT invited (False)
-    if (T->first.InviteOnly && !_isUserInvited(T, userName)) { return false; }
+    if (T->first.InviteOnly && !_isUserInvited(T, userName)) { 
+        return false; 
+    }
     
-    // Already in Channel (False)
-    UsersMap::iterator i = T->second.find(userName);
-    if (i != T->second.end()) return false;
+    // Already in Channel as (Operator or User)
+    for (UsersMap::iterator i = T->second.begin(); i != T->second.end(); i++) {
+        if (i->first == userName && (i->second.in_Operator_List || i->second.in_User_list))
+            return false;
+    }
 
     // Add to Channel
     T->second[userName] = _createNewUserStats(true, false, false);
@@ -255,25 +263,31 @@ bool                            Channels::Channel_Set_Operator(const std::string
 bool                            Channels::Channel_Invite(const std::string& invitedUser, const std::string& channelName) {
     ChannelMap* T = _getChannelByName(channelName);
     if (T) {
+        // Check if user is already in map
         for (UsersMap::iterator i = T->second.begin(); i != T->second.end(); i++) {
-            if (invitedUser == i->first) {
-
-                // Already in Channel -> Return false
-                if (i->second.in_Operator_List || i->second.in_User_list) return false;
-
-                i->second.in_Invited_List = true;
-                return true;
-            }
+            
+            // User Found
+            if (invitedUser == i->first) { return false; }
         }
+
+        // If the user isnt found, then add it as Invited
+        T->second[invitedUser] = _createNewUserStats(false, true, false);
+        return true;
     }
+
+    // Channel dont exist
     return false;
 }
 bool                            Channels::Channel_Uninvite(const std::string& invitedUser, const std::string& channelName) {
     ChannelMap* T = _getChannelByName(channelName);
     if (T) {
         for (UsersMap::iterator i = T->second.begin(); i != T->second.end(); i++) {
-            if (invitedUser == i->first) {
-                i->second.in_Invited_List = false;
+
+            // If we found the user and is invited, just kick
+            if (invitedUser == i->first && i->second.in_Invited_List) {
+
+                // Just remove him completly from the Map of users
+                T->second.erase(i);
                 return true;
             }
         }
@@ -393,11 +407,13 @@ std::vector<std::pair<std::string, std::string> >    Channels::SOCKETONLY_kickus
 
 // +++ Private +++
 bool                            Channels::_isUserInvited(ChannelMap* Channel, const std::string& user) {
+
     if (!Channel) return false;
-    UsersMap::iterator i = Channel->second.find(user);
-    if (i == Channel->second.end())
-        return false;
-    return true;
+    UsersMap::iterator it = Channel->second.find(user);
+    if (it != Channel->second.end()) {
+        return it->second.in_Invited_List;
+    }
+    return false;
 }
 ChannelMap*                     Channels::_getChannelByName(const std::string& channelName) {
     ChannelGroup::iterator i = _channelGroup.find(channelName);

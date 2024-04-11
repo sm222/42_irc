@@ -8,11 +8,11 @@ import sys
 # First arg = PORT, Default = 2000
 
 # Settings
-MESSAGE_COUNT           = 30       # Only changing this is the smart way to do it
+MESSAGE_COUNT           = 1       # Only changing this is the smart way to do it
 CHANNEL_NAME            = "#a"
 SERVER_PASSWORD         = "a"
-THREAD_TO_SPAWN         = 15        # THREAD AND TIME HAS LIMITS - DONT FUCK YOUR SESSION (keep it like this)
-TIME_BETWEEN_MESSAGE    = 0.05      # THREAD AND TIME HAS LIMITS - DONT FUCK YOUR SESSION (keep it like this)
+THREAD_TO_SPAWN         = 1        # THREAD AND TIME HAS LIMITS - DONT FUCK YOUR SESSION (keep it like this)
+TIME_BETWEEN_MESSAGE    = 1      # THREAD AND TIME HAS LIMITS - DONT FUCK YOUR SESSION (keep it like this)
 
 # Do not Edit
 SEND_THREAD_LIST        = [None] * THREAD_TO_SPAWN
@@ -90,7 +90,8 @@ if __name__ == "__main__":
     # Get Host IP & Port
     try:
         IP = socket.gethostbyname(socket.gethostname())
-        PORT = 2000
+        #IP = ""
+        PORT = 6667
         if len(sys.argv) == 2:
             PORT = int(sys.argv[2])
             if PORT < 0 or PORT > 65535:

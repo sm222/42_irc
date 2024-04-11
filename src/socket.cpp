@@ -2,7 +2,7 @@
 #include "signal.h"
 #include <ctime>
 
-#define DEBUGGING_MODE false
+#define DEBUGGING_MODE true
 
 // +++ Constructor +++
 Socket::Socket(const uint16_t port, const std::string password, const bool showDebug) : _password(password), _showDebug(showDebug) {
