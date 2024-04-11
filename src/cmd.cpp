@@ -102,7 +102,6 @@ bool  Parser::setTopic(const userData& user, const string& channelName, const st
   if (_channels.Channel_Get_CanUserChangeTopic(channelName)) {
     _channels.Channel_Set_Topic(channelName, topic);
     _sendTopicTo(channelName);
-    //                       <------------- HERE
     return true;
   }
   else if (_testOp(user, channelName)) {
@@ -160,6 +159,7 @@ bool    Parser::joinChannel(const userData& user, const string& channel, const s
       return false;    //! can't make chanel
     }
     _channels.Channel_Set_Password(channel, pass);
+    setTopic(user, channel, string(":") + user.nickName + ", new channel");
   }
   else if (!_tryJoinChannel(user, channel, pass))
     return false;
@@ -303,7 +303,14 @@ bool Parser::userInvite(userData& user, std::string nick, std::string channel){
 *l  Définir/supprimer la limite d’utilisateurs pour le canal
 */
 
-
+void    Parser::_sendChannel(const string message, const string channel) {
+  const vec_str& userList = _channels.Channel_Get_AllUsers(channel);
+  for (size_t i = 0; i < userList.size(); i++) {
+    const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
+    if (tmpUser)
+      Sock.SendData(tmpUser->userFD, message);
+  }
+}
 
 bool    Parser::ModeI(const userData& user, const string channel, const bool mode) {
   if (!_testOp(user, channel))
@@ -337,10 +344,14 @@ bool    Parser::ModeO(const userData& user, const string channel, const string n
   }
   if (!_testInChannel(*tmpUser, channel, &user))
     return false;
-  if (mode)
+  if (mode) {
     _channels.Channel_Set_Operator(tmpUser->userName, channel);
-  else
+    _sendChannel(string(":") + nick + " MODE " + channel + "+o " + nick, channel);
+  }
+  else {
     _channels.Channel_Remove_Operator(tmpUser->userName, channel);
+
+  }
   return true;
 }
 
