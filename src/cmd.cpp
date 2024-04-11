@@ -13,11 +13,6 @@ void Parser::notInChannel(const userData& user, const string channel, const user
   Sock.SendData(msg.userFD, ERR_USERNOTINCHANNEL(msg.nickName, channel));
 }
 
-<<<<<<< HEAD
-//<client> :There was no such nickname"ERR_WASNOSUCHNICK (406) 
-void Parser::noSuchNick(const userData& user, const string nick) {
-  Sock.SendData(user.userFD, string("406 ") + user.nickName + " " + nick + " :There was no such nickname");
-}
 
 void    Parser::_sendChannel(const string message, const string channel, const bool user) {
   const vec_str& userList = _channels.Channel_Get_AllUsers(channel);
@@ -32,8 +27,6 @@ void    Parser::_sendChannel(const string message, const string channel, const b
   }
 }
 
-=======
->>>>>>> oli
 bool  Parser::_testInChannel(const userData& user, const string channelName, const userData* ask) {
   if (channelName.empty()) {
     // no name
