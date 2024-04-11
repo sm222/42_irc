@@ -343,9 +343,14 @@ void                            Channels::PrintALLChannelContent() {
 std::vector<std::pair<std::string, std::string> >    Channels::SOCKETONLY_kickuserfromallchannels(const std::string& userName) {
 
     std::vector<std::pair<std::string, std::string> > PeopleToPm;
+    std::vector<std::string> emptyChannel;
+
+    if (_channelGroup.empty())
+        return PeopleToPm;
 
     // Iterate all the Channels
     for (ChannelGroup::iterator i = _channelGroup.begin(); i != _channelGroup.end(); i++) {
+
         std::string     channelName = i->first;
         UsersMap&       currentChannel = i->second.second; // Skip to the userlist right away
 
@@ -355,7 +360,7 @@ std::vector<std::pair<std::string, std::string> >    Channels::SOCKETONLY_kickus
         // If User is in Channel
         if (j != currentChannel.end()) {
 
-            // If there's one than one user in channel
+            // If there's more than only the LEAVER in the channel, send them the Leaving message
             if (currentChannel.size() > 1) {
 
                 // For Each users in channel
@@ -368,15 +373,20 @@ std::vector<std::pair<std::string, std::string> >    Channels::SOCKETONLY_kickus
                 }
             }
 
-            // Remove user from Channel
-            currentChannel.erase(j);
-
-            // Delete channel if Channel is now empty
-            if (currentChannel.size() == 0) {
-                _channelGroup.erase(i);
+            // Alone in Channel -> Add to delete list
+            else {
+                emptyChannel.push_back(channelName);
             }
 
+            // Remove user from Channel
+            currentChannel.erase(j);
         }
+
+    }
+
+    // Delete the Channels if they are empty
+    for (size_t i = 0; i < emptyChannel.size(); i++) {
+        _channelGroup.erase(emptyChannel[i]);
     }
     return PeopleToPm;
 }

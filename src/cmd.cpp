@@ -220,7 +220,7 @@ bool  Parser::privMsg(const string target, const string message, const string ni
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
     string msg = ":" + nick + " PRIVMSG " + target + " " + message;
-    if (tmpUser->nickName != nick || self)
+    if ((tmpUser && tmpUser->nickName != nick) || self)
       Sock.SendData(tmpUser->userFD, msg);
   }
   return true;
