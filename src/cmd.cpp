@@ -112,6 +112,10 @@ short     Parser::_tryJoinChannel(const userData& user, const string channel, co
     Sock.SendData(user.userFD, ERR_PASSWDMISMATCH);
     return false;
   }
+  if (_channels.Channel_Get_CurrentUsersCount(channel) >= _channels.Channel_Get_MaxUsersCount(channel)){
+    Sock.SendData(user.userFD, ERR_CHANNELISFULL(channel));
+    return false;
+  }
   if (!_channels.Channel_Join(user.userName, channel)) {
     if (_channels.Channel_Get_InviteOnly(channel))
       Sock.SendData(user.userFD, "473 " + user.nickName + " " + channel + " :Cannot join channel (+i)");

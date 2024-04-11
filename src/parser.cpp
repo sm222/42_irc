@@ -339,7 +339,6 @@ void Parser::fnMODE(vec_str& vec, userData& user){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
     return;
   }else if(vec.size() == 2){
-    //send all mode in this channel
     return;
   }
   else if (vec.size() < 3 && vec[2].find_first_of("tkol") != std::string::npos){
