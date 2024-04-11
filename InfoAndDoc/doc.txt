@@ -2,7 +2,7 @@ doc
 https://modern.ircdocs.horse/
 
 
-/server add O_O 10.12.6.4/9999 -notls -password=bozo
+/server add O_O 10.11.1.2/6667 -notls -password=a
 /set irc.server.O_O.username "user_name_0"
 /set irc.server.O_O.nicks "nick_name_0"
 /connect O_O
