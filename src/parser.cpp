@@ -365,18 +365,18 @@ void Parser::fnMODE(vec_str& vec, userData& user){
         break;
       case 'k':
         printf("k\n");
-        // if (mode == true && vec.size() > j && !vec[j].empty())
-        //   ModeK(user, vec[j], vec[1]);
-        // else
-        //   ModeK(user, "", vec[1]);
+        if (mode == true && vec.size() > j && !vec[j].empty())
+          ModeK(user, vec[j], vec[1]);
+        else
+          ModeK(user, "", vec[1]);
         j++;
         break;
       case 'o':
         printf("o\n");
-        // if (mode == true && vec.size() > j && !vec[j].empty())
-        // ModeO(user, vec[j], vec[1]);
+        if (mode == true && vec.size() > j && !vec[j].empty())
+          ModeO(user, vec[1], vec[j], mode);
         // else 
-        // ModeO(user, vec[j], vec[1]);
+          // error
         j++;
         break;
       case 'l':
