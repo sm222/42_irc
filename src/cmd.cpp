@@ -4,35 +4,14 @@
 //*         ERROR         *//
 //*                       *//
 
-
-
-//! don't use need to modefiy
-//! shoud be modefy for bad arg in cmd
-//! @param user ERR_UNKNOWNERROR (400) 
-void Parser::badCmd(userData& user) {
-  Sock.SendData(user.userFD, string("400 ") + ServerName " " + user.recvString + " :ERR_UNKNOWNERROR" );
-}
-
-void  Parser::unknowCommand(userData& user) {
-  Sock.SendData(user.userFD, string("421 ") + ServerName " " + user.recvString + " :unknow cmd" );
-}
-
-
 void  Parser::allReadyRegistered(userData& user) {
-  Sock.SendData(user.userFD, ServerName " :You may not reregister");
+  Sock.SendData(user.userFD, user.nickName + " :You may not reregister");
 }
 
 void Parser::notInChannel(const userData& user, const string channel, const userData* ask) {
   const userData& msg = ask ? *ask : user;
   Sock.SendData(msg.userFD, ERR_USERNOTINCHANNEL(msg.nickName, channel));
-  
 }
-
-//<client> :There was no such nickname"ERR_WASNOSUCHNICK (406) 
-void Parser::noSuchNick(const userData& user, const string nick) {
-  Sock.SendData(user.userFD, string("406 ") + user.nickName + " " + nick + " :There was no such nickname");
-}
-
 
 bool  Parser::_testInChannel(const userData& user, const string channelName, const userData* ask) {
   if (channelName.empty()) {
@@ -345,7 +324,7 @@ bool    Parser::ModeO(const userData& user, const string channel, const string n
     return false;
   if (mode) {
     _channels.Channel_Set_Operator(tmpUser->userName, channel);
-    _sendChannel(":@" + nick + " MODE " + channel + "+o " + nick, channel);
+    _sendChannel(":" + nick + " MODE " + channel + "+o " + nick, channel);
   }
   else {
     _channels.Channel_Remove_Operator(tmpUser->userName, channel);
