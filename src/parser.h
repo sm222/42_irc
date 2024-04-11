@@ -77,7 +77,7 @@ private:
     bool        _testOp(const userData& user, const string channelName);
     bool        _testInChannel(const userData& user, const string channelName, const userData* ask = NULL);
     bool        _sendTopicTo(const string channel, const userData* user = NULL);
-    void        _sendChannel(const string message, const string channel);
+    void        _sendChannel(const string message, const string channel, const bool user = false);
     //          look if the user doing the acorder lever of Action
     #define     LV(userLv, askLv) (userLv >= askLv)
     //

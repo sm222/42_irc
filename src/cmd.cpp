@@ -33,6 +33,18 @@ void Parser::noSuchNick(const userData& user, const string nick) {
   Sock.SendData(user.userFD, string("406 ") + user.nickName + " " + nick + " :There was no such nickname");
 }
 
+void    Parser::_sendChannel(const string message, const string channel, const bool user) {
+  const vec_str& userList = _channels.Channel_Get_AllUsers(channel);
+  for (size_t i = 0; i < userList.size(); i++) {
+    const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
+    string s;
+    if (tmpUser) {
+      if (user)
+        s = ":" + tmpUser->nickName + " ";
+      Sock.SendData(tmpUser->userFD, s + message);
+    }
+  }
+}
 
 bool  Parser::_testInChannel(const userData& user, const string channelName, const userData* ask) {
   if (channelName.empty()) {
@@ -292,14 +304,6 @@ bool Parser::userInvite(userData& user, std::string nick, std::string channel){
 *l  Définir/supprimer la limite d’utilisateurs pour le canal
 */
 
-void    Parser::_sendChannel(const string message, const string channel) {
-  const vec_str& userList = _channels.Channel_Get_AllUsers(channel);
-  for (size_t i = 0; i < userList.size(); i++) {
-    const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
-    if (tmpUser)
-      Sock.SendData(tmpUser->userFD, message);
-  }
-}
 
 bool    Parser::ModeI(const userData& user, const string channel, const bool mode) {
   if (!_testOp(user, channel))
@@ -335,11 +339,11 @@ bool    Parser::ModeO(const userData& user, const string channel, const string n
     return false;
   if (mode) {
     _channels.Channel_Set_Operator(tmpUser->userName, channel);
-    _sendChannel(":@" + nick + " MODE " + channel + "+o " + nick, channel);
+    _sendChannel(" MODE " + channel + " +o " + nick, channel, true);
   }
   else {
     _channels.Channel_Remove_Operator(tmpUser->userName, channel);
-    _sendChannel(":" + nick + " MODE " + channel + "-o " + nick, channel);
+    _sendChannel(" MODE " + channel + " -o " + nick, channel, true);
   }
   return true;
 }
