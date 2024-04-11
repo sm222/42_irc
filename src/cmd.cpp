@@ -7,7 +7,6 @@
 
 
 //! don't use need to modefiy
-//! don't use need to modefiy
 //! shoud be modefy for bad arg in cmd
 //! @param user ERR_UNKNOWNERROR (400) 
 void Parser::badCmd(userData& user) {
@@ -336,11 +335,11 @@ bool    Parser::ModeO(const userData& user, const string channel, const string n
     return false;
   if (mode) {
     _channels.Channel_Set_Operator(tmpUser->userName, channel);
-    _sendChannel(string(":") + nick + " MODE " + channel + "+o " + nick, channel);
+    _sendChannel(":@" + nick + " MODE " + channel + "+o " + nick, channel);
   }
   else {
     _channels.Channel_Remove_Operator(tmpUser->userName, channel);
-
+    _sendChannel(":" + nick + " MODE " + channel + "-o " + nick, channel);
   }
   return true;
 }

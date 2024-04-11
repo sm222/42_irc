@@ -355,7 +355,7 @@ void Parser::fnMODE(vec_str& vec, userData& user){
     return;
   }
 
-  size_t j = 4;
+  size_t j = 3;
   for (size_t i = 1; i < vec[2].length(); i++) {
     switch (vec[2][i]) {
       case 'i':
@@ -376,10 +376,10 @@ void Parser::fnMODE(vec_str& vec, userData& user){
         break;
       case 'o':
         printf("o\n");
-        if (mode == true && vec.size() > j && !vec[j].empty())
+        if (vec.size() > j && !vec[j].empty())
           ModeO(user, vec[1], vec[j], mode);
-        // else 
-          // error
+        else 
+          Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName + " " + vec[1]));
         j++;
         break;
       case 'l':
@@ -395,6 +395,7 @@ void Parser::fnMODE(vec_str& vec, userData& user){
         j++;
         break;
       default:
+        printf("end\n");
         Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
         break;
     }
