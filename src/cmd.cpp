@@ -13,7 +13,6 @@ void Parser::notInChannel(const userData& user, const string channel, const user
   Sock.SendData(msg.userFD, ERR_USERNOTINCHANNEL(msg.nickName, channel));
 }
 
-
 void    Parser::_sendChannel(const string message, const string channel, const bool user) {
   const vec_str& userList = _channels.Channel_Get_AllUsers(channel);
   for (size_t i = 0; i < userList.size(); i++) {
@@ -111,6 +110,10 @@ short     Parser::_tryJoinChannel(const userData& user, const string channel, co
   const string& _pass = _channels.Channel_Get_Password(channel);
   if (!_pass.empty() && _pass != pass) {
     Sock.SendData(user.userFD, ERR_PASSWDMISMATCH);
+    return false;
+  }
+  if (_channels.Channel_Get_CurrentUsersCount(channel) >= _channels.Channel_Get_MaxUsersCount(channel)){
+    Sock.SendData(user.userFD, ERR_CHANNELISFULL(channel));
     return false;
   }
   if (!_channels.Channel_Join(user.userName, channel)) {
