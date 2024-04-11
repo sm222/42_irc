@@ -171,7 +171,7 @@ bool                            Channels::Channel_Join(const std::string& userNa
 
     // Channel on Invite Only && User NOT invited (False)
     if (T->first.InviteOnly && !_isUserInvited(T, userName)) { return false; }
-
+    
     // Already in Channel (False)
     UsersMap::iterator i = T->second.find(userName);
     if (i != T->second.end()) return false;

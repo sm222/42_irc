@@ -289,6 +289,7 @@ void Parser::fnKICK(vec_str& vec, userData& user){
 //PART #channel 
 //PART #channel :reason
 void Parser::fnPART(vec_str& vec, userData& user){
+  std::cout << RED "|fnPART" RESET << std::endl;
   vec_str channel;
 
   if (vec.size() < 2){
@@ -319,6 +320,7 @@ void Parser::fnPART(vec_str& vec, userData& user){
 
 //QUIT *reason
 void Parser::fnQUIT(vec_str& vec, userData& user){
+  std::cout << RED "|fnQUIT" RESET << std::endl;
   if (vec.size() == 1){ 
     Sock.SendData(user.userFD, ":" + user.nickName + " QUIT");
   }
@@ -331,6 +333,7 @@ void Parser::fnQUIT(vec_str& vec, userData& user){
 //MODE #CHANNEL +/-ITKOL
 //MODE #CHANNEL +/-ITKOL param param param
 void Parser::fnMODE(vec_str& vec, userData& user){
+  std::cout << RED "|fnMODE" RESET << std::endl;
   bool mode = false;
   if (vec.size() < 2){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
@@ -396,6 +399,7 @@ void Parser::fnMODE(vec_str& vec, userData& user){
         break;
     }
   }
+  std::cout << RED "|fnMODE_OUT" RESET << std::endl;
 }
 
 //topic #channel :topic
@@ -415,9 +419,8 @@ void Parser::fnINVITE(vec_str& vec, userData& user){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString));
     return;
   }
-  else{
-    //invite(user, nick, channel);
-  }
+  else
+    userInvite(user, vec[1], vec[2]);
 }
 
 /// ####################################################################################################################

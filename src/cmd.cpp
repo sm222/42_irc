@@ -165,7 +165,6 @@ bool    Parser::joinChannel(const userData& user, const string& channel, const s
     return false;
   Sock.SendData(user.userFD, string(":") + user.nickName + " JOIN " + channel);
   _sendTopicTo(channel, &user);
-  std::cout << "ici\n";
   const vec_str& userList = Sock.channels.Channel_Get_AllUsers(channel);
   string  msg = "353 " + user.nickName + " = " + channel + " :";
   msg += _SendUserChannelStatus(userList, channel);
@@ -178,7 +177,6 @@ bool    Parser::joinChannel(const userData& user, const string& channel, const s
   }
   return true;
 }
-
 
 bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
   if (user.currentAction > e_notConfim) {
@@ -268,9 +266,6 @@ bool  Parser::userPart(const string channel , const string userName, const strin
   return false;
 }
 
-
-
-
 bool Parser::KickUserAllChannel(const userData& user, const string reson) {
   vec_str channelList = _channels.User_GetAllChannels(user.userName);
   if (channelList.size() == 0)
@@ -279,6 +274,20 @@ bool Parser::KickUserAllChannel(const userData& user, const string reson) {
   for (size_t i = 0; i < channelList.size(); i++) {
     userPart(channelList[i], user.userName, reson);
   }
+  return true;
+}
+
+
+//?  * // invite
+
+bool Parser::userInvite(userData& user, std::string nick, std::string channel){
+  if (!_testOp(user, channel))
+    return false;
+  const userData* tmpUser = Sock.GetUserByNickname(nick);
+  if (!tmpUser)
+    return false;
+  _channels.Channel_Invite(tmpUser->userName, channel);
+  Sock.SendData(tmpUser->userFD, ":" + user.nickName + " INVITE " +  nick + " " +  channel);
   return true;
 }
 

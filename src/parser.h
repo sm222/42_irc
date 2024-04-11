@@ -34,6 +34,7 @@ public:
     bool        KickUserChannel(const userData &user, const string channel, const string nick, const string reson);
     bool        KickUserAllChannel(const userData& user, const string reson);
     bool        userPart(const string channel , const string userName, const string reson);
+    bool        userInvite(userData& user, std::string nick, std::string channel);
     // !mode
     bool        ModeI(const userData& user, const string channel, const bool mode);
     bool        ModeT(const userData& user, const string channel, const bool mode);
