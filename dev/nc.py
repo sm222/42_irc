@@ -4,7 +4,7 @@ import threading
 import time
 import sys
 
-HOST = '10.12.6.7'
+HOST = '127.0.0.1'
 PORT = 2000
 
 commands = [
@@ -74,7 +74,8 @@ commands = [
     ("PRIVMSG #c :017\r\n", 0.01),
     ("PRIVMSG #c :018\r\n", 0.01),
     ("PRIVMSG #c :019\r\n", 0.01),
-    ("PRIVMSG #c :020\r\n", 0.01)
+    ("PRIVMSG #c :020\r\n", 0.01),
+    ("QUIT\r\n", 0.01)
 ]
 
 def sendcommands(s):
