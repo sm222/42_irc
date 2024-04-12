@@ -50,11 +50,12 @@ enum e_ActionLv {
 #define RPL_WELCOME(user, nick)                 "001 " + nick + " :Welcome to the 42irc " + user   //<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]
 
 // info //
-#define RPL_TOPIC(nick, channel, topic)         "332 " + nick +  " " + channel + " " + topic        //<client> <channel> :<topic>
 #define ERR_UNKNOWNERROR(cmd, reason)           "400 " + cmd + " :" + reason
 #define ERR_UNKNOWNCOMMAND(cmd)                 "421 " + cmd + " :Unknown command"
 #define ERR_NEEDMOREPARAMS(cmd)                 "461 " + cmd + " :Not enough parameters"
 #define ERR_PASSWDMISMATCH                      "464 :Password incorrect"
+#define ERR_NOTREGISTERED                       "451 :You have not registered"
+#define ERR_ALREADYREGISTRED                    "462 :Unauthorized command (already registered)"
 
 //user
 #define ERR_USERNOTINCHANNEL(nick, channel)     "441 " + nick + " " + channel + " :They aren't on that channel"
@@ -72,12 +73,14 @@ enum e_ActionLv {
 #define ERR_NOTONCHANNEL(channel)               "442 " + channel + " :You're not on that channel"
 
 //join
+#define RPL_JOIN(nick, channel)                 ":" + nick + "JOIN" + channel
 #define ERR_CHANNELISFULL(channel)              "471 " + channel + " :Cannot join channel (+l)"
 #define ERR_INVITEONLYCHAN(channel)             "473 " + channel + " :Cannot join channel (+i)"
 #define ERR_BADCHANNELKEY(channel)              "475 " + channel + " :Cannot join channel (+k)"
 
 //channel
 #define RPL_INVITING(nick, channel)             "341 " + channel + " " + nick
+#define RPL_ENDOFNAMES(channel)                 "366 " + channel + " :End of NAMES list"
 #define ERR_NOSUCHCHANNEL(channel)              "403 " + channel + " :No such channel"
 #define ERR_CANNOTSENDTOCHAN(channel)           "404 " + channel + " :Cannot send to channel"
 #define ERR_BADCHANNAME                         "479 :bad channel name/invalid charater"
@@ -89,6 +92,7 @@ enum e_ActionLv {
 #define ERR_NOTEXTTOSEND                        "412 :No text to send"
 
 //topic
+#define RPL_TOPIC(channel, topic)               "332 " + channel + " :" + topic
 #define ERR_TOOMANYTARGETS(target, mag)         target + ":407 recipients. " + msg
 #define ERR_NOTOPLEVEL(mask)                    "413 " + mask + " :No toplevel domain specified"
 

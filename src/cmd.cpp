@@ -65,14 +65,14 @@ bool  Parser::_sendTopicTo(const string channel, const userData* user) {
   if (!_channels.Channel_AlreadyExist(channel))
     return false;
   if (user && _channels.Channel_Get_IsUserInChannel(user->userName, channel)) {
-    Sock.SendData(user->userFD, string("332 ") + user->nickName + ' ' + channel + " " +  getTopic(channel));
+    Sock.SendData(user->userFD, RPL_TOPIC(channel, getTopic(channel)));
     return true;
   }
   const vec_str& userList = _channels.Channel_Get_AllUsers(channel);
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
     if (tmpUser) {
-      Sock.SendData(tmpUser->userFD, string("332 ") + tmpUser->nickName + ' ' + channel + " " +  getTopic(channel));
+      Sock.SendData(tmpUser->userFD, RPL_TOPIC(channel, getTopic(channel)));
     }
   }
   return true;
@@ -118,7 +118,7 @@ short     Parser::_tryJoinChannel(const userData& user, const string channel, co
   }
   if (!_channels.Channel_Join(user.userName, channel)) {
     if (_channels.Channel_Get_InviteOnly(channel))
-      Sock.SendData(user.userFD, "473 " + user.nickName + " " + channel + " :Cannot join channel (+i)");
+      Sock.SendData(user.userFD, ERR_INVITEONLYCHAN(channel));
     return false;
   }
   return true;
@@ -148,24 +148,25 @@ bool    Parser::joinChannel(const userData& user, const string& channel, const s
   }
   else if (!_tryJoinChannel(user, channel, pass))
     return false;
-  Sock.SendData(user.userFD, string(":") + user.nickName + " JOIN " + channel);
+  Sock.SendData(user.userFD, RPL_JOIN(user.nickName, channel));
   _sendTopicTo(channel, &user);
   const vec_str& userList = Sock.channels.Channel_Get_AllUsers(channel);
   string  msg = "353 " + user.nickName + " = " + channel + " :";
   msg += _SendUserChannelStatus(userList, channel);
   Sock.SendData(user.userFD, msg);
-  Sock.SendData(user.userFD, string("366 ") + user.nickName + " " + channel + " :End of /NAMES list");
+  Sock.SendData(user.userFD, RPL_ENDOFNAMES(channel));
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
     if (user.userFD != tmpUser->userFD)
-      Sock.SendData(tmpUser->userFD, string(":") + user.nickName + " JOIN " + channel);
+      Sock.SendData(tmpUser->userFD, RPL_JOIN(user.nickName, channel));
   }
   return true;
 }
 
 bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
   if (user.currentAction > e_notConfim) {
-    allReadyRegistered(user);
+    // allReadyRegistered(user);
+    Sock.SendData(user.userFD, ERR_NOTREGISTERED);
     return false;
   }
   else if (pass == Sock.GetPassword()){
