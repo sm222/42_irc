@@ -1,0 +1,7 @@
+nc:
+  can join with no nick or user
+  if you send empty string server segfault
+weechat:
+
+
+server:

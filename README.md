@@ -12,4 +12,4 @@ The 42IRC project is a basic IRC (Internet Relay Chat) server implementation wri
 - User authentication and registration
 - Channel creation and management
 - Real-time messaging between users
-- Error handling and logging
+- Error handling and loggings

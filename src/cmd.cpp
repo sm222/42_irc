@@ -6,7 +6,7 @@
 //*                       *//
 
 void  Parser::allReadyRegistered(userData& user) {
-  Sock.SendData(user.userFD, user.nickName + " :You may not reregister");
+  Sock.SendData(user.userFD, user.nickName + " :You may not register");
 }
 
 void Parser::notInChannel(const userData& user, const string channel, const userData* ask) {
