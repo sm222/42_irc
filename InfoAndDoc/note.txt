@@ -1,39 +1,54 @@
 nc:
-  can join with no nick or user
-  if you send empty string server segfault
-  if you join a channel with somone you get '::' {
-    PASS a^M
-    NICK a^M
-    USER b 0 * :a^M
-    001 a :Welcome to the 42irc b
-    JOIN #a,#b,#c^M
-    :a JOIN #a
-    332 #a ::nick_name_0, new channel <---
-    353 a = #a :a @nick_name_0
-    366 a #a :End of NAMES list
-    :a JOIN #b
-    332 #b ::nick_name_1, new channel <---
-    353 a = #b :a @nick_name_1
-    366 a #b :End of NAMES list
-    332 #c ::a, new channel <---
-    :a JOIN #c
-    332 #c ::a, new channel <---
-    353 a = #c :@a
-    366 a #c :End of NAMES list
-  }
+|can join with no nick or user
+|/                                                                /
+|if you send empty string server segfault
+|/                                                                /
+|if you join a channel with somone you get '::'
+|  PASS a^M
+|  NICK a^M
+|  USER b 0 * :a^M
+|  001 a :Welcome to the 42irc b
+|  JOIN #a,#b,#c^M
+|  :a JOIN #a
+|  332 #a ::nick_name_0, new channel <---
+|  353 a = #a :a @nick_name_0
+|  366 a #a :End of NAMES list
+|  :a JOIN #b
+|  332 #b ::nick_name_1, new channel <---
+|  353 a = #b :a @nick_name_1
+|  366 a #b :End of NAMES list
+|  332 #c ::a, new channel <---
+|  :a JOIN #c
+|  332 #c ::a, new channel <---
+|  353 a = #c :@a
+|  366 a #c :End of NAMES list
+|/                                                                /
+| token[0]TOPIC|[1]#a|[2]test|
 
 
 weechat:
-  inviting youself send on weechat V
-        O_O  -- │ You have been invited to #a by nick_name_0
-  and on server
-        |token[0]INVITE|[1]#a|[2]#a|
-        |token[0]INVITE|[1]nick_name_0|[2]#a|
+|/                                                                /
+|    inviting youself send on weechat V
+|        O_O  -- │ You have been invited to #a by nick_name_0
+|    and on server
+|        |token[0]INVITE|[1]#a|[2]#a|
+|        |token[0]INVITE|[1]nick_name_0|[2]#a|
+|/                                                                /
+|      that also create a ghost invite --> |token[0]INVITE|[1]#b|[2]#a|
+|
+|      @nick_name_0 is in #a
+|      #b is there but @nick_name_0 is not in the channel,
+|      if nick_name_0 do /invite #b nick_name_0 server show those 2 line
+|
+|      |token[0]INVITE|[1]#b|[2]#a|
+|      |token[0]INVITE|[1]a|[2]#a|
+|
+|      but weechat don't get a error message
+|/                                                                /
 
 
 server:
+/                                                                /
   482 #a :You're not channel operator <--  miss spell ?
-
-
-
+/                                                                /
 !  self invite make the server panic if you self invite form nc and weechat at the same time
