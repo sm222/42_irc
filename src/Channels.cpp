@@ -112,9 +112,9 @@ bool                            Channels::Channel_Remove_Operator(const std::str
 
 int                             Channels::Channel_Get_CurrentUsersCount(const std::string& channelname) {
     ChannelMap* T =_getChannelByName(channelname);
-
+    int len = 0;
+    
     if (T) {
-        int len = 0;
 
         // Loop all the users in this channel
         for (UsersMap::iterator i = T->second.begin(); i != T->second.end(); i++) {
@@ -125,7 +125,7 @@ int                             Channels::Channel_Get_CurrentUsersCount(const st
         }
 
     }
-    return 0;
+    return len;
 }
 
 bool                            Channels::Channel_Get_InviteOnly(const std::string& channelname) {
