@@ -51,7 +51,8 @@ void                Socket::KickUser(vectorIT& index) {
         if (_showDebug)  std::cout << "[DEBUG] ["+ std::string(__FILE__) +"][KickUser] [" + user->nickName + "] removed with Success" << std::endl;
     }
     // This order is important, do not move around
-    _users.erase(index->fd);    
+    _users.erase(index->fd);
+    close(index->fd);
     index->fd = -1;
     _updatePolls(true);
 }
