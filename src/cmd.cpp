@@ -66,14 +66,14 @@ bool  Parser::_sendTopicTo(const string channel, const userData* user) {
   if (!_channels.Channel_AlreadyExist(channel))
     return false;
   if (user && _channels.Channel_Get_IsUserInChannel(user->userName, channel)) {
-    Sock.SendData(user->userFD, RPL_TOPIC(channel, getTopic(channel)));
+    Sock.SendData(user->userFD, RPL_TOPIC(user->nickName, channel, getTopic(channel)));
     return true;
   }
   const vec_str& userList = _channels.Channel_Get_AllUsers(channel);
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
     if (tmpUser) {
-      Sock.SendData(tmpUser->userFD, RPL_TOPIC(channel, getTopic(channel)));
+      Sock.SendData(tmpUser->userFD, RPL_TOPIC(tmpUser->nickName, channel, getTopic(channel)));
     }
   }
   return true;
@@ -110,9 +110,10 @@ void  Parser::kickUser(vectorIT& index, const string reasons, const userData &us
 short     Parser::_tryJoinChannel(const userData& user, const string channel, const string pass) {
   const string& _pass = _channels.Channel_Get_Password(channel);
   if (!_pass.empty() && _pass != pass) {
-    Sock.SendData(user.userFD, ERR_PASSWDMISMATCH);
+    Sock.SendData(user.userFD, ERR_PASSWDMISMATCH(user.nickName));
     return false;
   }
+    std::cout << "test: " << _channels.Channel_Get_CurrentUsersCount(channel) << std::endl;
   if (_channels.Channel_Get_MaxUsersCount(channel) != -1 && _channels.Channel_Get_CurrentUsersCount(channel) >= _channels.Channel_Get_MaxUsersCount(channel)){
     Sock.SendData(user.userFD, ERR_CHANNELISFULL(channel));
     return false;
@@ -174,7 +175,7 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
     std::cout << GRN << "Valid password" << RESET << std::endl;
     return true;
   }
-  kickUser(index, ERR_PASSWDMISMATCH, user);
+  kickUser(index, ERR_PASSWDMISMATCH(user.nickName), user);
   std::cout << RED <<  "Bad password" << RESET << std::endl;
   return false;
 }
