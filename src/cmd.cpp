@@ -1,3 +1,4 @@
+#include "_header.h"
 #include "parser.h"
 
 //*                       *//
@@ -112,7 +113,7 @@ short     Parser::_tryJoinChannel(const userData& user, const string channel, co
     Sock.SendData(user.userFD, ERR_PASSWDMISMATCH);
     return false;
   }
-  if (_channels.Channel_Get_CurrentUsersCount(channel) >= _channels.Channel_Get_MaxUsersCount(channel)){
+  if (_channels.Channel_Get_MaxUsersCount(channel) != -1 && _channels.Channel_Get_CurrentUsersCount(channel) >= _channels.Channel_Get_MaxUsersCount(channel)){
     Sock.SendData(user.userFD, ERR_CHANNELISFULL(channel));
     return false;
   }
@@ -154,7 +155,7 @@ bool    Parser::joinChannel(const userData& user, const string& channel, const s
   string  msg = "353 " + user.nickName + " = " + channel + " :";
   msg += _SendUserChannelStatus(userList, channel);
   Sock.SendData(user.userFD, msg);
-  Sock.SendData(user.userFD, RPL_ENDOFNAMES(channel));
+  Sock.SendData(user.userFD, RPL_ENDOFNAMES(user.nickName, channel));
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
     if (user.userFD != tmpUser->userFD)
@@ -188,7 +189,7 @@ bool  Parser::privMsg(const string target, const string message, const string ni
   if (!Sock.channels.Channel_AlreadyExist(target)) {
       if (Sock.doesThisNicknameExist(target)) {
         const userData *tmpUser = Sock.GetUserByNickname(target);
-        Sock.SendData(tmpUser->userFD, string(":") + nick + " PRIVMSG " + target + " " + message);
+        Sock.SendData(tmpUser->userFD, RPL_PRIVMSG(nick, target, message));
         return true;
       }
     return false;

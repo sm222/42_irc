@@ -73,14 +73,14 @@ enum e_ActionLv {
 #define ERR_NOTONCHANNEL(channel)               "442 " + channel + " :You're not on that channel"
 
 //join
-#define RPL_JOIN(nick, channel)                 ":" + nick + "JOIN" + channel
+#define RPL_JOIN(nick, channel)                 ":" + nick + " JOIN " + channel
 #define ERR_CHANNELISFULL(channel)              "471 " + channel + " :Cannot join channel (+l)"
 #define ERR_INVITEONLYCHAN(channel)             "473 " + channel + " :Cannot join channel (+i)"
 #define ERR_BADCHANNELKEY(channel)              "475 " + channel + " :Cannot join channel (+k)"
 
 //channel
 #define RPL_INVITING(nick, channel)             "341 " + channel + " " + nick
-#define RPL_ENDOFNAMES(channel)                 "366 " + channel + " :End of NAMES list"
+#define RPL_ENDOFNAMES(nick, channel)           "366 " + nick + " " + channel + " :End of NAMES list"
 #define ERR_NOSUCHCHANNEL(channel)              "403 " + channel + " :No such channel"
 #define ERR_CANNOTSENDTOCHAN(channel)           "404 " + channel + " :Cannot send to channel"
 #define ERR_BADCHANNAME                         "479 :bad channel name/invalid charater"
@@ -88,6 +88,7 @@ enum e_ActionLv {
 
 //
 #define RPL_AWAY(nick, msg)                     "301 " + nick + " :" + msg
+#define RPL_PRIVMSG(nick, target, msg)          ":" + nick + " PRIVMSG " + target + " " + msg
 #define ERR_NORECIPIENT(cmd)                    "411 :No recipient given (" + cmd + ")"
 #define ERR_NOTEXTTOSEND                        "412 :No text to send"
 
