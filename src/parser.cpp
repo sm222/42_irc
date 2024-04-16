@@ -2,6 +2,7 @@
 #include "_header.h"
 #include <cctype>
 #include <cstddef>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -27,6 +28,16 @@ bool isValidStr(std::string str, std::string other, bool printable = false){
 
 int charCount(std::string str, char c){
   return std::count(str.begin(), str.end(), c);
+}
+
+bool strDoubleChar(std::string str){
+  for (size_t i = 0; i < str.length(); i++) {
+    for (size_t j = i + 1; j < str.length(); j++) {
+      if (str[i] == str[j])
+        return true;
+    }
+  }
+  return false;
 }
 
 void print_vec(vec_str vec, std::string name){
@@ -165,7 +176,7 @@ bool Parser::keyIsValid(std::string str){
 void Parser::fnPASS(vec_str& vec, userData& user){
   std::cout << RED "|fnPASS" RESET << std::endl;
   if (vec.size() < 2){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
   }
   if (testPassWord(vec[1], user, *_index))
@@ -175,7 +186,7 @@ void Parser::fnPASS(vec_str& vec, userData& user){
 void Parser::fnUSER(vec_str& vec, userData& user){
   std::cout << RED "|fnUSER" RESET << std::endl;
   if (vec.size() < 2){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
   }
   if (isValidStr(vec[1], "-_")){
@@ -196,7 +207,7 @@ void Parser::fnUSER(vec_str& vec, userData& user){
 void Parser::fnNICK(vec_str& vec, userData& user){
   std::cout << RED "|fnNICK" RESET << std::endl;
   if (vec.size() < 2){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
   }
   if (!user.nickName.empty()){
@@ -228,7 +239,7 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
 
   //error verification
   if (vec.size() < 2){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString));
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
   if (user.recvString.find(':') != std::string::npos){
@@ -266,18 +277,23 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
 void Parser::fnPMSG(vec_str& vec, userData& user){
   std::cout << RED "|fnPMSG" RESET << std::endl;
   if (vec.size() < 3){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
   }
   if (vec.size() >= 3)
     privMsg(vec[1], vec[2], user.nickName);
 }
 
+/*
+  kick multi
+  topic only user ask
+*/
+
 //KICK #a bob : reason
 void Parser::fnKICK(vec_str& vec, userData& user){
   std::cout << RED "|fnKICK" RESET << std::endl;
   if (vec.size() < 3){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
   }
   if (vec.size() == 3)
@@ -293,7 +309,7 @@ void Parser::fnPART(vec_str& vec, userData& user){
   vec_str channel;
 
   if (vec.size() < 2){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString));
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
   if (vec.size() >= 2 && !vec[1].empty())
@@ -336,24 +352,36 @@ void Parser::fnMODE(vec_str& vec, userData& user){
   std::cout << RED "|fnMODE" RESET << std::endl;
   bool mode = false;
   if (vec.size() < 2){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
   }else if(vec.size() == 2){
     return;
   }
-  else if (vec.size() < 3 && vec[2].find_first_of("tkol") != std::string::npos){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+  else if (vec.size() < 3 && vec[2].find_first_of("kol") != std::string::npos){
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
   }
 
   if (vec[2][0] == '+'){
     mode = true;
+  }else if (vec[2][0] != '-'){
+    Sock.SendData(user.userFD, ERR_UMODEUNKNOWNFLAG(user.nickName));
+    return;
   }
-  else if (vec[2][0] != '-'){
-    Sock.SendData(user.userFD, ERR_UMODEUNKNOWNFLAG);
+  if (strDoubleChar(vec[2])){
+    Sock.SendData(user.userFD, ERR_UMODEUNKNOWNFLAG(user.nickName));
     return;
   }
 
+  size_t count = 3;
+  for (size_t i = 1; i < vec[2].length(); i++) {
+    if (vec[2][i] == 'k' || vec[2][i] == 'o' || vec[2][i] == 'l')
+      count++;
+  }
+  if (vec.size() < count){
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, vec[1])); 
+    return;
+  }
   size_t j = 3;
   for (size_t i = 1; i < vec[2].length(); i++) {
     switch (vec[2][i]) {
@@ -363,14 +391,14 @@ void Parser::fnMODE(vec_str& vec, userData& user){
         break;
       case 't':
         printf("t\n");
-        ModeT(user, vec[1], mode);
+        ModeT(user, vec[1], !mode);
         break;
       case 'k':
         printf("k\n");
         if (mode == true && vec.size() > j && !vec[j].empty())
-          ModeK(user, vec[j], vec[1]);
+          ModeK(user, vec[1], vec[j]);
         else
-          ModeK(user, "", vec[1]);
+          ModeK(user, vec[1], "");
         j++;
         break;
       case 'o':
@@ -378,24 +406,25 @@ void Parser::fnMODE(vec_str& vec, userData& user){
         if (vec.size() > j && !vec[j].empty())
           ModeO(user, vec[1], vec[j], mode);
         else 
-          Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName + " " + vec[1]));
+          Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.nickName + " " + vec[1]));
         j++;
         break;
       case 'l':
         printf("l\n");
-        if (mode == true && vec.size() > j && !vec[j].empty())
+        if (mode == true && vec.size() > j && !vec[j].empty()){
           try {
             ModeL(user, vec[1], stoi(vec[j]));
           } catch (const std::exception& e) {
             Sock.SendData(user.userFD, ":invalide number");
           }
+        }
         else
           ModeL(user, vec[1], -1);
         j++;
         break;
       default:
         printf("end\n");
-        Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString)); 
+        Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
         break;
     }
   }
@@ -404,19 +433,21 @@ void Parser::fnMODE(vec_str& vec, userData& user){
 
 //topic #channel :topic
 void Parser::fnTOPIC(vec_str& vec, userData& user){
-  if (vec.size() < 3){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString));
+  if (vec.size() < 2){
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
-  if (isValidStr(vec[2], "", true)){
+  else if (vec.size() == 2)
+    _sendTopicTo(vec[1]);
+  else if (isValidStr(vec[2], "", true)){
     setTopic(user, vec[1], vec[2]);
-  }
+  } 
 }
 
 //INVITE nick #channel
 void Parser::fnINVITE(vec_str& vec, userData& user){
   if (vec.size() < 3){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.recvString));
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
   else
@@ -440,7 +471,7 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     // std::cout << "user - " << user.userName << "currentAction\t\t\t\t\t\t\t>" << user.currentAction << std::endl;
     if (token[0] == "PING" && LV(user.currentAction, e_ConfimUser)) { Sock.SendData(user.userFD, "PONG " + token[1]); }
     else if (token[0] == "PASS" && LV(user.currentAction, e_notConfim)) { fnPASS(token, user); }
-    else if (user.currentAction == 0) { kickUser(index, ERR_PASSWDMISMATCH, user); } //!if user send shit witout giving a valid password
+    else if (user.currentAction == 0) { kickUser(index, ERR_PASSWDMISMATCH(user.nickName), user); } //!if user send shit witout giving a valid password
     else if (token[0] == "USER" && LV(user.currentAction, e_notNameSet)) { fnUSER(token, user); }
     else if (token[0] == "PRIVMSG") { fnPMSG(token, user);}
     else if (token[0] == "NICK")    { fnNICK(token, user); }

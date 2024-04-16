@@ -52,8 +52,8 @@ enum e_ActionLv {
 // info //
 #define ERR_UNKNOWNERROR(cmd, reason)           "400 " + cmd + " :" + reason
 #define ERR_UNKNOWNCOMMAND(cmd)                 "421 " + cmd + " :Unknown command"
-#define ERR_NEEDMOREPARAMS(cmd)                 "461 " + cmd + " :Not enough parameters"
-#define ERR_PASSWDMISMATCH                      "464 :Password incorrect"
+#define ERR_NEEDMOREPARAMS(nick, cmd)           "461 " + nick + " " + cmd + " :Not enough parameters"
+#define ERR_PASSWDMISMATCH(nick)                "464 " + nick + ":Password incorrect"
 #define ERR_NOTREGISTERED                       "451 :You have not registered"
 #define ERR_ALREADYREGISTRED                    "462 :Unauthorized command (already registered)"
 
@@ -93,12 +93,12 @@ enum e_ActionLv {
 #define ERR_NOTEXTTOSEND                        "412 :No text to send"
 
 //topic
-#define RPL_TOPIC(channel, topic)               "332 " + channel + " :" + topic
+#define RPL_TOPIC(user, channel, topic)         "332 " + user + " " + channel + " " + topic
 #define ERR_TOOMANYTARGETS(target, mag)         target + ":407 recipients. " + msg
 #define ERR_NOTOPLEVEL(mask)                    "413 " + mask + " :No toplevel domain specified"
 
 //mode
-#define ERR_UMODEUNKNOWNFLAG                    "501 :Unknown MODE flag"
+#define ERR_UMODEUNKNOWNFLAG(nick)              "501 " + nick + " :Unknown MODE flag"
 #define ERR_UNKNOWNMODE(char, channel)          "472 " + char + " :is unknown mode char to me for " + channel
 
 
