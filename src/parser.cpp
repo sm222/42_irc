@@ -289,17 +289,57 @@ void Parser::fnPMSG(vec_str& vec, userData& user){
   topic only user ask
 */
 
-//KICK #a bob : reason
+//KICK #a,#a,#a bob,bob,bob : reason
 void Parser::fnKICK(vec_str& vec, userData& user){
   std::cout << RED "|fnKICK" RESET << std::endl;
+  vec_str channel;
+  vec_str usr;
+  std::string reason("");
+
+  //error verification
   if (vec.size() < 3){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
-  if (vec.size() == 3)
-    KickUserChannel(user, vec[1], vec[2], "");
-  else if (vec.size() >= 4)
-    KickUserChannel(user, vec[1], vec[2], vec[3]);
+  if (user.recvString.find(':') != std::string::npos){
+      Sock.SendData(user.userFD, "479 :invalid character");
+      return;
+  }
+
+  if (vec.size() >= 4)
+    reason = vec[3]; //KickUserChannel(user, vec[1], vec[2], reason);
+
+  //channel and key logical
+  if (vec.size() >= 2 && !vec[1].empty()){
+    channel = Tokenize(vec[1], ',');
+    if (vec.size() >= 3 && !vec[2].empty())
+      usr = Tokenize(vec[2], ',');
+    for (size_t i = 0; i < channel.size(); i++) {
+      if (!chaIsValid(channel[i])){
+        if (!usr.empty() && i < usr.size())
+          usr.erase(usr.begin() + i);
+        channel.erase(channel.begin() + i);
+        Sock.SendData(user.userFD, ERR_BADCHANNAME);
+        i--;
+      }
+    }
+  }
+
+  //join channel
+  if (!channel.empty()){
+    for (size_t i = 0; i < channel.size(); i++) {
+        std::string tmp("");
+        if (i < usr.size())
+          KickUserChannel(user, channel[i], usr[i], reason);
+        std::cout << RED "|fnKICK_CMD" RESET << std::endl;
+    }
+  }
+
+
+
+///kick #z,#x,#c,#v,#b nick_name_1,nick_name_1,nick_name_1,nick_name_1,nick_name_1
+
+  std::cout << RED "|fnKICK_OUT" RESET << std::endl;
 }
 
 //PART #channel 
