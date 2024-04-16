@@ -112,7 +112,19 @@ bool                            Channels::Channel_Remove_Operator(const std::str
 
 int                             Channels::Channel_Get_CurrentUsersCount(const std::string& channelname) {
     ChannelMap* T =_getChannelByName(channelname);
-    if (T) { return T->second.size(); }
+
+    if (T) {
+        int len = 0;
+
+        // Loop all the users in this channel
+        for (UsersMap::iterator i = T->second.begin(); i != T->second.end(); i++) {
+        
+        // is Operator OR user -> Increment
+            if (i->second.in_Operator_List || i->second.in_User_list)
+                len++;
+        }
+
+    }
     return 0;
 }
 
