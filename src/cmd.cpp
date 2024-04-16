@@ -1,3 +1,4 @@
+#include "_header.h"
 #include "parser.h"
 
 //*                       *//
@@ -12,7 +13,6 @@ void Parser::notInChannel(const userData& user, const string channel, const user
   const userData& msg = ask ? *ask : user;
   Sock.SendData(msg.userFD, ERR_USERNOTINCHANNEL(msg.nickName, channel));
 }
-
 
 void    Parser::_sendChannel(const string message, const string channel, const bool user) {
   const vec_str& userList = _channels.Channel_Get_AllUsers(channel);
@@ -66,14 +66,14 @@ bool  Parser::_sendTopicTo(const string channel, const userData* user) {
   if (!_channels.Channel_AlreadyExist(channel))
     return false;
   if (user && _channels.Channel_Get_IsUserInChannel(user->userName, channel)) {
-    Sock.SendData(user->userFD, string("332 ") + user->nickName + ' ' + channel + " " +  getTopic(channel));
+    Sock.SendData(user->userFD, RPL_TOPIC(channel, getTopic(channel)));
     return true;
   }
   const vec_str& userList = _channels.Channel_Get_AllUsers(channel);
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
     if (tmpUser) {
-      Sock.SendData(tmpUser->userFD, string("332 ") + tmpUser->nickName + ' ' + channel + " " +  getTopic(channel));
+      Sock.SendData(tmpUser->userFD, RPL_TOPIC(channel, getTopic(channel)));
     }
   }
   return true;
@@ -113,9 +113,13 @@ short     Parser::_tryJoinChannel(const userData& user, const string channel, co
     Sock.SendData(user.userFD, ERR_PASSWDMISMATCH);
     return false;
   }
+  if (_channels.Channel_Get_MaxUsersCount(channel) != -1 && _channels.Channel_Get_CurrentUsersCount(channel) >= _channels.Channel_Get_MaxUsersCount(channel)){
+    Sock.SendData(user.userFD, ERR_CHANNELISFULL(channel));
+    return false;
+  }
   if (!_channels.Channel_Join(user.userName, channel)) {
     if (_channels.Channel_Get_InviteOnly(channel))
-      Sock.SendData(user.userFD, "473 " + user.nickName + " " + channel + " :Cannot join channel (+i)");
+      Sock.SendData(user.userFD, ERR_INVITEONLYCHAN(channel));
     return false;
   }
   return true;
@@ -145,24 +149,25 @@ bool    Parser::joinChannel(const userData& user, const string& channel, const s
   }
   else if (!_tryJoinChannel(user, channel, pass))
     return false;
-  Sock.SendData(user.userFD, string(":") + user.nickName + " JOIN " + channel);
+  Sock.SendData(user.userFD, RPL_JOIN(user.nickName, channel));
   _sendTopicTo(channel, &user);
   const vec_str& userList = Sock.channels.Channel_Get_AllUsers(channel);
   string  msg = "353 " + user.nickName + " = " + channel + " :";
   msg += _SendUserChannelStatus(userList, channel);
   Sock.SendData(user.userFD, msg);
-  Sock.SendData(user.userFD, string("366 ") + user.nickName + " " + channel + " :End of /NAMES list");
+  Sock.SendData(user.userFD, RPL_ENDOFNAMES(user.nickName, channel));
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
     if (user.userFD != tmpUser->userFD)
-      Sock.SendData(tmpUser->userFD, string(":") + user.nickName + " JOIN " + channel);
+      Sock.SendData(tmpUser->userFD, RPL_JOIN(user.nickName, channel));
   }
   return true;
 }
 
 bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
   if (user.currentAction > e_notConfim) {
-    allReadyRegistered(user);
+    // allReadyRegistered(user);
+    Sock.SendData(user.userFD, ERR_NOTREGISTERED);
     return false;
   }
   else if (pass == Sock.GetPassword()){
@@ -184,7 +189,7 @@ bool  Parser::privMsg(const string target, const string message, const string ni
   if (!Sock.channels.Channel_AlreadyExist(target)) {
       if (Sock.doesThisNicknameExist(target)) {
         const userData *tmpUser = Sock.GetUserByNickname(target);
-        Sock.SendData(tmpUser->userFD, string(":") + nick + " PRIVMSG " + target + " " + message);
+        Sock.SendData(tmpUser->userFD, RPL_PRIVMSG(nick, target, message));
         return true;
       }
     return false;
