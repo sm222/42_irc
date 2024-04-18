@@ -34,11 +34,24 @@
 # endif
 
 // +++ enum +++
+/*
+
+e_notRegistred
+e_nickSet
+e_userSet
+e_userRegistred
+
+
+*/
 
 enum e_ActionLv {
-  e_notConfim,
-  e_notNameSet,
-  e_ConfimUser
+  e_notRegistred,
+  e_setNickname,
+  e_setUser,
+  e_userRegistred
+  // e_notConfirm,
+  // e_notNameSet,
+  // e_ConfirmUser
 };
 
 // +++ Defines +++
