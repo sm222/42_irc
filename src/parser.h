@@ -49,6 +49,7 @@ public:
 
     bool        chaIsValid(std::string str);
     bool        keyIsValid(std::string str);
+    void        sendAllChannel(userData& user, std::string message);
     void        fnJOIN(vec_str& vec, userData& user);
     void        fnPMSG(vec_str& vec, userData& user);
     void        fnKICK(vec_str& vec, userData& user);
