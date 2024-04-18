@@ -36,6 +36,7 @@ public:
     bool        userPart(const string channel , const string userName, const string reson);
     bool        userInvite(userData& user, std::string nick, std::string channel);
     // !mode
+    bool        Mode (const userData& user, const string channel);
     bool        ModeI(const userData& user, const string channel, const bool mode);
     bool        ModeT(const userData& user, const string channel, const bool mode);
     bool        ModeO(const userData& user, const string channel, const string nick, const bool mode);

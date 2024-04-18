@@ -392,6 +392,7 @@ void Parser::fnMODE(vec_str& vec, userData& user){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
   }else if(vec.size() == 2){
+    Mode(user, vec[1]);
     return;
   }
   else if (vec.size() < 3 && vec[2].find_first_of("kol") != std::string::npos){

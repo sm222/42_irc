@@ -291,11 +291,30 @@ bool Parser::userInvite(userData& user, std::string nick, std::string channel){
 *l  Définir/supprimer la limite d’utilisateurs pour le canal
 */
 
+bool    Parser::Mode(const userData& user, const string channel) {
+  if(!_testInChannel(user, channel))
+    return false;
+  string mode;
+  string  msg = "324 " + user.nickName   + " " + channel;
+  if (_channels.Channel_Get_InviteOnly(channel))
+    mode += "i";
+  if (!_channels.Channel_Get_CanUserChangeTopic(channel))
+    mode += "t";
+  if (!_channels.Channel_Get_Password(channel).empty())
+    mode += "k";
+  if (_channels.Channel_Get_MaxUsersCount(channel) != -1)
+    mode += "l";
+  if (!mode.empty())
+    msg += " +" + mode;
+  Sock.SendData(user.userFD, msg);
+  return true;
+}
 
 bool    Parser::ModeI(const userData& user, const string channel, const bool mode) {
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_InviteOnly(channel, mode);
+  _sendChannel(":" + user.nickName + " MODE " + (mode ? '+' : '-') + "i", channel);
   return true;
 }
 
@@ -303,6 +322,7 @@ bool    Parser::ModeT(const userData& user, const string channel, const bool mod
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_CanUserChangeTopic(channel, mode);
+  _sendChannel(":" + user.nickName + " MODE " + (mode ? '+' : '-') + "t", channel);
   return true;
 }
 
@@ -311,6 +331,7 @@ bool    Parser::ModeK(const userData& user, const string channel, const string p
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_Password(channel, pass);
+  _sendChannel(":" + user.nickName + " MODE " + channel + " " + (!pass.empty() ? '+' : '-') + "k", channel);
   return true;
 }
 
@@ -339,6 +360,7 @@ bool   Parser::ModeL(const userData& user, const string channel, const int numbe
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_MaxUsersCount(channel, number);
+  _sendChannel(":" + user.nickName + " MODE " + channel + " " + (number > 0 ? '-' : '+') + "t", channel);
   return true;
 }
 
