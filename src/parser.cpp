@@ -221,6 +221,7 @@ void Parser::fnNICK(vec_str& vec, userData& user){
   }
   if (!user.nickName.empty()){
     if (!Sock.doesThisNicknameExist(vec[1])){
+      sendAllChannel(user, ":" + user.nickName + " NICK " + vec[1]);
       user.nickName = vec[1];
     }
     else {

@@ -27,6 +27,13 @@ void    Parser::_sendChannel(const string message, const string channel, const b
   }
 }
 
+void Parser::sendAllChannel(userData& user, std::string message){
+  vec_str channels = _channels.User_GetAllChannels(user.userName);
+  for (size_t i = 0; i < channels.size(); i++) {
+    _sendChannel(message, channels[i]);
+  }
+}
+
 bool  Parser::_testInChannel(const userData& user, const string channelName, const userData* ask) {
   if (channelName.empty()) {
     // no name
@@ -113,7 +120,6 @@ short     Parser::_tryJoinChannel(const userData& user, const string channel, co
     Sock.SendData(user.userFD, ERR_PASSWDMISMATCH(user.nickName));
     return false;
   }
-    std::cout << "test: " << _channels.Channel_Get_CurrentUsersCount(channel) << std::endl;
   if (_channels.Channel_Get_MaxUsersCount(channel) != -1 && _channels.Channel_Get_CurrentUsersCount(channel) >= _channels.Channel_Get_MaxUsersCount(channel)){
     Sock.SendData(user.userFD, ERR_CHANNELISFULL(channel));
     return false;
