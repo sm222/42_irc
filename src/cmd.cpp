@@ -166,9 +166,9 @@ bool    Parser::joinChannel(const userData& user, const string& channel, const s
 }
 
 bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
-  if (user.currentAction > e_notConfim) {
+  if (user.currentAction > e_notRegistred) {
     // allReadyRegistered(user);
-    Sock.SendData(user.userFD, ERR_NOTREGISTERED);
+    Sock.SendData(user.userFD, ERR_ALREADYREGISTRED);
     return false;
   }
   else if (pass == Sock.GetPassword()){
@@ -272,7 +272,7 @@ bool Parser::userInvite(userData& user, std::string nick, std::string channel){
   if (!_testOp(user, channel))
     return false;
   const userData* tmpUser = Sock.GetUserByNickname(nick);
-  if (!tmpUser)
+  if (!tmpUser || user.nickName == nick)
     return false;
   _channels.Channel_Invite(tmpUser->userName, channel);
   Sock.SendData(tmpUser->userFD, ":" + user.nickName + " INVITE " +  nick + " " +  channel);

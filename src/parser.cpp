@@ -2,6 +2,7 @@
 #include "_header.h"
 #include <cctype>
 #include <cstddef>
+#include <cstring>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -14,7 +15,7 @@
 /// @param other a string to add chars in the filter
 /// @return bool
 bool isValidStr(std::string str, std::string other, bool printable = false){
-  if (isdigit(str[0]))
+  if (str.empty() || isdigit(str[0]))
     return false;
   for (size_t i = 0; i < str.length(); i++) {
     if (!printable && !isalnum(str[i]) && other.find(str[i]) == std::string::npos)
@@ -174,19 +175,28 @@ bool Parser::keyIsValid(std::string str){
 }
 
 void Parser::fnPASS(vec_str& vec, userData& user){
-  std::cout << RED "|fnPASS" RESET << std::endl;
   if (vec.size() < 2){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
   }
-  if (testPassWord(vec[1], user, *_index))
-    user.currentAction = 10;
+  if (user.currentAction == e_userRegistred){
+    Sock.SendData(user.userFD, ERR_ALREADYREGISTRED);
+    return;
+  }
+  if (testPassWord(vec[1], user, *_index)){
+    user.currentAction = 1;
+    user.userName.clear();
+    user.nickName.clear();
+  }
 }
 
 void Parser::fnUSER(vec_str& vec, userData& user){
-  std::cout << RED "|fnUSER" RESET << std::endl;
-  if (vec.size() < 2){
+  if (vec.size() < 5){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
+    return;
+  }
+  if (!user.userName.empty() || user.userName == vec[1]){
+    Sock.SendData(user.userFD, ERR_ALREADYREGISTRED);
     return;
   }
   if (isValidStr(vec[1], "-_")){
@@ -205,7 +215,6 @@ void Parser::fnUSER(vec_str& vec, userData& user){
 }
 
 void Parser::fnNICK(vec_str& vec, userData& user){
-  std::cout << RED "|fnNICK" RESET << std::endl;
   if (vec.size() < 2){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
@@ -213,16 +222,16 @@ void Parser::fnNICK(vec_str& vec, userData& user){
   if (!user.nickName.empty()){
     if (!Sock.doesThisNicknameExist(vec[1])){
       user.nickName = vec[1];
-      //send all user new nick name
     }
-    else{
-      kickUser(*_index, ERR_NICKNAMEINUSE(vec[1]), user);
+    else {
+      Sock.SendData(user.userFD, ERR_NICKNAMEINUSE(vec[1]));
     }
     return;
   }
   if (isValidStr(vec[1], "-_")){
     if (!Sock.GetUserByNickname(vec[1])){
       user.nickName = vec[1];
+      user.currentAction++;
       return;
     }
     kickUser(*_index, ERR_NICKNAMEINUSE(vec[1]), user);
@@ -233,7 +242,6 @@ void Parser::fnNICK(vec_str& vec, userData& user){
 }
 
 void Parser::fnJOIN(vec_str& vec, userData& user){
-  std::cout << RED "|fnJOIN" RESET << std::endl;
   vec_str channel;
   vec_str key;
 
@@ -275,7 +283,6 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
 }
 
 void Parser::fnPMSG(vec_str& vec, userData& user){
-  std::cout << RED "|fnPMSG" RESET << std::endl;
   if (vec.size() < 3){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
@@ -291,7 +298,6 @@ void Parser::fnPMSG(vec_str& vec, userData& user){
 
 //KICK #a,#a,#a bob,bob,bob : reason
 void Parser::fnKICK(vec_str& vec, userData& user){
-  std::cout << RED "|fnKICK" RESET << std::endl;
   vec_str channel;
   vec_str usr;
   std::string reason("");
@@ -334,18 +340,11 @@ void Parser::fnKICK(vec_str& vec, userData& user){
         std::cout << RED "|fnKICK_CMD" RESET << std::endl;
     }
   }
-
-
-
-///kick #z,#x,#c,#v,#b nick_name_1,nick_name_1,nick_name_1,nick_name_1,nick_name_1
-
-  std::cout << RED "|fnKICK_OUT" RESET << std::endl;
 }
 
 //PART #channel 
 //PART #channel :reason
 void Parser::fnPART(vec_str& vec, userData& user){
-  std::cout << RED "|fnPART" RESET << std::endl;
   vec_str channel;
 
   if (vec.size() < 2){
@@ -376,7 +375,6 @@ void Parser::fnPART(vec_str& vec, userData& user){
 
 //QUIT *reason
 void Parser::fnQUIT(vec_str& vec, userData& user){
-  std::cout << RED "|fnQUIT" RESET << std::endl;
   if (vec.size() == 1){ 
     Sock.SendData(user.userFD, ":" + user.nickName + " QUIT");
   }
@@ -389,7 +387,6 @@ void Parser::fnQUIT(vec_str& vec, userData& user){
 //MODE #CHANNEL +/-ITKOL
 //MODE #CHANNEL +/-ITKOL param param param
 void Parser::fnMODE(vec_str& vec, userData& user){
-  std::cout << RED "|fnMODE" RESET << std::endl;
   bool mode = false;
   if (vec.size() < 2){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
@@ -426,15 +423,12 @@ void Parser::fnMODE(vec_str& vec, userData& user){
   for (size_t i = 1; i < vec[2].length(); i++) {
     switch (vec[2][i]) {
       case 'i':
-        printf("i\n");
         ModeI(user, vec[1], mode);
         break;
       case 't':
-        printf("t\n");
         ModeT(user, vec[1], !mode);
         break;
       case 'k':
-        printf("k\n");
         if (mode == true && vec.size() > j && !vec[j].empty())
           ModeK(user, vec[1], vec[j]);
         else
@@ -442,7 +436,6 @@ void Parser::fnMODE(vec_str& vec, userData& user){
         j++;
         break;
       case 'o':
-        printf("o\n");
         if (vec.size() > j && !vec[j].empty())
           ModeO(user, vec[1], vec[j], mode);
         else 
@@ -450,7 +443,6 @@ void Parser::fnMODE(vec_str& vec, userData& user){
         j++;
         break;
       case 'l':
-        printf("l\n");
         if (mode == true && vec.size() > j && !vec[j].empty()){
           try {
             ModeL(user, vec[1], stoi(vec[j]));
@@ -463,12 +455,10 @@ void Parser::fnMODE(vec_str& vec, userData& user){
         j++;
         break;
       default:
-        printf("end\n");
         Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
         break;
     }
   }
-  std::cout << RED "|fnMODE_OUT" RESET << std::endl;
 }
 
 //topic #channel :topic
@@ -500,28 +490,27 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     _channels = Sock.channels;
     _index = &index;
     vec_str token = Tokenize(user.recvString, ' ');
-    if(token[0] != "PING")
-      print_vec(token, "token");
-
     if (token.empty()) {
       std::cout << "empty\n"; //! fix segfault
       return ;
     }
 
+    if(token[0] != "PING")
+      print_vec(token, "token");
     // std::cout << "user - " << user.userName << "currentAction\t\t\t\t\t\t\t>" << user.currentAction << std::endl;
-    if (token[0] == "PING" && LV(user.currentAction, e_ConfimUser)) { Sock.SendData(user.userFD, "PONG " + token[1]); }
-    else if (token[0] == "PASS" && LV(user.currentAction, e_notConfim)) { fnPASS(token, user); }
+    if (token[0] == "PING" && LV(user.currentAction, e_userRegistred)) {if (token.size() >= 2) Sock.SendData(user.userFD, "PONG " + token[1]); }
+    else if (token[0] == "PASS" && LV(user.currentAction, e_notRegistred)) { fnPASS(token, user); }
     else if (user.currentAction == 0) { kickUser(index, ERR_PASSWDMISMATCH(user.nickName), user); } //!if user send shit witout giving a valid password
-    else if (token[0] == "USER" && LV(user.currentAction, e_notNameSet)) { fnUSER(token, user); }
-    else if (token[0] == "PRIVMSG") { fnPMSG(token, user);}
-    else if (token[0] == "NICK")    { fnNICK(token, user); }
-    else if (token[0] == "JOIN")    { fnJOIN(token, user); }
-    else if (token[0] == "KICK")    { fnKICK(token, user); }
-    else if (token[0] == "MODE")    { fnMODE(token, user); }
-    else if (token[0] == "PART")    { fnPART(token, user); }
-    else if (token[0] == "QUIT")    { fnQUIT(token, user); }
-    else if (token[0] == "TOPIC")   { fnTOPIC(token, user); }
-    else if (token[0] == "INVITE")  { fnINVITE(token, user); }
+    else if (token[0] == "NICK" && LV(user.currentAction, e_setNickname))    { fnNICK(token, user); }
+    else if (token[0] == "USER" && LV(user.currentAction, e_setUser)) { fnUSER(token, user); }
+    else if (token[0] == "PRIVMSG" && LV(user.currentAction, e_userRegistred)) { fnPMSG(token, user);}
+    else if (token[0] == "JOIN" && LV(user.currentAction, e_userRegistred))    { fnJOIN(token, user); }
+    else if (token[0] == "KICK" && LV(user.currentAction, e_userRegistred))    { fnKICK(token, user); }
+    else if (token[0] == "MODE" && LV(user.currentAction, e_userRegistred))    { fnMODE(token, user); }
+    else if (token[0] == "PART" && LV(user.currentAction, e_userRegistred))    { fnPART(token, user); }
+    else if (token[0] == "QUIT" && LV(user.currentAction, e_userRegistred))    { fnQUIT(token, user); }
+    else if (token[0] == "TOPIC" && LV(user.currentAction, e_userRegistred))   { fnTOPIC(token, user); }
+    else if (token[0] == "INVITE" && LV(user.currentAction, e_userRegistred))  { fnINVITE(token, user); }
 
     // std::cout << "Received: " + user.recvString;    // Data Received
 }
