@@ -221,6 +221,7 @@ void Parser::fnNICK(vec_str& vec, userData& user){
   }
   if (!user.nickName.empty()){
     if (!Sock.doesThisNicknameExist(vec[1])){
+      sendAllChannel(user, ":" + user.nickName + " NICK " + vec[1]);
       user.nickName = vec[1];
     }
     else {
@@ -392,6 +393,7 @@ void Parser::fnMODE(vec_str& vec, userData& user){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
   }else if(vec.size() == 2){
+    //send mode
     return;
   }
   else if (vec.size() < 3 && vec[2].find_first_of("kol") != std::string::npos){
