@@ -5,16 +5,16 @@
 //*         ERROR         *//
 //*                       *//
 
-void  Parser::allReadyRegistered(userData& user) {
+void      Parser::allReadyRegistered(userData& user) {
   Sock.SendData(user.userFD, user.nickName + " :You may not register");
 }
 
-void Parser::notInChannel(const userData& user, const string channel, const userData* ask) {
+void      Parser::notInChannel(const userData& user, const string channel, const userData* ask) {
   const userData& msg = ask ? *ask : user;
   Sock.SendData(msg.userFD, ERR_USERNOTINCHANNEL(msg.nickName, channel));
 }
 
-void    Parser::_sendChannel(const string message, const string channel, const bool user) {
+void      Parser::_sendChannel(const string message, const string channel, const bool user) {
   const vec_str& userList = _channels.Channel_Get_AllUsers(channel);
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
@@ -27,16 +27,16 @@ void    Parser::_sendChannel(const string message, const string channel, const b
   }
 }
 
-void Parser::sendAllChannel(userData& user, std::string message){
+void      Parser::sendAllChannel(userData& user, std::string message) {
   vec_str channels = _channels.User_GetAllChannels(user.userName);
   for (size_t i = 0; i < channels.size(); i++) {
     _sendChannel(message, channels[i]);
   }
 }
 
-bool  Parser::_testInChannel(const userData& user, const string channelName, const userData* ask) {
+bool      Parser::_testInChannel(const userData& user, const string channelName, const userData* ask) {
   if (channelName.empty()) {
-    // no name
+    // no name                                                                                      <--        add err here ?
     return false;
   }
   if (!_channels.Channel_AlreadyExist(channelName)) {
@@ -50,7 +50,7 @@ bool  Parser::_testInChannel(const userData& user, const string channelName, con
   return true;
 }
 
-bool  Parser::_testOp(const userData& user, const string channelName) {
+bool      Parser::_testOp(const userData& user, const string channelName) {
   if (!_testInChannel(user, channelName))
     return false;
   if (!_channels.Channel_Get_IsUserChannelOP(user.userName, channelName)) {
@@ -64,12 +64,9 @@ bool  Parser::_testOp(const userData& user, const string channelName) {
 //*           CMD         *//
 //*                       *//
 
-//?  * // topic
+//?  * // TOPIC
 
-//TOPIC
-
-  //332   "<client> <channel> :<topic>"
-bool  Parser::_sendTopicTo(const string channel, const userData* user) {
+bool      Parser::_sendTopicTo(const string channel, const userData* user) {
   if (!_channels.Channel_AlreadyExist(channel))
     return false;
   if (user && _channels.Channel_Get_IsUserInChannel(user->userName, channel)) {
@@ -86,7 +83,7 @@ bool  Parser::_sendTopicTo(const string channel, const userData* user) {
   return true;
 }
 
-bool  Parser::setTopic(const userData& user, const string& channelName, const string& topic) {
+bool      Parser::setTopic(const userData& user, const string& channelName, const string& topic) {
   if (_channels.Channel_Get_CanUserChangeTopic(channelName)) {
     _channels.Channel_Set_Topic(channelName, topic);
     _sendTopicTo(channelName);
@@ -100,21 +97,21 @@ bool  Parser::setTopic(const userData& user, const string& channelName, const st
   return false;
 }
 
-string  Parser::getTopic(const string& chanalName) {
+string      Parser::getTopic(const string& chanalName) {
   if (_channels.Channel_AlreadyExist(chanalName))
     return _channels.Channel_Get_Topic(chanalName);
   return ("");
 }
 
 
-//?  * // kick
+//?  * // KICK
 
-void  Parser::kickUser(vectorIT& index, const string reasons, const userData &user) {
+void      Parser::kickUser(vectorIT& index, const string reasons, const userData &user) {
     Sock.SendData(user.userFD, reasons);
     Sock.KickUser(index);
 }
 
-short     Parser::_tryJoinChannel(const userData& user, const string channel, const string pass) {
+short      Parser::_tryJoinChannel(const userData& user, const string channel, const string pass) {
   const string& _pass = _channels.Channel_Get_Password(channel);
   if (!_pass.empty() && _pass != pass) {
     Sock.SendData(user.userFD, ERR_PASSWDMISMATCH(user.nickName));
@@ -132,7 +129,7 @@ short     Parser::_tryJoinChannel(const userData& user, const string channel, co
   return true;
 }
 
-string   Parser::_SendUserChannelStatus(const vec_str& userList, const string& name) {
+string      Parser::_SendUserChannelStatus(const vec_str& userList, const string& name) {
   string msg;
   for (size_t i = 0; i < userList.size(); i++) {
     const userData* tmpUser = Sock.GetUserByUsername(userList[i]);
@@ -146,7 +143,7 @@ string   Parser::_SendUserChannelStatus(const vec_str& userList, const string& n
   return msg;
 }
 
-bool    Parser::joinChannel(const userData& user, const string& channel, const string& pass) {
+bool      Parser::joinChannel(const userData& user, const string& channel, const string& pass) {
   if (!_channels.Channel_AlreadyExist(channel)) {
     if (!_channels.Channel_Create(user.userName, channel)) {
       return false;    //! can't make chanel
@@ -171,13 +168,13 @@ bool    Parser::joinChannel(const userData& user, const string& channel, const s
   return true;
 }
 
-bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
+bool      Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
   if (user.currentAction > e_notRegistred) {
-    // allReadyRegistered(user);
+    //! allReadyRegistered(user);                                                        <-- add error ?
     Sock.SendData(user.userFD, ERR_ALREADYREGISTRED);
     return false;
   }
-  else if (pass == Sock.GetPassword()){
+  else if (pass == Sock.GetPassword()) {
     std::cout << GRN << "Valid password" << RESET << std::endl;
     return true;
   }
@@ -187,22 +184,15 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
 }
 
 //?  * // PRIVMSG
-//PRIVMSG #a :awd
 
-
-
-bool  Parser::privMsg(const string target, const string message, const string nick, bool self) {
+bool      Parser::privMsg(const string target, const string message, const string nick, bool self) {
   //* send mesagge to one user if no channel find 
   if (!Sock.channels.Channel_AlreadyExist(target)) {
-      // if (Sock.doesThisNicknameExist(target)) {
         const userData *tmpUser = Sock.GetUserByNickname(target);
         if (Sock.doesThisNicknameExist(target) && tmpUser ? LV(tmpUser->currentAction, e_userRegistred) : false){
           Sock.SendData(tmpUser->userFD, RPL_PRIVMSG(nick, target, message));
           return true;
         }
-        // else
-          // return false;
-      // }
     return false;
   }
   //* send message to all user
@@ -224,12 +214,7 @@ bool  Parser::privMsg(const string target, const string message, const string ni
 
 //?  * // KICK
 
-
-// Received: KICK #a bob :bozo lala
-
-// :WiZ!jto@tolsun.oulu.fi KICK #Finnish John
-
-bool  Parser::KickUserChannel(const userData &user, const string channel, const string nick, const string reson) {
+bool      Parser::KickUserChannel(const userData &user, const string channel, const string nick, const string reson) {
   if (!_testOp(user, channel))
     return false;
   const userData* tmpUser = Sock.GetUserByNickname(nick);
@@ -247,10 +232,9 @@ bool  Parser::KickUserChannel(const userData &user, const string channel, const 
   return true;
 }
 
-
 //?  * // PART
 
-bool  Parser::userPart(const string channel , const string userName, const string reson) {
+bool      Parser::userPart(const string channel , const string userName, const string reson) {
   const userData* leaver = Sock.GetUserByUsername(userName);
   if (_testInChannel(*leaver, channel)) {
     vec_str channelUser = _channels.Channel_Get_AllUsers(channel);
@@ -264,11 +248,10 @@ bool  Parser::userPart(const string channel , const string userName, const strin
   return false;
 }
 
-bool Parser::KickUserAllChannel(const userData& user, const string reson) {
+bool      Parser::KickUserAllChannel(const userData& user, const string reson) {
   vec_str channelList = _channels.User_GetAllChannels(user.userName);
   if (channelList.size() == 0)
     return false;
-  //*                                              //
   for (size_t i = 0; i < channelList.size(); i++) {
     userPart(channelList[i], user.userName, reson);
   }
@@ -278,7 +261,7 @@ bool Parser::KickUserAllChannel(const userData& user, const string reson) {
 
 //?  * // invite
 
-bool Parser::userInvite(userData& user, std::string nick, std::string channel){
+bool      Parser::userInvite(userData& user, std::string nick, std::string channel) {
   userData *tmp = Sock.GetUserByNickname(nick);
   if (!_testOp(user, channel) || tmp ? !LV(tmp->currentAction, e_userRegistred) : false)
     return false;
@@ -295,14 +278,14 @@ bool Parser::userInvite(userData& user, std::string nick, std::string channel){
 //?  * // MODE
 
 /* 
-*i  Définir/supprimer le canal sur invitation uniquement // ? --
-*t  Définir/supprimer les restrictions de la commande TOPIC pour les opérateurs de canaux // ? --
-*k  Définir/supprimer la clé du canal (mot de passe // !
-*o  Donner/retirer le privilège de l’opérateur de cana // !
+*i  Définir/supprimer le canal sur invitation uniquement
+*t  Définir/supprimer les restrictions de la commande TOPIC pour les opérateurs de canaux
+*k  Définir/supprimer la clé du canal (mot de pass)
+*o  Donner/retirer le privilège de l’opérateur de cana
 *l  Définir/supprimer la limite d’utilisateurs pour le canal
 */
 
-bool    Parser::Mode(const userData& user, const string channel) {
+bool      Parser::Mode(const userData& user, const string channel) {
   if(!_testInChannel(user, channel))
     return false;
   string mode;
@@ -321,7 +304,7 @@ bool    Parser::Mode(const userData& user, const string channel) {
   return true;
 }
 
-bool    Parser::ModeI(const userData& user, const string channel, const bool mode) {
+bool      Parser::ModeI(const userData& user, const string channel, const bool mode) {
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_InviteOnly(channel, mode);
@@ -329,7 +312,7 @@ bool    Parser::ModeI(const userData& user, const string channel, const bool mod
   return true;
 }
 
-bool    Parser::ModeT(const userData& user, const string channel, const bool mode) {
+bool      Parser::ModeT(const userData& user, const string channel, const bool mode) {
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_CanUserChangeTopic(channel, mode);
@@ -338,7 +321,7 @@ bool    Parser::ModeT(const userData& user, const string channel, const bool mod
 }
 
 
-bool    Parser::ModeK(const userData& user, const string channel, const string pass) {
+bool      Parser::ModeK(const userData& user, const string channel, const string pass) {
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_Password(channel, pass);
@@ -346,7 +329,7 @@ bool    Parser::ModeK(const userData& user, const string channel, const string p
   return true;
 }
 
-bool    Parser::ModeO(const userData& user, const string channel, const string nick, const bool mode) {
+bool      Parser::ModeO(const userData& user, const string channel, const string nick, const bool mode) {
   if (!_testOp(user, channel))
     return false;
   const userData* tmpUser = Sock.GetUserByNickname(nick);
@@ -367,14 +350,10 @@ bool    Parser::ModeO(const userData& user, const string channel, const string n
   return true;
 }
 
-bool   Parser::ModeL(const userData& user, const string channel, const int number) {
+bool      Parser::ModeL(const userData& user, const string channel, const int number) {
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_MaxUsersCount(channel, number);
   _sendChannel(":" + user.nickName + " MODE " + channel + " " + (number > 0 ? '-' : '+') + "t", channel);
   return true;
 }
-
-
-//join #a,#b,#c
-//10.12.2.5
