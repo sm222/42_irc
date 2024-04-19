@@ -3,13 +3,11 @@
 #include <stdlib.h>
 
 int main(int argc, char **args) {
-
     // ++++++++++++++ Args Counts ++++++++++++++
     if (argc != 3) {
         std::cout << "./ircserv <port> <password>" << std::endl;
         return 1;
     }
-
     // ++++++++++++++ Port ++++++++++++++
     uint16_t port;
     try {
@@ -23,10 +21,6 @@ int main(int argc, char **args) {
         std::cout << "[-] Port Argument is messed up" << std::endl;
         return 1;
     }
-
-
-
-
     // ++++++++++++++ Password ++++++++++++++
     if (strlen(args[2]) > 100) {
         std::cout << "[-] Anti Dave Password Policy - 100 Chars max Password" << std::endl;
@@ -38,20 +32,15 @@ int main(int argc, char **args) {
             return 1;
         }
     }
-
-
-
-
     // ++++++++++++++ Start ++++++++++++++
     std::string pw = args[2];
     try {
         Socket serverSocket(port, pw);
     }
-    catch (const std::exception& e) { 
+    catch (const std::exception& e) {
         std::cout << e.what() << std::endl;
         return 1;
     }
-
     return 0;
 }
 
