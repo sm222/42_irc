@@ -10,7 +10,7 @@
 
 class Socket {
 public:
-    Socket(uint16_t port, const std::string password, const bool showDebug = true);
+    Socket(uint16_t port, const std::string password, const bool showDebug = false);
     ~Socket();
  
     // Channels
