@@ -346,7 +346,7 @@ void Parser::fnMODE(vec_str& vec, userData& user) {
   }
   size_t count = 3;
   for (size_t i = 1; i < vec[2].length(); i++) {
-    if (vec[2][i] == 'k' || vec[2][i] == 'o' || vec[2][i] == 'l')
+    if (vec[2][i] == 'k' || vec[2][i] == 'o' || (mode && vec[2][i] == 'l'))
       count++;
   }
   if (vec.size() < count) {

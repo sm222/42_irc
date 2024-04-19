@@ -66,7 +66,7 @@ enum e_ActionLv {
 #define ERR_UNKNOWNERROR(cmd, reason)           "400 " + cmd + " :" + reason
 #define ERR_UNKNOWNCOMMAND(cmd)                 "421 " + cmd + " :Unknown command"
 #define ERR_NEEDMOREPARAMS(nick, cmd)           "461 " + nick + " " + cmd + " :Not enough parameters"
-#define ERR_PASSWDMISMATCH(nick)                "464 " + nick + ":Password incorrect"
+#define ERR_PASSWDMISMATCH(nick)                "464 " + nick + " :Password incorrect"
 #define ERR_NOTREGISTERED                       "451 :You have not registered"
 #define ERR_ALREADYREGISTRED                    "462 :Unauthorized command (already registered)"
 

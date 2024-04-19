@@ -263,7 +263,9 @@ bool      Parser::KickUserAllChannel(const userData& user, const string reson) {
 
 bool      Parser::userInvite(userData& user, std::string nick, std::string channel) {
   userData *tmp = Sock.GetUserByNickname(nick);
-  if (!_testOp(user, channel) || tmp ? !LV(tmp->currentAction, e_userRegistred) : false)
+  if (!tmp || tmp->currentAction < e_userRegistred)
+    return false;
+  if (!_testOp(user, channel))
     return false;
   const userData* tmpUser = Sock.GetUserByNickname(nick);
   if (!tmpUser || user.nickName == nick)
@@ -308,7 +310,7 @@ bool      Parser::ModeI(const userData& user, const string channel, const bool m
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_InviteOnly(channel, mode);
-  _sendChannel(":" + user.nickName + " MODE " + (mode ? '+' : '-') + "i", channel);
+  _sendChannel(":" + user.nickName + " MODE " + channel + " " + (mode ? '+' : '-') + "i", channel);
   return true;
 }
 
@@ -316,7 +318,7 @@ bool      Parser::ModeT(const userData& user, const string channel, const bool m
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_CanUserChangeTopic(channel, mode);
-  _sendChannel(":" + user.nickName + " MODE " + (mode ? '+' : '-') + "t", channel);
+  _sendChannel(":" + user.nickName + " MODE " + channel + " " + (mode ? '-' : '+') + "t", channel);
   return true;
 }
 
@@ -354,6 +356,6 @@ bool      Parser::ModeL(const userData& user, const string channel, const int nu
   if (!_testOp(user, channel))
     return false;
   _channels.Channel_Set_MaxUsersCount(channel, number);
-  _sendChannel(":" + user.nickName + " MODE " + channel + " " + (number > 0 ? '-' : '+') + "t", channel);
+  _sendChannel(":" + user.nickName + " MODE " + channel + " " + (number > 0 ? '+' : '-') + "l", channel);
   return true;
 }
