@@ -1,9 +1,5 @@
 CC		= c++
-#FLAGS	= -Wall -Wextra -Werror -g
-#FLAGS	= -Wall -Wextra -Werror -std=c++98 -pedantic -g
-FLAGS	= -Wall -Wextra -Werror -pedantic -g
-#FLAGS	= -Wall -Wextra -Werror -std=c++98 -O2
-#FLAGS	= -g 
+FLAGS	= -Wall -Wextra -Werror -std=c++98 -O2
 
 TARGET		= ircserv
 OBJECTS		:= $(patsubst src/%.cpp,obj/%.o,$(wildcard src/*.cpp))
@@ -26,30 +22,14 @@ leak: all
 	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET)
 
 run: re $(TARGET) ip
-	@./$(TARGET) 2000 a
-
-docker-clean:
-	@docker ps -q --filter ancestor=weechat/weechat | xargs docker stop
-
-docker-clear:
-	@docker kill $$(docker ps -q) || true
-	@docker system prune -af || true
+	@./$(TARGET) 6667 a
 
 ip:
 	@ifconfig -l | xargs -n1 ipconfig getifaddr | grep 10. || true
 	@echo -n 'cd ' 
 	@pwd
 
-client:
-	@docker run -ti weechat/weechat
-
 wee:
-	@./dev/run_weechat.sh
-
-wee-d:
-	@./dev/run_weechat.sh -d
-
-term:
-	@./dev/double_term.sh
+	@docker run -ti --rm weechat/weechat
 
 .PHONY: all clean fclean re leak run docker
