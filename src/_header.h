@@ -114,23 +114,6 @@ enum e_ActionLv {
 #define ERR_UMODEUNKNOWNFLAG(nick)              "501 " + nick + " :Unknown MODE flag"
 #define ERR_UNKNOWNMODE(char, channel)          "472 " + char + " :is unknown mode char to me for " + channel
 
-
-typedef enum e_type {
-  e_none = -1,      // -1
-  e_welcom,         // 001
-  e_rplTopic,       // 332
-  e_passmismatch,   // 464 ERR_PASSWDMISMATCH
-  e_errornickname   // 432
-} t_code;
-
-const char* const MType[] = {
-  "001",
-  "332",
-  "464",
-  "432 PRIVMSG",
-  ""
-};
-
 // +++ Structs +++
 
 // This is what we need to parse

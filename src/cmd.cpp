@@ -36,7 +36,7 @@ void      Parser::sendAllChannel(userData& user, std::string message) {
 
 bool      Parser::_testInChannel(const userData& user, const string channelName, const userData* ask) {
   if (channelName.empty()) {
-    // no name                                                                                      <--        add err here ?
+    Sock.SendData(user.userFD, ERR_NOSUCHNICK(user.nickName));
     return false;
   }
   if (!_channels.Channel_AlreadyExist(channelName)) {
@@ -117,7 +117,8 @@ short      Parser::_tryJoinChannel(const userData& user, const string channel, c
     Sock.SendData(user.userFD, ERR_PASSWDMISMATCH(user.nickName));
     return false;
   }
-  if (_channels.Channel_Get_MaxUsersCount(channel) != -1 && _channels.Channel_Get_CurrentUsersCount(channel) >= _channels.Channel_Get_MaxUsersCount(channel)){
+  if (_channels.Channel_Get_MaxUsersCount(channel) != -1 
+    && _channels.Channel_Get_CurrentUsersCount(channel) >= _channels.Channel_Get_MaxUsersCount(channel)){
     Sock.SendData(user.userFD, ERR_CHANNELISFULL(channel));
     return false;
   }
@@ -170,7 +171,6 @@ bool      Parser::joinChannel(const userData& user, const string& channel, const
 
 bool      Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
   if (user.currentAction > e_notRegistred) {
-    //! allReadyRegistered(user);                                                        <-- add error ?
     Sock.SendData(user.userFD, ERR_ALREADYREGISTRED);
     return false;
   }

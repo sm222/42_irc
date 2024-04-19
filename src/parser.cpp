@@ -20,8 +20,8 @@ bool isValidStr(std::string str, std::string other, bool printable = false) {
   for (size_t i = 0; i < str.length(); i++) {
     if (!printable && !isalnum(str[i]) && other.find(str[i]) == std::string::npos)
       return false;
-    else if (printable && isprint(str[i])) {
-    //?                                                                               <-- make sense ?
+    else if (printable && !isprint(str[i])) {
+      return false;
     }
   }
   return true;
@@ -154,8 +154,6 @@ void Parser::fnUSER(vec_str& vec, userData& user) {
     return;
   }
   kickUser(*_index, "904 " ServerName " :invalide character for user", user);
-  // else
-    // !ERR_ALREADYREGISTERED (462)                                              <-- we add that back ?
 }
 
 void Parser::fnNICK(vec_str& vec, userData& user) {
