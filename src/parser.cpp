@@ -14,24 +14,24 @@
 /// @param str a string 
 /// @param other a string to add chars in the filter
 /// @return bool
-bool isValidStr(std::string str, std::string other, bool printable = false){
+bool isValidStr(std::string str, std::string other, bool printable = false) {
   if (str.empty() || isdigit(str[0]))
     return false;
   for (size_t i = 0; i < str.length(); i++) {
     if (!printable && !isalnum(str[i]) && other.find(str[i]) == std::string::npos)
       return false;
-    else if (printable && isprint(str[i])){
-
+    else if (printable && isprint(str[i])) {
+    //?                                                                               <-- make sense ?
     }
   }
   return true;
 }
 
-int charCount(std::string str, char c){
+int charCount(std::string str, char c) {
   return std::count(str.begin(), str.end(), c);
 }
 
-bool strDoubleChar(std::string str){
+bool strDoubleChar(std::string str) {
   for (size_t i = 0; i < str.length(); i++) {
     for (size_t j = i + 1; j < str.length(); j++) {
       if (str[i] == str[j])
@@ -41,7 +41,7 @@ bool strDoubleChar(std::string str){
   return false;
 }
 
-void print_vec(vec_str vec, std::string name){
+void print_vec(vec_str vec, std::string name) {
   if (vec.empty())
     return;
   std::cout << MAG "|" RESET << name;
@@ -50,7 +50,7 @@ void print_vec(vec_str vec, std::string name){
   std::cout << std::endl;
 }
 
-std::string supchar(const std::string &str, char c){
+std::string supchar(const std::string &str, char c) {
 	std::string tmp = "";
   if (str.empty())
     return tmp;
@@ -62,11 +62,10 @@ std::string supchar(const std::string &str, char c){
 
 //CLASS
 
-Parser::Parser(Socket& socketClass) : Sock(socketClass), _channels(Sock.channels) {
-}
-Parser::~Parser(){}
+Parser::Parser(Socket& socketClass) : Sock(socketClass), _channels(Sock.channels) {}
+Parser::~Parser() {}
 
-vec_str Parser::Tokenize(std::string message, char c){
+vec_str Parser::Tokenize(std::string message, char c) {
   vec_str vec;
   size_t pos = 0;
   size_t old_pos = 0;
@@ -78,14 +77,12 @@ vec_str Parser::Tokenize(std::string message, char c){
 
   if (message.empty())
     return vec;
-  
   if (point != std::string::npos){
     _text = message.substr(message.find(':', 0));
     _cmds = message.substr(0, message.find(':', 0));
   }else {
     _cmds = message;
   }
-
   while ((pos = _cmds.find(c, old_pos)) != std::string::npos) {
     std::string token = _cmds.substr(old_pos, pos - old_pos);
     if (!token.empty())
@@ -101,7 +98,6 @@ vec_str Parser::Tokenize(std::string message, char c){
 
 /*
 * - asuming the currentAction = 0 at start, step 0 is to confim the password
-*
 *                                                *
 *  password - 0                                  *
 *            |                                   *
@@ -109,52 +105,49 @@ vec_str Parser::Tokenize(std::string message, char c){
 *                          |                     *
 *                          ? next step 2         *
 *                                                *
-*                                                *
-*                                                *
-*                                                *
-*                                                *
 */
-bool Parser::chaIsValid(std::string str){
-  if (str.length() == 1 || !isValidStr(str, "#&") || (str[0] != '#' && str[0] != '&')){
+
+bool Parser::chaIsValid(std::string str) {
+  if (str.length() == 1 || !isValidStr(str, "#&") || (str[0] != '#' && str[0] != '&')) {
     return false;
-   }
-   return true;
+  }
+  return true;
 }
 
 bool Parser::keyIsValid(std::string str){
-   return isValidStr(str, "!@$%?&*");
+  return isValidStr(str, "!@$%?&*");
 }
 
-void Parser::fnPASS(vec_str& vec, userData& user){
+void Parser::fnPASS(vec_str& vec, userData& user) {
   if (vec.size() < 2){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
   }
-  if (user.currentAction == e_userRegistred){
+  if (user.currentAction == e_userRegistred) {
     Sock.SendData(user.userFD, ERR_ALREADYREGISTRED);
     return;
   }
-  if (testPassWord(vec[1], user, *_index)){
+  if (testPassWord(vec[1], user, *_index)) {
     user.currentAction = 1;
     user.userName.clear();
     user.nickName.clear();
   }
 }
 
-void Parser::fnUSER(vec_str& vec, userData& user){
-  if (vec.size() < 5){
+void Parser::fnUSER(vec_str& vec, userData& user) {
+  if (vec.size() < 5) {
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
     return;
   }
-  if (!user.userName.empty() || user.userName == vec[1]){
+  if (!user.userName.empty() || user.userName == vec[1]) {
     Sock.SendData(user.userFD, ERR_ALREADYREGISTRED);
     return;
   }
-  if (isValidStr(vec[1], "-_")){
-    if (!Sock.GetUserByUsername(vec[1])){
+  if (isValidStr(vec[1], "-_")) {
+    if (!Sock.GetUserByUsername(vec[1])) {
       user.userName = vec[1];
       user.currentAction++;
-      Sock.SendData(user.userFD, RPL_WELCOME(user.userName, user.nickName) );
+      Sock.SendData(user.userFD, RPL_WELCOME(user.userName, user.nickName));
       return;
     }
     kickUser(*_index, "904 " ServerName " :user alrady use", user);
@@ -162,16 +155,16 @@ void Parser::fnUSER(vec_str& vec, userData& user){
   }
   kickUser(*_index, "904 " ServerName " :invalide character for user", user);
   // else
-    // !ERR_ALREADYREGISTERED (462)
+    // !ERR_ALREADYREGISTERED (462)                                              <-- we add that back ?
 }
 
-void Parser::fnNICK(vec_str& vec, userData& user){
-  if (vec.size() < 2){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
+void Parser::fnNICK(vec_str& vec, userData& user) {
+  if (vec.size() < 2) {
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
-  if (!user.nickName.empty()){
-    if (!Sock.doesThisNicknameExist(vec[1])){
+  if (!user.nickName.empty()) {
+    if (!Sock.doesThisNicknameExist(vec[1])) {
       sendAllChannel(user, ":" + user.nickName + " NICK " + vec[1]);
       user.nickName = vec[1];
     }
@@ -180,8 +173,8 @@ void Parser::fnNICK(vec_str& vec, userData& user){
     }
     return;
   }
-  if (isValidStr(vec[1], "-_")){
-    if (!Sock.GetUserByNickname(vec[1])){
+  if (isValidStr(vec[1], "-_")) {
+    if (!Sock.GetUserByNickname(vec[1])) {
       user.nickName = vec[1];
       user.currentAction++;
       return;
@@ -193,22 +186,21 @@ void Parser::fnNICK(vec_str& vec, userData& user){
     kickUser(*_index, ERR_ERRONEUSNICKNAME(vec[1]), user);
 }
 
-void Parser::fnJOIN(vec_str& vec, userData& user){
+void Parser::fnJOIN(vec_str& vec, userData& user) {
   vec_str channel;
   vec_str key;
 
   //error verification
-  if (vec.size() < 2){
+  if (vec.size() < 2) {
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
-  if (user.recvString.find(':') != std::string::npos){
+  if (user.recvString.find(':') != std::string::npos) {
       Sock.SendData(user.userFD, "479 :invalid character");
       return;
   }
-
   //channel and key logical
-  if (vec.size() >= 2 && !vec[1].empty()){
+  if (vec.size() >= 2 && !vec[1].empty()) {
     channel = Tokenize(vec[1], ',');
     if (vec.size() >= 3 && !vec[2].empty())
       key = Tokenize(vec[2], ',');
@@ -222,9 +214,8 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
       }
     }
   }
-
   //join channel
-  if (!channel.empty()){
+  if (!channel.empty()) {
     for (size_t i = 0; i < channel.size(); i++) {
         std::string tmp("");
         if (i < key.size())
@@ -234,9 +225,9 @@ void Parser::fnJOIN(vec_str& vec, userData& user){
   }
 }
 
-void Parser::fnPMSG(vec_str& vec, userData& user){
+void Parser::fnPMSG(vec_str& vec, userData& user) {
   if (vec.size() < 3){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
   if (vec.size() >= 3)
@@ -249,26 +240,23 @@ void Parser::fnPMSG(vec_str& vec, userData& user){
 */
 
 //KICK #a,#a,#a bob,bob,bob : reason
-void Parser::fnKICK(vec_str& vec, userData& user){
+void Parser::fnKICK(vec_str& vec, userData& user) {
   vec_str channel;
   vec_str usr;
   std::string reason("");
-
   //error verification
-  if (vec.size() < 3){
+  if (vec.size() < 3) {
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
-  if (user.recvString.find(':') != std::string::npos){
+  if (user.recvString.find(':') != std::string::npos) {
       Sock.SendData(user.userFD, "479 :invalid character");
       return;
   }
-
   if (vec.size() >= 4)
     reason = vec[3]; //KickUserChannel(user, vec[1], vec[2], reason);
-
   //channel and key logical
-  if (vec.size() >= 2 && !vec[1].empty()){
+  if (vec.size() >= 2 && !vec[1].empty()) {
     channel = Tokenize(vec[1], ',');
     if (vec.size() >= 3 && !vec[2].empty())
       usr = Tokenize(vec[2], ',');
@@ -282,7 +270,6 @@ void Parser::fnKICK(vec_str& vec, userData& user){
       }
     }
   }
-
   //join channel
   if (!channel.empty()){
     for (size_t i = 0; i < channel.size(); i++) {
@@ -295,10 +282,10 @@ void Parser::fnKICK(vec_str& vec, userData& user){
 
 //PART #channel 
 //PART #channel :reason
-void Parser::fnPART(vec_str& vec, userData& user){
+void Parser::fnPART(vec_str& vec, userData& user) {
   vec_str channel;
 
-  if (vec.size() < 2){
+  if (vec.size() < 2) {
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
@@ -313,7 +300,6 @@ void Parser::fnPART(vec_str& vec, userData& user){
       }
     }
   }
-
   if (!channel.empty()){
     for (size_t i = 0; i < channel.size(); i++) {
       std::string tmp = "";
@@ -325,11 +311,11 @@ void Parser::fnPART(vec_str& vec, userData& user){
 }
 
 //QUIT *reason
-void Parser::fnQUIT(vec_str& vec, userData& user){
-  if (vec.size() == 1){ 
+void Parser::fnQUIT(vec_str& vec, userData& user) {
+  if (vec.size() == 1) {
     Sock.SendData(user.userFD, ":" + user.nickName + " QUIT");
   }
-  else if (vec.size() >= 2){
+  else if (vec.size() >= 2) {
     Sock.SendData(user.userFD, ":" + user.nickName + " QUIT " + vec[1]);
   }
   KickUserAllChannel(user, vec[1]);
@@ -337,38 +323,36 @@ void Parser::fnQUIT(vec_str& vec, userData& user){
 
 //MODE #CHANNEL +/-ITKOL
 //MODE #CHANNEL +/-ITKOL param param param
-void Parser::fnMODE(vec_str& vec, userData& user){
+void Parser::fnMODE(vec_str& vec, userData& user) {
   bool mode = false;
-  if (vec.size() < 2){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
+  if (vec.size() < 2) {
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
-  }else if(vec.size() == 2){
+  }else if(vec.size() == 2) {
     Mode(user, vec[1]);
     return;
   }
   else if (vec.size() < 3 && vec[2].find_first_of("kol") != std::string::npos){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
-
-  if (vec[2][0] == '+'){
+  if (vec[2][0] == '+') {
     mode = true;
-  }else if (vec[2][0] != '-'){
+  }else if (vec[2][0] != '-') {
     Sock.SendData(user.userFD, ERR_UMODEUNKNOWNFLAG(user.nickName));
     return;
   }
-  if (strDoubleChar(vec[2])){
+  if (strDoubleChar(vec[2])) {
     Sock.SendData(user.userFD, ERR_UMODEUNKNOWNFLAG(user.nickName));
     return;
   }
-
   size_t count = 3;
   for (size_t i = 1; i < vec[2].length(); i++) {
     if (vec[2][i] == 'k' || vec[2][i] == 'o' || vec[2][i] == 'l')
       count++;
   }
-  if (vec.size() < count){
-    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, vec[1])); 
+  if (vec.size() < count) {
+    Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, vec[1]));
     return;
   }
   size_t j = 3;
@@ -395,7 +379,7 @@ void Parser::fnMODE(vec_str& vec, userData& user){
         j++;
         break;
       case 'l':
-        if (mode == true && vec.size() > j && !vec[j].empty()){
+        if (mode == true && vec.size() > j && !vec[j].empty()) {
           try {
             ModeL(user, vec[1], stoi(vec[j]));
           } catch (const std::exception& e) {
@@ -407,28 +391,28 @@ void Parser::fnMODE(vec_str& vec, userData& user){
         j++;
         break;
       default:
-        Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString)); 
+        Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
         break;
     }
   }
 }
 
 //topic #channel :topic
-void Parser::fnTOPIC(vec_str& vec, userData& user){
+void Parser::fnTOPIC(vec_str& vec, userData& user) {
   if (vec.size() < 2){
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
   else if (vec.size() == 2)
     _sendTopicTo(vec[1]);
-  else if (isValidStr(vec[2], "", true)){
+  else if (isValidStr(vec[2], "", true)) {
     setTopic(user, vec[1], vec[2]);
   } 
 }
 
 //INVITE nick #channel
-void Parser::fnINVITE(vec_str& vec, userData& user){
-  if (vec.size() < 3){
+void Parser::fnINVITE(vec_str& vec, userData& user) {
+  if (vec.size() < 3) {
     Sock.SendData(user.userFD, ERR_NEEDMOREPARAMS(user.nickName, user.recvString));
     return;
   }
@@ -445,10 +429,8 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     if (token.empty()) {
       return ;
     }
-
     // if(token[0] != "PING")
     //   print_vec(token, "token");
-
     if (token[0] == "PING" && LV(user.currentAction, e_userRegistred)) {if (token.size() >= 2) Sock.SendData(user.userFD, "PONG " + token[1]); }
     else if (token[0] == "PASS" && LV(user.currentAction, e_notRegistred)) { fnPASS(token, user); }
     else if (user.currentAction == 0) { kickUser(index, ERR_PASSWDMISMATCH(user.nickName), user); } //!if user send shit witout giving a valid password
@@ -462,6 +444,5 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     else if (token[0] == "QUIT" && LV(user.currentAction, e_userRegistred))    { fnQUIT(token, user); }
     else if (token[0] == "TOPIC" && LV(user.currentAction, e_userRegistred))   { fnTOPIC(token, user); }
     else if (token[0] == "INVITE" && LV(user.currentAction, e_userRegistred))  { fnINVITE(token, user); }
-
     // std::cout << "Received: " + user.recvString;    // Data Received
 }
