@@ -66,34 +66,6 @@ Parser::Parser(Socket& socketClass) : Sock(socketClass), _channels(Sock.channels
 }
 Parser::~Parser(){}
 
-/// @brief use to build a message to send
-/// @param type 
-/// @param msg %u = user.userName, %n = user.nickName, %i
-/// @param user 
-/// @return 
-string  Parser::makeMessage(t_code const type, const string msg, const userData& user) {
-    string result;
-    if (type > -1) {
-      result = MType[type];
-      result += " " + user.nickName + " ";
-    }
-    else
-      result = "";
-    for (size_t i = 0; i < msg.size(); i++) {
-      if (msg[i] == '%' && msg[i + 1] == 'u') {
-        result += user.userName;
-        i++;
-      }
-      else if (msg[i] == '%' && msg[i + 1] == 'n') {
-        result += user.nickName;
-        i++;
-      }
-      else
-        result += msg[i];
-    }
-    return (result);
-}
-
 vec_str Parser::Tokenize(std::string message, char c){
   vec_str vec;
   size_t pos = 0;
@@ -127,26 +99,6 @@ vec_str Parser::Tokenize(std::string message, char c){
   return (vec);
 }
 
-// void test(vec_str& vec, userData& user){
-//   std::string msg = user.recvString.substr(user.recvString.find(':', 0));
-//   int index;
-//   for (int i = 0; i < vec.size(); i++) {
-//     if (vec[i].find(':', 0) != std::string::npos){
-//       index = i;
-//       break;
-//     }
-//   }
-//   vec_str tmp;
-//   for (int i = 0; i <= index; i++) {
-//     if (i == index)
-//       tmp.push_back(msg);
-//     else
-//       tmp.push_back(vec[i]);
-//   }
-//   vec.clear();
-//   vec = tmp;
-// }
-
 /*
 * - asuming the currentAction = 0 at start, step 0 is to confim the password
 *
@@ -163,7 +115,7 @@ vec_str Parser::Tokenize(std::string message, char c){
 *                                                *
 */
 bool Parser::chaIsValid(std::string str){
-   if (str.length() == 1 || !isValidStr(str, "#&") || (str[0] != '#' && str[0] != '&')){
+  if (str.length() == 1 || !isValidStr(str, "#&") || (str[0] != '#' && str[0] != '&')){
     return false;
    }
    return true;
@@ -491,7 +443,6 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
     _index = &index;
     vec_str token = Tokenize(user.recvString, ' ');
     if (token.empty()) {
-      std::cout << "empty\n"; //! fix segfault
       return ;
     }
 
@@ -514,52 +465,3 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
 
     // std::cout << "Received: " + user.recvString;    // Data Received
 }
-
-
-
-
-//** example v
-
-   //user set user
-    // index is pretty much only used to kick user. 
-    //user.currentAction = 1;                       // Action Index, step 1 = wait 4 password, step 2 = ask for username..Etc
-                                                    // im not using it anywhere, its for you guys to use
-    // Little example how i think you should use currentAction
-  /*
-    // Step 1 -> Check password         ( you can probably use an Enum for this )
-    if (user.currentAction == 0) {
-
-        // If the user DIDNT enter the right password, kick his ass
-        if (user.recvString != Sock.GetPassword()) {
-            Sock.SendData(user.userFD, "eat shit and die\n");
-            Sock.KickUser(index);
-            std::cout << "USER KICKED" << std::endl;
-            return;
-        }
-        // Otherwise, go to next step
-        else {
-            user.currentAction++;
-        }
-    }
-    // Step 2 -> Save user
-    else if (user.currentAction == 2) {
-        // Empty Username, We dont increment, so user will be forced to actually send something
-        if (user.recvString == "") {
-            Sock.SendData(user.userFD, "Are you fucking dumb ? Enter something bozo");
-        }
-        // Correct Username
-        else {
-            user.userName = user.recvString;
-            Sock.SendData(user.userFD, "Welcome" + user.userName);
-            user.currentAction++;   // Next step ...
-        }
-    }
-  */
-    //user.userName = "userName";                   // Set username
-    //user.nickName = "nickName";                   // Set nickname
-    //user.userFD;                                  // Hold user FD
-    //user.recvString;                              // Data received just now
-
-    //Sock.KickUser(index);                           // Kick user
-    //Sock.GetPassword();                             // To check if user entered correct password, return the password
-    //Sock.SendData(user.userFD, "nice scam sir");    // You can easily send data with this
