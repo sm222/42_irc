@@ -182,7 +182,7 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
     return true;
   }
   kickUser(index, ERR_PASSWDMISMATCH(user.nickName), user);
-  std::cout << RED <<  "Bad password" << RESET << std::endl;
+    std::cout << RED <<  "Bad password" << RESET << std::endl;
   return false;
 }
 
@@ -192,13 +192,17 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
 
 
 bool  Parser::privMsg(const string target, const string message, const string nick, bool self) {
-  //* send mesagge to one user if no channel find
+  //* send mesagge to one user if no channel find 
   if (!Sock.channels.Channel_AlreadyExist(target)) {
-      if (Sock.doesThisNicknameExist(target)) {
+      // if (Sock.doesThisNicknameExist(target)) {
         const userData *tmpUser = Sock.GetUserByNickname(target);
-        Sock.SendData(tmpUser->userFD, RPL_PRIVMSG(nick, target, message));
-        return true;
-      }
+        if (Sock.doesThisNicknameExist(target) && tmpUser ? LV(tmpUser->currentAction, e_userRegistred) : false){
+          Sock.SendData(tmpUser->userFD, RPL_PRIVMSG(nick, target, message));
+          return true;
+        }
+        // else
+          // return false;
+      // }
     return false;
   }
   //* send message to all user
@@ -275,7 +279,8 @@ bool Parser::KickUserAllChannel(const userData& user, const string reson) {
 //?  * // invite
 
 bool Parser::userInvite(userData& user, std::string nick, std::string channel){
-  if (!_testOp(user, channel))
+  userData *tmp = Sock.GetUserByNickname(nick);
+  if (!_testOp(user, channel) || tmp ? !LV(tmp->currentAction, e_userRegistred) : false)
     return false;
   const userData* tmpUser = Sock.GetUserByNickname(nick);
   if (!tmpUser || user.nickName == nick)

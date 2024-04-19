@@ -91,7 +91,6 @@ string  Parser::makeMessage(t_code const type, const string msg, const userData&
       else
         result += msg[i];
     }
-    std::cout << RED "|" << CYN  << result << RESET << "\n";
     return (result);
 }
 
@@ -338,7 +337,6 @@ void Parser::fnKICK(vec_str& vec, userData& user){
         std::string tmp("");
         if (i < usr.size())
           KickUserChannel(user, channel[i], usr[i], reason);
-        std::cout << RED "|fnKICK_CMD" RESET << std::endl;
     }
   }
 }
@@ -497,9 +495,9 @@ void    Parser::ParseData(userData& user, vectorIT& index) {
       return ;
     }
 
-    if(token[0] != "PING")
-      print_vec(token, "token");
-    // std::cout << "user - " << user.userName << "currentAction\t\t\t\t\t\t\t>" << user.currentAction << std::endl;
+    // if(token[0] != "PING")
+    //   print_vec(token, "token");
+
     if (token[0] == "PING" && LV(user.currentAction, e_userRegistred)) {if (token.size() >= 2) Sock.SendData(user.userFD, "PONG " + token[1]); }
     else if (token[0] == "PASS" && LV(user.currentAction, e_notRegistred)) { fnPASS(token, user); }
     else if (user.currentAction == 0) { kickUser(index, ERR_PASSWDMISMATCH(user.nickName), user); } //!if user send shit witout giving a valid password
