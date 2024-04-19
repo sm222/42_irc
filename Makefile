@@ -33,3 +33,4 @@ wee:
 	@docker run -ti --rm weechat/weechat
 
 .PHONY: all clean fclean re leak run docker
+
