@@ -182,7 +182,7 @@ bool Parser::testPassWord(string &pass, userData &user, vectorIT& index) {
     return true;
   }
   kickUser(index, ERR_PASSWDMISMATCH(user.nickName), user);
-  std::cout << RED <<  "Bad password" << RESET << std::endl;
+    std::cout << RED <<  "Bad password" << RESET << std::endl;
   return false;
 }
 
