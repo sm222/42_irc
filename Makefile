@@ -52,6 +52,4 @@ wee-d:
 term:
 	@./dev/double_term.sh
 
-shit: term run
-
 .PHONY: all clean fclean re leak run docker
