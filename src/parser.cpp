@@ -148,6 +148,9 @@ void Parser::fnUSER(vec_str& vec, userData& user) {
       user.userName = vec[1];
       user.currentAction++;
       Sock.SendData(user.userFD, RPL_WELCOME(user.userName, user.nickName));
+      Sock.SendData(user.userFD, RPL_YOURHOST(user.nickName));
+      Sock.SendData(user.userFD, RPL_CREATED(user.nickName));
+      Sock.SendData(user.userFD, RPL_MYINFO(user.nickName));
       return;
     }
     kickUser(*_index, "904 " ServerName " :user alrady use", user);
