@@ -149,7 +149,7 @@ void Parser::fnUSER(vec_str& vec, userData& user) {
       user.currentAction++;
       Sock.SendData(user.userFD, RPL_WELCOME(user.userName, user.nickName));
       Sock.SendData(user.userFD, RPL_YOURHOST(user.nickName));
-      Sock.SendData(user.userFD, RPL_CREATED(user.nickName));
+      Sock.SendData(user.userFD, RPL_CREATED(user.nickName) + Sock.GetTimestamp());
       Sock.SendData(user.userFD, RPL_MYINFO(user.nickName));
       return;
     }

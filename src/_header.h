@@ -62,7 +62,7 @@ enum e_ActionLv {
 // base //
 #define RPL_WELCOME(user, nick)                 "001 " + nick + " :Welcome to the 42irc " + user   //<client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]
 #define RPL_YOURHOST(nick)                      "002 " + nick + " :Your host is " + ServerName + ", running version 1.0" //"Your host is <servername>, running version <ver>"
-#define RPL_CREATED(nick)                       "003 " + nick + " :This server was created today" //"This server was created <date>"
+#define RPL_CREATED(nick)                       "003 " + nick + " :This server was created @ " //"This server was created <date>"
 #define RPL_MYINFO(nick)                        "004 " + nick + " :ircserv 1.0 +itkol #&" //"<servername> <version> <available user modes> <available channel modes>"
 // info //
 #define ERR_UNKNOWNERROR(cmd, reason)           "400 " + cmd + " :" + reason
@@ -125,10 +125,6 @@ struct userData {
     std::string recvString;     // <--- Received Data
     std::string nickName;
     std::string userName;
-    std::string IP;             // Rate limiter
+    std::string IP;
 };
 
-struct rateLimiting {
-  time_t        lastTimer;
-  int           spamCount;
-};
