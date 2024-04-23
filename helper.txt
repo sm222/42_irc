@@ -1,0 +1,5 @@
+
+/server add O_O XXXXXXXX/6667 -notls -password=a
+/set irc.server.O_O.username "USERNAME1"
+/set irc.server.O_O.nicks "NICKNAME1"
+/connect O_O

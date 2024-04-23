@@ -79,7 +79,6 @@ void                Socket::SendData(const std::string& userName, std::string da
 const std::string&  Socket::GetPassword() {
     return _password;
 }
-
 userData* Socket::GetUserByUsername(const std::string& userName) {
     for (std::map<int, userData>::iterator it = _users.begin(); it != _users.end(); ++it) {
         if (it->second.userName == userName)
