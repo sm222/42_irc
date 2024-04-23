@@ -148,6 +148,9 @@ void Parser::fnUSER(vec_str& vec, userData& user) {
       user.userName = vec[1];
       user.currentAction++;
       Sock.SendData(user.userFD, RPL_WELCOME(user.userName, user.nickName));
+      Sock.SendData(user.userFD, RPL_YOURHOST(user.nickName));
+      Sock.SendData(user.userFD, RPL_CREATED(user.nickName) + Sock.GetTimestamp());
+      Sock.SendData(user.userFD, RPL_MYINFO(user.nickName));
       return;
     }
     kickUser(*_index, "904 " ServerName " :user alrady use", user);
@@ -346,7 +349,7 @@ void Parser::fnMODE(vec_str& vec, userData& user) {
   }
   size_t count = 3;
   for (size_t i = 1; i < vec[2].length(); i++) {
-    if (vec[2][i] == 'k' || vec[2][i] == 'o' || vec[2][i] == 'l')
+    if (vec[2][i] == 'k' || vec[2][i] == 'o' || (mode && vec[2][i] == 'l'))
       count++;
   }
   if (vec.size() < count) {

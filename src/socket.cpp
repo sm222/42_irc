@@ -7,6 +7,7 @@
 // +++ Constructor +++
 Socket::Socket(const uint16_t port, const std::string password, const bool showDebug) : _password(password), _showDebug(showDebug) {
     _fd = _getSocket(port, "");
+    GetTimestamp();
     _start();
 }
 
@@ -43,7 +44,7 @@ void                Socket::KickUser(vectorIT& index) {
             for (size_t i = 0; i < T.size(); i++) {
                 userData* tmp = GetUserByUsername(T[i].first);
                 if (tmp) {
-                    try { SendData(tmp->userFD, ":" + user->nickName + " PART " + T[i].second + " :got disconnected ~ bozo ~"); }
+                    try { SendData(tmp->userFD, ":" + user->nickName + " PART " + T[i].second + " :got disconnected"); }
                     catch (const std::exception& e) { if (_showDebug) std::cout << "BROKEN PIPE IGNORED" << std::endl;}
                 }
             }
@@ -340,4 +341,24 @@ int                 Socket::_getSocket(const uint16_t port, const std::string ip
     freeaddrinfo(result);
     throw AnyExcept("[-] Couldnt Create Socket.. [Address Info] [1]");
     return -1;
+}
+
+std::string         Socket::GetTimestamp() {
+
+    // i love technology and tide pods
+    static std::string  T;
+    static bool         init;
+
+    if (!init) {
+        char            buffer[20];
+        std::time_t     currentTime = std::time(nullptr);
+        std::tm*        localTime = std::localtime(&currentTime);
+
+        std::snprintf(buffer, sizeof(buffer), "%02d-%02d-%4d %02d:%02d:%02d", localTime->tm_mday, localTime->tm_mon + 1, localTime->tm_year + 1900, localTime->tm_hour, localTime->tm_min, localTime->tm_sec);
+        T = buffer;
+        init = true;
+    }
+
+  
+    return T;
 }

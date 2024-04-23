@@ -1,4 +1,5 @@
 CC		= c++
+#FLAGS	= -Wall -Wextra -Werror -pedantic -g
 FLAGS	= -Wall -Wextra -Werror -std=c++98 -O2
 
 TARGET		= ircserv
@@ -31,6 +32,8 @@ ip:
 
 wee:
 	@docker run -ti --rm weechat/weechat
+
+shit: term run
 
 .PHONY: all clean fclean re leak run docker
 
