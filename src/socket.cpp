@@ -8,7 +8,6 @@
 Socket::Socket(const uint16_t port, const std::string password, const bool showDebug) : _password(password), _showDebug(showDebug) {
     _fd = _getSocket(port, "");
     GetTimestamp();
-    std::cout << GetTimestamp() << std::endl;
     _start();
 }
 

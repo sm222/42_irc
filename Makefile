@@ -1,9 +1,6 @@
 CC		= c++
-#FLAGS	= -Wall -Wextra -Werror -g
-#FLAGS	= -Wall -Wextra -Werror -std=c++98 -pedantic -g
-FLAGS	= -Wall -Wextra -Werror -pedantic -g
-#FLAGS	= -Wall -Wextra -Werror -std=c++98 -O2
-#FLAGS	= -g 
+#FLAGS	= -Wall -Wextra -Werror -pedantic -g
+FLAGS	= -Wall -Wextra -Werror -std=c++98 -O2
 
 TARGET		= ircserv
 OBJECTS		:= $(patsubst src/%.cpp,obj/%.o,$(wildcard src/*.cpp))
